@@ -9,7 +9,7 @@ export const authConfig = {
   secret: process.env.AUTH_SECRET,
   trustHost: true,
   pages: {
-    signIn: "/iniciar-sesion",
+    signIn: "/",
   },
   session: { strategy: "jwt" },
   providers: [],

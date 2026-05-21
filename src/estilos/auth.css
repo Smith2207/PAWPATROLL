@@ -189,3 +189,27 @@
 .nav-usuario a:hover {
   color: var(--blue);
 }
+
+.panel-cuenta-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.panel-cuenta-header > div:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .panel-cuenta h1 {
+    font-size: 1.5rem;
+  }
+
+  .nav-usuario:not(.nav-usuario--movil) {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}

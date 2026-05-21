@@ -11,7 +11,7 @@ export function FormularioRegistro() {
   const { status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated") router.replace("/perfil");
+    if (status === "authenticated") router.replace("/");
   }, [status, router]);
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
@@ -55,7 +55,7 @@ export function FormularioRegistro() {
         </p>
         <p className="auth-ayuda" style={{ marginBottom: "1rem" }}>
           ¿Prefieres Google?{" "}
-          <Link href="/iniciar-sesion">Inicia sesión aquí</Link> — no necesitas
+          <Link href="/?login=1">Inicia sesión aquí</Link> — no necesitas
           este formulario.
         </p>
 
@@ -101,7 +101,7 @@ export function FormularioRegistro() {
 
         <p className="auth-enlace">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/iniciar-sesion">Iniciar sesión</Link>
+          <Link href="/?login=1">Iniciar sesión</Link>
         </p>
       </div>
     </div>

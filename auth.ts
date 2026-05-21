@@ -124,8 +124,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url;
-      return `${baseUrl}/perfil`;
+      if (url.startsWith("/iniciar-sesion")) return baseUrl;
+
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+
+      if (url.startsWith(baseUrl)) {
+        const ruta = new URL(url).pathname;
+        if (ruta === "/iniciar-sesion") return baseUrl;
+        return url;
+      }
+
+      return baseUrl;
     },
   },
   events: {

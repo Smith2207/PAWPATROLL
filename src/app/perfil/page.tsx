@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { BotonSalirSesion } from "@/componentes/auth/BotonSalirSesion";
 import { FormularioPerfil } from "@/componentes/auth/FormularioPerfil";
 import { etiquetaRol } from "@/lib/auth/roles";
 import Link from "next/link";
@@ -8,20 +9,13 @@ import "@/estilos/landing-pawpatrol.css";
 
 export default async function PaginaPerfil() {
   const sesion = await auth();
-  if (!sesion?.user) redirect("/iniciar-sesion");
+  if (!sesion?.user) redirect("/");
 
   const { user } = sesion;
 
   return (
     <div className="panel-cuenta">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          marginBottom: "1.5rem",
-        }}
-      >
+      <div className="panel-cuenta-header">
         {user.image ? (
           <img
             src={user.image}
@@ -46,13 +40,14 @@ export default async function PaginaPerfil() {
             👤
           </div>
         )}
-        <div>
+        <div style={{ flex: 1 }}>
           <h1 style={{ marginBottom: 4 }}>{user.name ?? "Usuario"}</h1>
           <p style={{ color: "var(--muted)", fontWeight: 600, margin: 0 }}>
             {user.email}
           </p>
           <span className="badge-rol">{etiquetaRol(user.rol)}</span>
         </div>
+        <BotonSalirSesion />
       </div>
 
       <div className="panel-cuenta-grid">
@@ -67,7 +62,7 @@ export default async function PaginaPerfil() {
               <Link href="/mis-mascotas">🐾 Mis mascotas</Link>
             </li>
             <li>
-              <Link href="/">🏠 Volver a la landing</Link>
+              <Link href="/">🏠 Volver al inicio</Link>
             </li>
           </ul>
         </div>

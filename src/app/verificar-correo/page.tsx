@@ -63,7 +63,7 @@ export default async function PaginaVerificarCorreo({ searchParams }: Props) {
         )}
 
         <p className="auth-enlace" style={{ marginTop: "1.5rem" }}>
-          <Link href="/iniciar-sesion">Ir a iniciar sesión</Link>
+          <Link href="/?login=1">Ir a iniciar sesión</Link>
         </p>
       </div>
     </div>

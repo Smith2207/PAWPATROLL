@@ -3,6 +3,8 @@ import { ProveedorSesion } from "@/componentes/auth/ProveedorSesion";
 import { ProveedorModales } from "@/contexto/ContextoModales";
 import { Nunito, Fredoka } from "next/font/google";
 import "./globals.css";
+import "@/estilos/landing-pawpatrol.css";
+import "@/estilos/responsive.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -20,6 +22,12 @@ export const metadata: Metadata = {
   title: "PawPatrol — Encuentra a tu mascota perdida",
   description:
     "PawPatrol usa inteligencia artificial y mapas interactivos para reunir mascotas perdidas con sus familias.",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

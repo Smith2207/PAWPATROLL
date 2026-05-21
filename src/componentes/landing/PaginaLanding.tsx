@@ -18,6 +18,8 @@ import { ModalReportarPerdida } from "@/componentes/landing/modales/ModalReporta
 import { ModalReportarAvistamiento } from "@/componentes/landing/modales/ModalReportarAvistamiento";
 import { ModalIniciarSesion } from "@/componentes/landing/modales/ModalIniciarSesion";
 import { ModalIdentificacionPorFoto } from "@/componentes/landing/modales/ModalIdentificacionPorFoto";
+import { AbrirLoginDesdeUrl } from "@/componentes/auth/AbrirLoginDesdeUrl";
+import { Suspense } from "react";
 
 type Props = {
   mascotasActivas?: MascotaPublicaTarjeta[];
@@ -33,6 +35,9 @@ export default function PaginaLanding({ mascotasActivas = [] }: Props) {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <AbrirLoginDesdeUrl />
+      </Suspense>
       <BarraNavegacion />
       <SeccionHero />
       <BarraBusqueda />
