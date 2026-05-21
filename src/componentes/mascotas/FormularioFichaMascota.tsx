@@ -84,137 +84,168 @@ export function FormularioFichaMascota({
 
   return (
     <form onSubmit={enviar} className="form-ficha">
+      {modo === "crear" && (
+        <p className="form-ficha-intro">
+          🐾 Empieza con lo básico. Los campos con <span className="form-ficha-req">*</span> son
+          obligatorios; el resto ayuda si la mascota se pierde.
+        </p>
+      )}
+
       {error && <p className="auth-alerta auth-alerta--error">{error}</p>}
 
-      <div className="section-divider">Datos de la mascota</div>
+      <div className="form-ficha-layout">
+        <div className="form-ficha-columna">
+          <section className="form-ficha-bloque">
+            <h3 className="form-ficha-bloque-titulo">Lo esencial</h3>
+            <div className="form-ficha-grid">
+              <div className="form-group">
+                <label>
+                  Nombre <span className="form-ficha-req">*</span>
+                </label>
+                <input
+                  name="nombre"
+                  type="text"
+                  required
+                  defaultValue={mascota?.nombre}
+                  placeholder="Ej: Max"
+                />
+              </div>
+              <div className="form-group">
+                <label>
+                  Tipo <span className="form-ficha-req">*</span>
+                </label>
+                <select name="tipo" required defaultValue={mascota?.tipo ?? ""}>
+                  <option value="">Elegir...</option>
+                  {TIPOS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Raza</label>
+                <input
+                  name="raza"
+                  type="text"
+                  defaultValue={mascota?.raza ?? ""}
+                  placeholder="Ej: Mestizo"
+                />
+              </div>
+              <div className="form-group">
+                <label>Sexo</label>
+                <select name="sexo" defaultValue={mascota?.sexo ?? ""}>
+                  <option value="">—</option>
+                  {SEXOS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </section>
 
-      <div className="form-row">
-        <div className="form-group">
-          <label>Nombre *</label>
-          <input
-            name="nombre"
-            type="text"
-            required
-            defaultValue={mascota?.nombre}
-            placeholder="Ej: Max"
-          />
+          <section className="form-ficha-bloque form-ficha-bloque--suave">
+            <h3 className="form-ficha-bloque-titulo">
+              Más detalles <span className="form-ficha-opcional">opcional</span>
+            </h3>
+            <div className="form-ficha-grid">
+              <div className="form-group">
+                <label>Color</label>
+                <input
+                  name="color"
+                  type="text"
+                  defaultValue={mascota?.color ?? ""}
+                  placeholder="Ej: Marrón"
+                />
+              </div>
+              <div className="form-group">
+                <label>Tamaño</label>
+                <select name="tamano" defaultValue={mascota?.tamano ?? ""}>
+                  <option value="">—</option>
+                  {TAMANOS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Edad</label>
+                <input
+                  name="edad"
+                  type="text"
+                  defaultValue={mascota?.edad ?? ""}
+                  placeholder="Ej: 3 años"
+                />
+              </div>
+              <div className="form-group">
+                <label>Peso</label>
+                <input
+                  name="peso"
+                  type="text"
+                  defaultValue={mascota?.peso ?? ""}
+                  placeholder="Ej: 12 kg"
+                />
+              </div>
+              <div className="form-group">
+                <label>Collar / placa</label>
+                <input name="collar" type="text" defaultValue={mascota?.collar ?? ""} />
+              </div>
+              <div className="form-group">
+                <label>Microchip</label>
+                <input name="microchip" type="text" defaultValue={mascota?.microchip ?? ""} />
+              </div>
+              <div className="form-group form-ficha-grid--ancho">
+                <label>Contacto si se pierde</label>
+                <input
+                  name="contactoPublico"
+                  type="text"
+                  defaultValue={mascota?.contactoPublico ?? ""}
+                  placeholder="Teléfono o correo"
+                />
+              </div>
+              <div className="form-group form-ficha-grid--ancho">
+                <label>Descripción breve</label>
+                <textarea
+                  name="descripcion"
+                  rows={2}
+                  defaultValue={mascota?.descripcion ?? ""}
+                  placeholder="Personalidad, pelaje..."
+                />
+              </div>
+              <div className="form-group form-ficha-grid--ancho">
+                <label>Señas particulares</label>
+                <textarea
+                  name="senasParticulares"
+                  rows={2}
+                  defaultValue={mascota?.senasParticulares ?? ""}
+                  placeholder="Cicatrices, manchas..."
+                />
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="form-group">
-          <label>Tipo *</label>
-          <select name="tipo" required defaultValue={mascota?.tipo ?? ""}>
-            <option value="">Seleccionar...</option>
-            {TIPOS.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </div>
+
+        <aside className="form-ficha-lateral">
+          <section className="form-ficha-bloque form-ficha-bloque--fotos">
+            <h3 className="form-ficha-bloque-titulo">Fotos</h3>
+            <p className="form-ficha-tip">
+              Sube hasta 5. La primera será la principal en la ficha pública.
+            </p>
+            <SubirFotosMascota fotos={fotos} onFotosChange={onFotosChange} />
+          </section>
+        </aside>
       </div>
 
-      <div className="form-row">
-        <div className="form-group">
-          <label>Raza</label>
-          <input name="raza" type="text" defaultValue={mascota?.raza ?? ""} />
-        </div>
-        <div className="form-group">
-          <label>Sexo</label>
-          <select name="sexo" defaultValue={mascota?.sexo ?? ""}>
-            <option value="">Seleccionar...</option>
-            {SEXOS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>Color principal</label>
-          <input name="color" type="text" defaultValue={mascota?.color ?? ""} />
-        </div>
-        <div className="form-group">
-          <label>Tamaño</label>
-          <select name="tamano" defaultValue={mascota?.tamano ?? ""}>
-            <option value="">Seleccionar...</option>
-            {TAMANOS.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>Edad aproximada</label>
-          <input name="edad" type="text" defaultValue={mascota?.edad ?? ""} />
-        </div>
-        <div className="form-group">
-          <label>Peso</label>
-          <input name="peso" type="text" defaultValue={mascota?.peso ?? ""} />
-        </div>
-      </div>
-
-      <div className="section-divider">Identificación y contacto</div>
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>Collar / placa</label>
-          <input name="collar" type="text" defaultValue={mascota?.collar ?? ""} />
-        </div>
-        <div className="form-group">
-          <label>Microchip</label>
-          <input
-            name="microchip"
-            type="text"
-            defaultValue={mascota?.microchip ?? ""}
-          />
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label>Contacto público (si se pierde)</label>
-        <input
-          name="contactoPublico"
-          type="text"
-          defaultValue={mascota?.contactoPublico ?? ""}
-          placeholder="Teléfono o correo visible en la ficha pública"
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Descripción general</label>
-        <textarea
-          name="descripcion"
-          rows={2}
-          defaultValue={mascota?.descripcion ?? ""}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Señas particulares</label>
-        <textarea
-          name="senasParticulares"
-          rows={2}
-          defaultValue={mascota?.senasParticulares ?? ""}
-          placeholder="Cicatrices, manchas, comportamiento..."
-        />
-      </div>
-
-      <div className="section-divider">Fotos</div>
-      <SubirFotosMascota fotos={fotos} onFotosChange={onFotosChange} />
-
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem", flexWrap: "wrap" }}>
+      <div className="form-ficha-acciones">
         <button type="submit" disabled={cargando} className="submit-btn">
           {cargando
             ? "Guardando..."
             : modo === "crear"
               ? "Crear ficha"
-              : "Guardar cambios"}
+              : "Guardar ficha"}
         </button>
         <Link href="/mis-mascotas" className="btn-mascota btn-mascota--secundario">
           Cancelar

@@ -49,8 +49,8 @@ export default async function PaginaEditarMascota({ params }: Props) {
           </div>
         </div>
 
-        <div className="tarjeta-panel">
-          <h2>Editar ficha</h2>
+        <div className="tarjeta-panel tarjeta-panel--form-ficha">
+          <h2>Ficha de {mascota.nombre}</h2>
           <FormularioFichaMascota
             modo="editar"
             mascota={mascota}

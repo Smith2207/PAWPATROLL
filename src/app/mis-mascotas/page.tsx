@@ -16,22 +16,21 @@ export default async function PaginaMisMascotas() {
     <EnvolturaPaginasApp>
     <div className="panel-cuenta">
       <EncabezadoModuloMascotas
-        titulo="🐾 Mis mascotas"
-        subtitulo="Ficha digital, fotos, estados (en casa, perdida, encontrada, reunida) y ficha pública."
+        titulo="🐾 Mis fichas"
+        subtitulo="Cada mascota tiene su ficha digital, fotos y estados (en casa, perdida, encontrada, reunida)."
       />
 
       {mascotas.length === 0 ? (
         <div className="tarjeta-panel">
           <p className="texto-vacio-modulo">
-            Aún no tienes mascotas registradas. Crea la primera ficha con todos sus
-            datos y fotos.
+            Aún no tienes fichas. Crea la primera con nombre, tipo y al menos una foto.
           </p>
           <Link
-            href="/mis-mascotas/nueva"
+            href="/mis-mascotas/ficha"
             className="btn-mascota btn-mascota--primario"
             style={{ marginTop: "1rem", display: "inline-flex" }}
           >
-            + Registrar mascota
+            + Crear ficha
           </Link>
         </div>
       ) : (

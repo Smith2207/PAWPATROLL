@@ -2,16 +2,23 @@
 
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 const ENLACES_SESION = [
-  { href: "/", etiqueta: "Inicio" },
-  { href: "/mis-mascotas", etiqueta: "Mis mascotas" },
-  { href: "/perfil", etiqueta: "Mi perfil" },
+  { href: "/", etiqueta: "Inicio", exacto: true },
+  { href: "/mis-mascotas", etiqueta: "Mis fichas", exacto: false },
+  { href: "/perfil", etiqueta: "Mi perfil", exacto: true },
 ] as const;
 
+function enlaceActivo(pathname: string, href: string, exacto: boolean) {
+  if (exacto) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function BarraNavegacionApp() {
+  const pathname = usePathname();
   const { status } = useSession();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const sesionActiva = status === "authenticated";
@@ -28,7 +35,7 @@ export function BarraNavegacionApp() {
   }
 
   return (
-    <nav className="nav-principal">
+    <nav className="nav-principal nav-principal--app">
       <Link className="logo" href="/" onClick={cerrar}>
         <div className="logo-icon">🐾</div>
         <span className="logo-texto">PawPatrol</span>
@@ -36,9 +43,22 @@ export function BarraNavegacionApp() {
 
       {sesionActiva && (
         <div className="nav-centro nav-centro--escritorio">
-          <div className="nav-links">
+          <div className="nav-links nav-links--app">
             {ENLACES_SESION.map((enlace) => (
-              <Link key={enlace.href} href={enlace.href}>
+              <Link
+                key={enlace.href}
+                href={enlace.href}
+                className={
+                  enlaceActivo(pathname, enlace.href, enlace.exacto)
+                    ? "nav-link--activo"
+                    : undefined
+                }
+                aria-current={
+                  enlaceActivo(pathname, enlace.href, enlace.exacto)
+                    ? "page"
+                    : undefined
+                }
+              >
                 {enlace.etiqueta}
               </Link>
             ))}
@@ -47,7 +67,7 @@ export function BarraNavegacionApp() {
       )}
 
       <div className="nav-actions nav-actions--escritorio">
-        <MenuUsuario />
+        <MenuUsuario compacto={sesionActiva} />
       </div>
 
       <button
@@ -73,14 +93,23 @@ export function BarraNavegacionApp() {
         {sesionActiva && (
           <div className="nav-drawer-links">
             {ENLACES_SESION.map((enlace) => (
-              <Link key={enlace.href} href={enlace.href} onClick={cerrar}>
+              <Link
+                key={enlace.href}
+                href={enlace.href}
+                className={
+                  enlaceActivo(pathname, enlace.href, enlace.exacto)
+                    ? "nav-link--activo"
+                    : undefined
+                }
+                onClick={cerrar}
+              >
                 {enlace.etiqueta}
               </Link>
             ))}
           </div>
         )}
         <div className="nav-drawer-actions">
-          <MenuUsuario enMenuMovil />
+          <MenuUsuario enMenuMovil compacto />
         </div>
       </div>
     </nav>
