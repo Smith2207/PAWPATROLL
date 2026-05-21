@@ -68,76 +68,25 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
   return (
     <div>
       {registrado && !enModal && (
-        <p
-          style={{
-            background: "#EFF6FF",
-            border: "1px solid #BFDBFE",
-            borderRadius: 12,
-            padding: "12px 14px",
-            marginBottom: "1rem",
-            fontSize: "0.9rem",
-          }}
-        >
+        <p className="auth-alerta auth-alerta--info">
           Revisa tu correo para verificar la cuenta.{" "}
           <Link href="/verificar-correo">Reenviar correo de verificación</Link>
         </p>
       )}
 
       {verificado && !enModal && (
-        <p
-          style={{
-            background: "#ECFDF5",
-            border: "1px solid #A7F3D0",
-            borderRadius: 12,
-            padding: "0.75rem 1rem",
-            marginBottom: "1rem",
-            fontSize: "0.85rem",
-            fontWeight: 700,
-            color: "#065F46",
-          }}
-        >
+        <p className="auth-alerta auth-alerta--ok">
           ✅ Correo verificado. Ya puedes iniciar sesión.
         </p>
       )}
 
-      {error && (
-        <p
-          style={{
-            background: "#FEF2F2",
-            border: "1px solid #FECACA",
-            borderRadius: 12,
-            padding: "0.75rem 1rem",
-            marginBottom: "1rem",
-            fontSize: "0.85rem",
-            fontWeight: 700,
-            color: "#991B1B",
-          }}
-        >
-          {error}
-        </p>
-      )}
+      {error && <p className="auth-alerta auth-alerta--error">{error}</p>}
 
       <button
         type="button"
         disabled={cargando}
         onClick={iniciarConGoogle}
-        style={{
-          width: "100%",
-          background: "white",
-          border: "2px solid var(--border)",
-          padding: "0.8rem",
-          borderRadius: "var(--radius-sm)",
-          fontFamily: "'Nunito', sans-serif",
-          fontWeight: 800,
-          fontSize: "0.95rem",
-          color: "var(--navy)",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-          marginBottom: "1.2rem",
-        }}
+        className="btn-google"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
           <path
@@ -186,7 +135,7 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
         <button
           type="submit"
           disabled={cargando}
-          className="submit-btn submit-btn-navy"
+          className="submit-btn"
           style={{ marginBottom: "1rem" }}
         >
           {cargando ? "Entrando..." : "Iniciar sesión"}

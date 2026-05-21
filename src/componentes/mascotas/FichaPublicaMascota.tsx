@@ -1,170 +1,177 @@
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
+import { CarruselFotosPublica } from "@/componentes/mascotas/CarruselFotosPublica";
 import type { obtenerMascotaPublica } from "@/actions/mascotas";
 import Link from "next/link";
 
 type DatosPublicos = NonNullable<Awaited<ReturnType<typeof obtenerMascotaPublica>>>;
 
+function ChipMeta({ children }: { children: string }) {
+  return <span className="ficha-publica-chip">{children}</span>;
+}
+
 export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
   const { mascota, duenoNombre, fotos, historial } = datos;
-  const principal = fotos[0]?.url;
-  const secundarias = fotos.slice(1, 5);
+
+  const metas = [
+    mascota.tipo,
+    mascota.raza,
+    mascota.sexo,
+    mascota.edad,
+  ].filter(Boolean) as string[];
+
+  const datosFicha = [
+    mascota.color && { label: "Color", valor: mascota.color, icono: "🎨" },
+    mascota.tamano && { label: "Tamaño", valor: mascota.tamano, icono: "📏" },
+    mascota.collar && { label: "Collar", valor: mascota.collar, icono: "🏷️" },
+    mascota.fechaPerdida && {
+      label: "Desde",
+      valor: new Date(mascota.fechaPerdida).toLocaleString("es-PE", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+      icono: "🕐",
+    },
+    mascota.lugarPerdida && {
+      label: "Último lugar visto",
+      valor: mascota.lugarPerdida,
+      icono: "📍",
+      ancho: true,
+    },
+    mascota.contactoPublico && {
+      label: "Contacto",
+      valor: mascota.contactoPublico,
+      icono: "📞",
+      ancho: true,
+    },
+  ].filter(Boolean) as {
+    label: string;
+    valor: string;
+    icono: string;
+    ancho?: boolean;
+  }[];
 
   return (
     <div className="ficha-publica">
-      <p className="auth-enlace" style={{ marginBottom: "1rem" }}>
-        <Link href="/">← Volver a PawPatrol</Link>
-      </p>
+      <Link href="/" className="ficha-publica-volver">
+        ← Volver a PawPatrol
+      </Link>
 
-      <article className="ficha-publica-hero">
-        <div className="ficha-publica-galeria">
-          <div className="ficha-publica-galeria-principal">
-            {principal ? (
-              <img src={principal} alt={mascota.nombre} />
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                  fontSize: "4rem",
-                }}
-              >
-                🐾
+      <div
+        className={`ficha-publica-contenedor ${
+          historial.length > 0 ? "ficha-publica-contenedor--con-historial" : ""
+        }`}
+      >
+        <article
+          className={`ficha-publica-hero ${
+            mascota.estado === "PERDIDA"
+              ? "ficha-publica-hero--perdida"
+              : mascota.estado === "ENCONTRADA"
+                ? "ficha-publica-hero--encontrada"
+                : ""
+          }`}
+        >
+          <div className="ficha-publica-media">
+            <CarruselFotosPublica fotos={fotos} nombre={mascota.nombre} />
+          </div>
+
+          <div className="ficha-publica-cuerpo">
+          <header className="ficha-publica-encabezado">
+            <BadgeEstadoMascota estado={mascota.estado} />
+            <h1 className="ficha-publica-titulo">{mascota.nombre}</h1>
+            {metas.length > 0 && (
+              <div className="ficha-publica-meta-chips">
+                {metas.map((m) => (
+                  <ChipMeta key={m}>{m}</ChipMeta>
+                ))}
               </div>
             )}
-          </div>
-          {secundarias.length > 0 && (
-            <div className="ficha-publica-miniaturas">
-              {secundarias.map((f) => (
-                <img key={f.id} src={f.url} alt="" />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="ficha-publica-cuerpo">
-          <BadgeEstadoMascota estado={mascota.estado} />
-          <h1 className="ficha-publica-titulo">{mascota.nombre}</h1>
-          <p style={{ fontWeight: 700, color: "var(--muted)" }}>
-            {mascota.tipo}
-            {mascota.raza ? ` · ${mascota.raza}` : ""}
-            {mascota.sexo ? ` · ${mascota.sexo}` : ""}
-          </p>
+          </header>
 
           {mascota.estado === "PERDIDA" && (
-            <p
-              style={{
-                marginTop: "1rem",
-                padding: "0.75rem 1rem",
-                background: "#fef2f2",
-                borderRadius: 12,
-                border: "1px solid #fecaca",
-                fontWeight: 700,
-              }}
-            >
-              🔴 Esta mascota está perdida. Si la ves, reporta un avistamiento en
-              la landing.
-            </p>
+            <div className="ficha-publica-alerta-perdida" role="status">
+              <span className="ficha-publica-alerta-icono" aria-hidden>
+                🚨
+              </span>
+              <p>
+                Esta mascota está <strong>perdida</strong>. Si la ves, reporta un
+                avistamiento desde la página de inicio.
+              </p>
+            </div>
           )}
 
-          <div className="ficha-publica-datos">
-            {mascota.color && (
-              <div className="ficha-publica-dato">
-                <label>Color</label>
-                <span>{mascota.color}</span>
+          {datosFicha.length > 0 && (
+            <section className="ficha-publica-seccion">
+              <h2 className="ficha-publica-seccion-titulo">Información</h2>
+              <div className="ficha-publica-datos">
+                {datosFicha.map((d) => (
+                  <div
+                    key={d.label}
+                    className={`ficha-publica-dato ${d.ancho ? "ficha-publica-dato--ancho" : ""}`}
+                  >
+                    <span className="ficha-publica-dato-icono" aria-hidden>
+                      {d.icono}
+                    </span>
+                    <div className="ficha-publica-dato-texto">
+                      <label>{d.label}</label>
+                      <span>{d.valor}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
+            </section>
+          )}
+
+          {(mascota.descripcion || mascota.senasParticulares) && (
+            <section className="ficha-publica-seccion">
+              <h2 className="ficha-publica-seccion-titulo">Detalles</h2>
+              {mascota.descripcion && (
+                <p className="ficha-publica-bloque-texto">{mascota.descripcion}</p>
+              )}
+              {mascota.senasParticulares && (
+                <p className="ficha-publica-bloque-texto">
+                  <span className="ficha-publica-bloque-etiqueta">Señas particulares</span>
+                  {mascota.senasParticulares}
+                </p>
+              )}
+            </section>
+          )}
+
+          <div className="ficha-publica-pie">
+            {duenoNombre && (
+              <p className="ficha-publica-dueno">
+                <span className="ficha-publica-dueno-etiqueta">Publicado por</span>
+                <strong>{duenoNombre}</strong>
+              </p>
             )}
-            {mascota.edad && (
-              <div className="ficha-publica-dato">
-                <label>Edad</label>
-                <span>{mascota.edad}</span>
-              </div>
-            )}
-            {mascota.tamano && (
-              <div className="ficha-publica-dato">
-                <label>Tamaño</label>
-                <span>{mascota.tamano}</span>
-              </div>
-            )}
-            {mascota.collar && (
-              <div className="ficha-publica-dato">
-                <label>Collar</label>
-                <span>{mascota.collar}</span>
-              </div>
-            )}
-            {mascota.lugarPerdida && (
-              <div className="ficha-publica-dato">
-                <label>Último lugar visto</label>
-                <span>📍 {mascota.lugarPerdida}</span>
-              </div>
-            )}
-            {mascota.fechaPerdida && (
-              <div className="ficha-publica-dato">
-                <label>Desde</label>
-                <span>
-                  {new Date(mascota.fechaPerdida).toLocaleString("es-PE", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </span>
-              </div>
-            )}
-            {mascota.contactoPublico && (
-              <div className="ficha-publica-dato">
-                <label>Contacto</label>
-                <span>{mascota.contactoPublico}</span>
-              </div>
-            )}
+            <Link href="/#avistamientos" className="ficha-publica-cta">
+              👁️ Reportar avistamiento
+            </Link>
           </div>
+          </div>
+        </article>
 
-          {mascota.descripcion && (
-            <p style={{ lineHeight: 1.6, fontWeight: 600 }}>{mascota.descripcion}</p>
-          )}
-          {mascota.senasParticulares && (
-            <p style={{ lineHeight: 1.6, marginTop: "0.75rem" }}>
-              <strong>Señas:</strong> {mascota.senasParticulares}
-            </p>
-          )}
-
-          {duenoNombre && (
-            <p
-              style={{
-                marginTop: "1.25rem",
-                fontSize: "0.85rem",
-                color: "var(--muted)",
-                fontWeight: 600,
-              }}
-            >
-              Publicado por {duenoNombre}
-            </p>
-          )}
-        </div>
-      </article>
-
-      {historial.length > 0 && (
-        <div className="tarjeta-panel" style={{ marginTop: "1.5rem" }}>
-          <h2>Historial de estados</h2>
-          <ul className="historial-lista">
-            {historial.map((h, i) => (
-              <li key={i} className="historial-item">
-                <BadgeEstadoMascota estado={h.estadoNuevo} />
-                {h.notas && (
-                  <p style={{ fontSize: "0.82rem", margin: "6px 0 0", fontWeight: 600 }}>
-                    {h.notas}
-                  </p>
-                )}
-                <div className="historial-item-fecha">
-                  {new Date(h.createdAt).toLocaleString("es-PE", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {historial.length > 0 && (
+          <aside className="tarjeta-panel ficha-publica-historial">
+            <h2 className="ficha-publica-seccion-titulo">Historial</h2>
+            <ul className="historial-lista ficha-publica-historial-lista">
+              {historial.map((h, i) => (
+                <li key={i} className="historial-item ficha-publica-historial-item">
+                  <BadgeEstadoMascota estado={h.estadoNuevo} />
+                  {h.notas && (
+                    <p className="historial-item-notas">{h.notas}</p>
+                  )}
+                  <time className="historial-item-fecha">
+                    {new Date(h.createdAt).toLocaleString("es-PE", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </time>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

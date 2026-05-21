@@ -10,12 +10,7 @@ export function ModalReportarAvistamiento() {
   return (
     <ModalContenedor tipo="sighting">
       <div className="modal-header">
-        <div
-          className="modal-header-accent"
-          style={{
-            background: "linear-gradient(90deg,var(--mint),#34D399)",
-          }}
-        />
+        <div className="modal-header-accent modal-header-accent--mint" />
         <BotonCerrarModal tipo="sighting" />
         <div className="modal-title">👁️ Reportar avistamiento</div>
         <div className="modal-sub">

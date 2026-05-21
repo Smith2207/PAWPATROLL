@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { AbrirLoginDesdeUrl } from "@/componentes/auth/AbrirLoginDesdeUrl";
 import { ProveedorSesion } from "@/componentes/auth/ProveedorSesion";
+import { ModalesGlobales } from "@/componentes/landing/ModalesGlobales";
 import { ProveedorModales } from "@/contexto/ContextoModales";
 import { Nunito, Fredoka } from "next/font/google";
 import "./globals.css";
+import "@/estilos/paleta.css";
 import "@/estilos/landing-pawpatrol.css";
+import "@/estilos/auth.css";
+import "@/estilos/mascotas.css";
 import "@/estilos/responsive.css";
 
 const nunito = Nunito({
@@ -43,7 +49,13 @@ export default function RootLayout({
         }}
       >
         <ProveedorSesion>
-          <ProveedorModales>{children}</ProveedorModales>
+          <ProveedorModales>
+            <Suspense fallback={null}>
+              <AbrirLoginDesdeUrl />
+            </Suspense>
+            {children}
+            <ModalesGlobales />
+          </ProveedorModales>
         </ProveedorSesion>
       </body>
     </html>

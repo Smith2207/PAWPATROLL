@@ -16,16 +16,7 @@ export function BotonEliminarMascota({ id }: { id: string }) {
     <button
       type="button"
       onClick={eliminar}
-      style={{
-        background: "#FEF2F2",
-        border: "1px solid #FECACA",
-        color: "#991B1B",
-        borderRadius: 8,
-        padding: "4px 10px",
-        fontSize: "0.75rem",
-        fontWeight: 800,
-        cursor: "pointer",
-      }}
+      className="btn-mascota btn-mascota--peligro"
     >
       Eliminar
     </button>

@@ -4,9 +4,7 @@ import { EncabezadoModuloMascotas } from "@/componentes/mascotas/EncabezadoModul
 import { TarjetaMascotaLista } from "@/componentes/mascotas/TarjetaMascotaLista";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import "@/estilos/auth.css";
-import "@/estilos/mascotas.css";
-import "@/estilos/landing-pawpatrol.css";
+import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 
 export default async function PaginaMisMascotas() {
   const sesion = await auth();
@@ -15,6 +13,7 @@ export default async function PaginaMisMascotas() {
   const mascotas = await listarMisMascotas();
 
   return (
+    <EnvolturaPaginasApp>
     <div className="panel-cuenta">
       <EncabezadoModuloMascotas
         titulo="🐾 Mis mascotas"
@@ -23,7 +22,7 @@ export default async function PaginaMisMascotas() {
 
       {mascotas.length === 0 ? (
         <div className="tarjeta-panel">
-          <p style={{ color: "var(--muted)", fontWeight: 600 }}>
+          <p className="texto-vacio-modulo">
             Aún no tienes mascotas registradas. Crea la primera ficha con todos sus
             datos y fotos.
           </p>
@@ -47,5 +46,6 @@ export default async function PaginaMisMascotas() {
         <Link href="/perfil">← Mi perfil</Link>
       </p>
     </div>
+    </EnvolturaPaginasApp>
   );
 }

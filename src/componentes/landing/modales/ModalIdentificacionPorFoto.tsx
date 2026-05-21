@@ -35,12 +35,7 @@ export function ModalIdentificacionPorFoto() {
   return (
     <ModalContenedor tipo="quickcam" anchoMaximo={420} alCerrar={alCerrar}>
       <div className="modal-header">
-        <div
-          className="modal-header-accent"
-          style={{
-            background: "linear-gradient(90deg,var(--mint),#34D399)",
-          }}
-        />
+        <div className="modal-header-accent modal-header-accent--mint" />
         <BotonCerrarModal tipo="quickcam" alCerrar={alCerrar} />
         <div className="modal-title">📸 Identificar por foto</div>
         <div className="modal-sub">

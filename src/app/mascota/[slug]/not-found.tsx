@@ -1,11 +1,12 @@
 import Link from "next/link";
-import "@/estilos/mascotas.css";
+import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 
 export default function MascotaNoEncontrada() {
   return (
+    <EnvolturaPaginasApp>
     <div className="ficha-publica" style={{ textAlign: "center" }}>
-      <h1 style={{ fontFamily: "var(--font-fredoka)" }}>Mascota no disponible</h1>
-      <p style={{ fontWeight: 600, color: "var(--muted)" }}>
+      <h1 className="ficha-publica-titulo">Mascota no disponible</h1>
+      <p className="texto-vacio-modulo">
         La ficha no existe o no está publicada (solo mascotas perdidas o
         encontradas).
       </p>
@@ -13,5 +14,6 @@ export default function MascotaNoEncontrada() {
         Ir al inicio
       </Link>
     </div>
+    </EnvolturaPaginasApp>
   );
 }

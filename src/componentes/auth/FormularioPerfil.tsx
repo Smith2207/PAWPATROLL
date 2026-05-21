@@ -32,7 +32,7 @@ export function FormularioPerfil({ nombreInicial }: Props) {
           onChange={(e) => setNombre(e.target.value)}
         />
       </div>
-      <button type="submit" className="submit-btn submit-btn-blue">
+      <button type="submit" className="submit-btn">
         Guardar cambios
       </button>
     </form>

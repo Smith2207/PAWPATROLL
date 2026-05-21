@@ -10,11 +10,7 @@ export function EncabezadoModuloMascotas({ titulo, subtitulo }: Props) {
     <div className="mascotas-toolbar">
       <div>
         <h1 style={{ marginBottom: subtitulo ? 4 : 0 }}>{titulo}</h1>
-        {subtitulo && (
-          <p style={{ color: "var(--muted)", fontWeight: 600, margin: 0 }}>
-            {subtitulo}
-          </p>
-        )}
+        {subtitulo && <p className="mascotas-toolbar-sub">{subtitulo}</p>}
       </div>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <Link href="/mis-mascotas/nueva" className="btn-mascota btn-mascota--primario">

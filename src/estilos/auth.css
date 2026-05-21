@@ -10,7 +10,7 @@
 .auth-card {
   width: 100%;
   max-width: 480px;
-  background: white;
+  background: var(--card);
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
   padding: 2rem;
@@ -33,7 +33,7 @@
 }
 
 .auth-alerta {
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
   font-size: 0.85rem;
@@ -41,15 +41,21 @@
 }
 
 .auth-alerta--error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
 }
 
 .auth-alerta--ok {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #065f46;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-border);
+  color: var(--ok-text);
+}
+
+.auth-alerta--info {
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  color: var(--info-text);
 }
 
 .auth-ayuda {
@@ -70,6 +76,39 @@
 .auth-enlace a {
   color: var(--blue);
   font-weight: 800;
+}
+
+.auth-enlace a:hover {
+  color: var(--blue2);
+}
+
+.btn-google {
+  width: 100%;
+  background: var(--white);
+  border: 2px solid var(--border);
+  padding: 0.8rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--navy);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 1.2rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btn-google:hover:not(:disabled) {
+  border-color: var(--blue2);
+  background: var(--blue-light);
+}
+
+.btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .form-row {
@@ -101,6 +140,16 @@
   border-radius: var(--radius-sm);
   font-family: inherit;
   font-weight: 600;
+  color: var(--text);
+  background: var(--white);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--blue2);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .panel-cuenta {
@@ -108,6 +157,8 @@
   margin: 0 auto;
   padding: 2.5rem var(--padding-pagina, 2rem);
   width: 100%;
+  min-height: calc(100vh - 68px);
+  background: var(--bg);
 }
 
 .panel-cuenta h1 {
@@ -131,10 +182,11 @@
 }
 
 .tarjeta-panel {
-  background: white;
+  background: var(--card);
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
+  box-shadow: var(--shadow);
 }
 
 .tarjeta-panel h2 {
@@ -144,11 +196,21 @@
   margin-bottom: 1rem;
 }
 
+.tarjeta-panel a {
+  color: var(--blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.tarjeta-panel a:hover {
+  color: var(--blue2);
+}
+
 .badge-rol {
   display: inline-block;
-  background: #eff6ff;
+  background: var(--blue-light);
   color: var(--blue);
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--info-border);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
@@ -201,6 +263,28 @@
 .panel-cuenta-header > div:first-of-type {
   flex: 1;
   min-width: 0;
+}
+
+.avatar-perfil {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  object-fit: cover;
+}
+
+.avatar-perfil--placeholder {
+  background: var(--blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+.panel-cuenta-subtitulo {
+  color: var(--muted);
+  font-weight: 600;
+  margin: 0;
 }
 
 @media (max-width: 640px) {

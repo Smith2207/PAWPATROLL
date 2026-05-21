@@ -14,12 +14,6 @@ import {
 } from "@/componentes/landing/SeccionMascotasRecientes";
 import { SeccionLlamadaAccion } from "@/componentes/landing/SeccionLlamadaAccion";
 import { PiePagina } from "@/componentes/landing/PiePagina";
-import { ModalReportarPerdida } from "@/componentes/landing/modales/ModalReportarPerdida";
-import { ModalReportarAvistamiento } from "@/componentes/landing/modales/ModalReportarAvistamiento";
-import { ModalIniciarSesion } from "@/componentes/landing/modales/ModalIniciarSesion";
-import { ModalIdentificacionPorFoto } from "@/componentes/landing/modales/ModalIdentificacionPorFoto";
-import { AbrirLoginDesdeUrl } from "@/componentes/auth/AbrirLoginDesdeUrl";
-import { Suspense } from "react";
 
 type Props = {
   mascotasActivas?: MascotaPublicaTarjeta[];
@@ -35,9 +29,6 @@ export default function PaginaLanding({ mascotasActivas = [] }: Props) {
 
   return (
     <>
-      <Suspense fallback={null}>
-        <AbrirLoginDesdeUrl />
-      </Suspense>
       <BarraNavegacion />
       <SeccionHero />
       <BarraBusqueda />
@@ -47,11 +38,6 @@ export default function PaginaLanding({ mascotasActivas = [] }: Props) {
       <SeccionMascotasRecientes mascotas={mascotasActivas} />
       <SeccionLlamadaAccion />
       <PiePagina />
-
-      <ModalReportarPerdida />
-      <ModalReportarAvistamiento />
-      <ModalIniciarSesion />
-      <ModalIdentificacionPorFoto />
     </>
   );
 }

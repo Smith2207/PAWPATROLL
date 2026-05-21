@@ -3,14 +3,14 @@ import { EncabezadoModuloMascotas } from "@/componentes/mascotas/EncabezadoModul
 import { FormularioFichaMascota } from "@/componentes/mascotas/FormularioFichaMascota";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import "@/estilos/auth.css";
-import "@/estilos/mascotas.css";
+import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 
 export default async function PaginaNuevaMascota() {
   const sesion = await auth();
   if (!sesion?.user) redirect("/");
 
   return (
+    <EnvolturaPaginasApp>
     <div className="panel-cuenta">
       <EncabezadoModuloMascotas
         titulo="Alta de mascota"
@@ -25,5 +25,6 @@ export default async function PaginaNuevaMascota() {
         <Link href="/mis-mascotas">← Volver al listado</Link>
       </p>
     </div>
+    </EnvolturaPaginasApp>
   );
 }

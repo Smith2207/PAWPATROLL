@@ -1,0 +1,50 @@
+/* Paleta PawPatrol — misma que la landing (fuente única de verdad) */
+:root {
+  --navy: #0f2a52;
+  --navy2: #1a3c6e;
+  --blue: #2563eb;
+  --blue2: #3b82f6;
+  --blue-light: #dbeafe;
+  --orange: #c2410c;
+  --orange2: #b45309;
+  --orange-glow: rgba(194, 65, 12, 0.18);
+  --orange-light: #fff0e6;
+  --orange-light2: #ffe4cc;
+  --mint: #10b981;
+  --mint-light: #d1fae5;
+  --yellow: #fbbf24;
+  --yellow-light: #fef3c7;
+  --bg: #f0f7ff;
+  --bg2: #e8f1fd;
+  --white: #ffffff;
+  --text: #0f2a52;
+  --muted: #4a5568;
+  --muted2: #505a6b;
+  --card: #ffffff;
+  --border: #e2eaf8;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow: 0 8px 32px rgba(15, 42, 82, 0.1);
+  --shadow-lg: 0 20px 60px rgba(15, 42, 82, 0.16);
+  --shadow-orange: 0 8px 32px rgba(249, 115, 22, 0.25);
+
+  --ancho-contenido: min(1680px, calc(100% - 3rem));
+  --padding-pagina: clamp(1.25rem, 3vw, 3rem);
+
+  /* Semánticos alineados a la landing */
+  --info-bg: var(--blue-light);
+  --info-border: rgba(37, 99, 235, 0.28);
+  --info-text: var(--navy2);
+
+  --ok-bg: var(--mint-light);
+  --ok-border: rgba(16, 185, 129, 0.35);
+  --ok-text: #065f46;
+
+  --warn-bg: var(--yellow-light);
+  --warn-border: #fde68a;
+  --warn-text: #78350f;
+
+  --danger-bg: rgba(249, 115, 22, 0.1);
+  --danger-border: rgba(194, 65, 12, 0.28);
+  --danger-text: #9a3412;
+}
