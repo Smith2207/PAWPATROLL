@@ -7,21 +7,19 @@ const { auth } = NextAuth(authConfig);
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
-  if (
-    req.auth &&
-    (pathname.startsWith("/registro") ||
-      pathname.startsWith("/iniciar-sesion"))
-  ) {
-    return NextResponse.redirect(new URL("/perfil", req.nextUrl.origin));
+  if (pathname.startsWith("/iniciar-sesion")) {
+    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
+  }
+
+  if (req.auth && pathname.startsWith("/registro")) {
+    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 
   const rutasProtegidas = ["/perfil", "/mis-mascotas", "/admin"];
   const esProtegida = rutasProtegidas.some((r) => pathname.startsWith(r));
 
   if (esProtegida && !req.auth) {
-    const login = new URL("/iniciar-sesion", req.nextUrl.origin);
-    login.searchParams.set("callbackUrl", req.nextUrl.pathname);
-    return NextResponse.redirect(login);
+    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 
   if (pathname.startsWith("/admin")) {

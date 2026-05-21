@@ -19,7 +19,8 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
   useEffect(() => {
     if (status === "authenticated") {
       if (enModal) cerrarModal("login");
-      router.replace("/perfil");
+      router.replace("/");
+      router.refresh();
     }
   }, [status, enModal, cerrarModal, router]);
   const [email, setEmail] = useState("");
@@ -32,7 +33,7 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
 
   async function iniciarConGoogle() {
     setCargando(true);
-    await signIn("google", { callbackUrl: "/perfil" });
+    await signIn("google", { callbackUrl: "/" });
   }
 
   async function iniciarConCorreo(e: React.FormEvent) {
@@ -60,7 +61,7 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
     }
 
     if (enModal) cerrarModal("login");
-    router.replace("/perfil");
+    router.replace("/");
     router.refresh();
   }
 

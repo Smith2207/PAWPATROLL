@@ -1,6 +1,5 @@
 import { listarMascotasPerdidasPublicas } from "@/actions/mascotas";
 import PaginaLanding from "@/componentes/landing/PaginaLanding";
-import "@/estilos/landing-pawpatrol.css";
 
 export const dynamic = "force-dynamic";
 

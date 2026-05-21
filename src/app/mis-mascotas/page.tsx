@@ -10,7 +10,7 @@ import "@/estilos/landing-pawpatrol.css";
 
 export default async function PaginaMisMascotas() {
   const sesion = await auth();
-  if (!sesion?.user) redirect("/iniciar-sesion");
+  if (!sesion?.user) redirect("/");
 
   const mascotas = await listarMisMascotas();
 

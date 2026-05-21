@@ -6,7 +6,7 @@ import "@/estilos/auth.css";
 
 export default async function PaginaRegistro() {
   const sesion = await auth();
-  if (sesion?.user) redirect("/perfil");
+  if (sesion?.user) redirect("/");
 
   return (
     <>

@@ -16,7 +16,7 @@ type Props = {
 
 export default async function PaginaEditarMascota({ params }: Props) {
   const sesion = await auth();
-  if (!sesion?.user) redirect("/iniciar-sesion");
+  if (!sesion?.user) redirect("/");
 
   const { id } = await params;
   const datos = await obtenerMascotaPropia(id);

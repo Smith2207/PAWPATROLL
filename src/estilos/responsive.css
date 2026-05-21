@@ -1,0 +1,368 @@
+/* ─── Navegación móvil ─── */
+.nav-principal {
+  position: relative;
+}
+
+.logo-texto {
+  display: inline;
+}
+
+.nav-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--navy);
+  flex-shrink: 0;
+}
+
+.nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 68px 0 0;
+  z-index: 150;
+  background: rgba(15, 42, 82, 0.45);
+  border: none;
+  cursor: pointer;
+}
+
+.nav-drawer {
+  display: none;
+  position: fixed;
+  top: 68px;
+  right: 0;
+  z-index: 160;
+  width: min(320px, 100vw);
+  max-height: calc(100vh - 68px);
+  overflow-y: auto;
+  background: white;
+  border-left: 1.5px solid var(--border);
+  box-shadow: -8px 0 32px rgba(15, 42, 82, 0.12);
+  padding: 1.25rem;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+
+.nav-drawer--abierto {
+  transform: translateX(0);
+}
+
+.nav-drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-drawer-links a {
+  display: block;
+  padding: 0.75rem 0.5rem;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--navy);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.nav-drawer-links a:hover {
+  background: var(--bg);
+  color: var(--orange);
+}
+
+.nav-drawer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.nav-usuario--movil {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.nav-usuario--movil a,
+.nav-usuario--movil button {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+/* ─── Tipografía fluida ─── */
+.hero h1,
+.section-title {
+  font-size: clamp(1.85rem, 5vw, 3.5rem) !important;
+}
+
+.hero-desc {
+  font-size: clamp(0.95rem, 2.5vw, 1.05rem) !important;
+}
+
+.section-title {
+  line-height: 1.15 !important;
+}
+
+.panel-cuenta h1,
+.ficha-publica-titulo {
+  font-size: clamp(1.5rem, 4vw, 2rem) !important;
+}
+
+/* ─── Tablet (≤1024px) ─── */
+@media (max-width: 1024px) {
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .stat {
+    border-right: none;
+    padding: 0 1rem 0 0;
+  }
+
+  .search-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .pets-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+}
+
+/* ─── Móvil / nav drawer (≤900px) ─── */
+@media (max-width: 900px) {
+  .nav-centro--escritorio,
+  .nav-actions--escritorio {
+    display: none !important;
+  }
+
+  .nav-menu-btn {
+    display: flex;
+  }
+
+  .nav-overlay {
+    display: block;
+  }
+
+  .nav-drawer {
+    display: block;
+  }
+
+  nav,
+  .nav-principal {
+    padding-left: var(--padding-pagina) !important;
+    padding-right: var(--padding-pagina) !important;
+    gap: 0.5rem;
+  }
+
+  .logo {
+    font-size: clamp(1.2rem, 4vw, 1.7rem);
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .hero {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  .hero-visual {
+    display: none;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .btn-primary,
+  .hero-actions .btn-secondary {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .behavior-banner {
+    flex-direction: column !important;
+    text-align: center;
+  }
+
+  .mascotas-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mascotas-toolbar > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .panel-cuenta-header {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .item-mascota {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  .ficha-publica-datos {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── Móvil pequeño (≤640px) ─── */
+@media (max-width: 640px) {
+  :root {
+    --padding-pagina: 1rem;
+  }
+
+  [id] {
+    scroll-margin-top: 76px;
+  }
+
+  nav,
+  .nav-principal {
+    height: auto;
+    min-height: 60px;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  .nav-drawer,
+  .nav-overlay {
+    top: 60px;
+    max-height: calc(100vh - 60px);
+  }
+
+  .auth-pagina {
+    padding: 1.25rem 1rem;
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    padding: 1.25rem;
+  }
+
+  .panel-cuenta {
+    padding: 1.5rem 1rem;
+  }
+
+  .tarjeta-panel {
+    padding: 1.15rem;
+  }
+
+  .modal-overlay {
+    padding: 0.5rem;
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-height: 95vh;
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
+  }
+
+  .modal-header,
+  .modal-body {
+    padding-left: 1.15rem !important;
+    padding-right: 1.15rem !important;
+  }
+
+  .modal-title {
+    font-size: 1.25rem !important;
+    padding-right: 2rem;
+  }
+
+  .cta-section {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 1.75rem 1.15rem !important;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .cta-buttons button {
+    width: 100%;
+  }
+
+  .mascotas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mascota-tarjeta-acciones {
+    flex-direction: column;
+  }
+
+  .mascota-tarjeta-acciones .btn-mascota {
+    width: 100%;
+  }
+
+  .galeria-fotos {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .ficha-publica {
+    padding: 1.25rem 1rem;
+  }
+
+  .ficha-publica-cuerpo {
+    padding: 1.15rem !important;
+  }
+
+  .ficha-publica-miniaturas {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .btn-orange-nav,
+  .btn-ghost {
+    font-size: 0.8rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .photo-upload[style*="grid"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── Pantallas muy estrechas ─── */
+@media (max-width: 380px) {
+  .logo-texto {
+    font-size: 1.1rem;
+  }
+
+  .hero-stats .stat {
+    flex: 1 1 45%;
+    text-align: center;
+    padding: 0.5rem;
+  }
+
+  .galeria-fotos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

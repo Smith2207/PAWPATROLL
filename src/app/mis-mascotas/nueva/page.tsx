@@ -8,7 +8,7 @@ import "@/estilos/mascotas.css";
 
 export default async function PaginaNuevaMascota() {
   const sesion = await auth();
-  if (!sesion?.user) redirect("/iniciar-sesion");
+  if (!sesion?.user) redirect("/");
 
   return (
     <div className="panel-cuenta">
