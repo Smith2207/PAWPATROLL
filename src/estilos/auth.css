@@ -241,6 +241,10 @@
   gap: 0.5rem;
 }
 
+.nav-usuario--compacto {
+  gap: 0.65rem;
+}
+
 .nav-usuario a {
   color: var(--navy2);
   text-decoration: none;
@@ -250,6 +254,154 @@
 
 .nav-usuario a:hover {
   color: var(--blue);
+}
+
+.nav-usuario-cargando {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  width: 1.5rem;
+  text-align: center;
+}
+
+.nav-usuario-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.65rem 0.3rem 0.3rem;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--navy) !important;
+  max-width: 10rem;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.nav-usuario-chip:hover {
+  border-color: var(--blue2);
+  background: white;
+  color: var(--navy) !important;
+}
+
+.nav-usuario-chip--bloque {
+  max-width: none;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.65rem 0.85rem;
+}
+
+.nav-usuario-inicial {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-usuario-nombre {
+  font-size: 0.85rem;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-ghost--nav-salir {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.btn-orange-nav--nav {
+  padding: 0.45rem 1rem;
+  white-space: nowrap;
+}
+
+.nav-cta-icono {
+  line-height: 1;
+}
+
+/* Barra app / landing: logo | enlaces centrados | acciones */
+.nav-principal--app,
+.nav-principal--landing {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem 1.5rem;
+}
+
+.nav-principal--app .logo,
+.nav-principal--landing .logo {
+  justify-self: start;
+}
+
+.nav-principal--app .nav-centro--escritorio,
+.nav-principal--landing .nav-centro--escritorio {
+  justify-self: center;
+  min-width: 0;
+}
+
+.nav-principal--app .nav-actions--escritorio,
+.nav-principal--landing .nav-actions--escritorio {
+  justify-self: end;
+}
+
+.nav-links--con-sesion {
+  gap: 1.35rem;
+}
+
+.nav-links--con-sesion a,
+.nav-links--con-sesion .nav-link-externo {
+  font-size: 0.88rem;
+}
+
+.nav-link-externo {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.93rem;
+  transition: color 0.2s;
+  position: relative;
+  white-space: nowrap;
+}
+
+.nav-link-externo::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--orange);
+  border-radius: 2px;
+  transition: width 0.25s;
+}
+
+.nav-link-externo:hover {
+  color: var(--navy);
+}
+
+.nav-link-externo:hover::after {
+  width: 100%;
+}
+
+.nav-links--app {
+  gap: 1.75rem;
+}
+
+.nav-links--app a.nav-link--activo {
+  color: var(--navy);
+}
+
+.nav-links--app a.nav-link--activo::after {
+  width: 100%;
 }
 
 .panel-cuenta-header {

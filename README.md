@@ -1,26 +1,54 @@
-# PAWPATROLL
+# PawPatrol (PAWPATROLL)
 
-Landing + autenticación con **Neon PostgreSQL**, **Auth.js** y roles de usuario.
+Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** y gestionar **fichas digitales de mascotas**. Incluye landing pública, autenticación (correo + Google), módulo de fichas con fotos y estados, y ficha pública compartible.
 
-## Iniciar
+**Demo:** [pawpatroll.vercel.app](https://pawpatroll.vercel.app)
+
+## Stack
+
+- **Next.js 16** (App Router)
+- **Auth.js** — sesión, Google OAuth, credenciales
+- **Neon PostgreSQL** + **Drizzle ORM**
+- **Vercel** — despliegue
+- Estilos: paleta unificada (`paleta.css`), landing, auth, mascotas, responsive
+
+## Inicio rápido
 
 ```bash
 copy .env.example .env.local   # Windows
 pnpm install
-pnpm db:push                   # crea tablas en Neon
+pnpm db:push                   # crea/actualiza tablas en Neon
 pnpm dev
 ```
 
+Abre [http://localhost:3000](http://localhost:3000).
+
+## Variables de entorno (`.env.local`)
+
+| Variable | Uso |
+|----------|-----|
+| `DATABASE_URL` | Connection string de Neon (pooled recomendado) |
+| `AUTH_SECRET` | Secreto Auth.js (`openssl rand -base64 32`) |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` (o URL de Vercel) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Google |
+| `SMTP_*` / `EMAIL_FROM` | Opcional: correos de verificación y bienvenida |
+
+Sin SMTP, los enlaces de verificación se imprimen en la consola (`pnpm dev`).
+
 ## Administrador único
 
-Solo **paw.patrol.soporte@gmail.com** recibe el rol `ADMINISTRADOR` automáticamente (Google o correo).
+Solo **paw.patrol.soporte@gmail.com** recibe el rol `ADMINISTRADOR` automáticamente (Google o correo). Ese correo también envía los emails del sistema vía Gmail SMTP.
 
-Ese mismo correo envía los emails del sistema vía Gmail SMTP.
+Asignar administrador manualmente en Neon:
 
-## Correos (verificación y bienvenida)
+```sql
+UPDATE "user" SET rol = 'ADMINISTRADOR' WHERE email = 'tu@correo.com';
+```
 
-1. En Gmail `paw.patrol.soporte@gmail.com` activa **verificación en 2 pasos**.
-2. Crea una **contraseña de aplicación** (16 caracteres).
+### Correos (Gmail SMTP)
+
+1. Verificación en 2 pasos en la cuenta de soporte.
+2. Contraseña de aplicación (16 caracteres).
 3. En `.env.local`:
 
 ```env
@@ -31,113 +59,111 @@ SMTP_PASS=xxxx xxxx xxxx xxxx
 EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 ```
 
-**Flujo:**
-- Registro con correo → email de **verificación** con enlace.
-- Tras verificar (o entrar con Google) → email de **bienvenida**.
+**Flujo:** registro → email de verificación → tras verificar (o Google) → email de bienvenida.
 
 ### API verificar cuenta
 
 | Método | Ruta | Uso |
 |--------|------|-----|
-| `GET` | `/api/auth/verificar-correo?token=...&email=...` | Enlace del correo (redirige al navegador) |
-| `POST` | `/api/auth/verificar-cuenta` | Verificar con JSON (apps, Postman) |
-| `GET` | `/api/auth/verificar-cuenta?email=...&token=...` | Verificar, respuesta JSON |
-| `GET` | `/api/auth/verificar-cuenta?email=...&estado=1` | ¿Ya está verificado? |
+| `GET` | `/api/auth/verificar-correo?token=...&email=...` | Enlace del correo |
+| `POST` | `/api/auth/verificar-cuenta` | JSON (Postman, apps) |
+| `GET` | `/api/auth/verificar-cuenta?email=...&token=...` | Verificar, JSON |
+| `GET` | `/api/auth/verificar-cuenta?email=...&estado=1` | ¿Ya verificado? |
 
-Ejemplo POST:
+## Rutas principales
 
-```json
-POST http://localhost:3000/api/auth/verificar-cuenta
-Content-Type: application/json
-
-{
-  "email": "usuario@gmail.com",
-  "token": "el_token_del_correo"
-}
-```
-
-Respuesta OK:
-
-```json
-{
-  "ok": true,
-  "mensaje": "Cuenta verificada correctamente.",
-  "email": "usuario@gmail.com",
-  "verificado": true
-}
-```
-
-Sin SMTP configurado, los enlaces se imprimen en la consola del servidor (`pnpm dev`).
-
-## Variables de entorno (`.env.local`)
-
-| Variable | Uso |
-|----------|-----|
-| `DATABASE_URL` | Connection string de Neon (pooled recomendado) |
-| `AUTH_SECRET` | Secreto Auth.js (`openssl rand -base64 32`) |
-| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Google |
-| `SMTP_*` / `EMAIL_FROM` | Opcional: envío real de correos de verificación |
-
-En desarrollo, el enlace de verificación se imprime en la consola del servidor.
-
-## Módulo de autenticación
-
-- **Registro** con correo y contraseña → `/registro`
-- **Verificación de correo** (token en Neon, enlace por email o consola en dev)
-- **Inicio de sesión** con correo o **Google OAuth 2.0** → `/iniciar-sesion`
-- **Perfil** → `/perfil`
-- **Mis mascotas** (ficha digital, fotos, estados) → `/mis-mascotas`
-- **Ficha pública** (perdida / encontrada) → `/mascota/[slug]`
-
-### Roles
-
-| Rol | Permisos |
-|-----|----------|
-| `CIUDADANO` | Miembro: reportar pérdidas, avistamientos y registrar mascotas |
-| `DUENO` | *(legado en BD; mismos permisos que CIUDADANO)* |
-| `ADMINISTRADOR` | Gestión total (solo correo de soporte o asignación manual) |
-
-Asignar administrador en Neon SQL Editor:
-
-```sql
-UPDATE "user" SET rol = 'ADMINISTRADOR' WHERE email = 'tu@correo.com';
-```
-
-## Módulo de mascotas
+### Públicas
 
 | Ruta | Descripción |
 |------|-------------|
-| `/mis-mascotas` | Listado de fichas |
-| `/mis-mascotas/nueva` | Alta con datos y hasta 5 fotos |
-| `/mis-mascotas/[id]` | Edición, cambio de estado e historial |
-| `/mascota/[slug]` | Ficha pública (solo perdida o encontrada) |
+| `/` | Landing: búsqueda, avistamientos, mascotas perdidas recientes |
+| `/mascota/[slug]` | Ficha pública (solo `PERDIDA` o `ENCONTRADA`): fotos, datos, historial, CTA reportar avistamiento |
+| `/iniciar-sesion` | Login (modal también desde la landing) |
 
-Estados: `EN_CASA` → `PERDIDA` → `ENCONTRADA` → `REUNIDA` (con historial en Neon).
+### Con sesión
 
-Tras actualizar el schema, en Neon SQL Editor ejecuta `drizzle/0002_modulo_mascotas.sql` o `pnpm db:push`.
+| Ruta | Descripción |
+|------|-------------|
+| `/registro` | Alta de cuenta con correo |
+| `/verificar-correo` | Estado de verificación |
+| `/perfil` | Datos de usuario y accesos rápidos |
+| `/mis-mascotas` | Listado de **mis fichas** |
+| `/mis-mascotas/ficha` | **Nueva ficha** (formulario en dos columnas: datos + fotos) |
+| `/mis-mascotas/nueva` | Redirige a `/mis-mascotas/ficha` |
+| `/mis-mascotas/[id]` | Editar ficha, cambiar estado, historial, eliminar |
 
-## Estructura
+### Navegación
+
+- **Landing:** secciones ancla + enlace **Mis fichas** en el centro si hay sesión; derecha: chip de usuario, Salir, Reportar.
+- **App** (`/mis-mascotas`, `/perfil`, ficha pública con barra): Inicio · Mis fichas · Mi perfil (activo resaltado) + acciones de usuario.
+- **Modales globales** (login y reportar pérdida) en `layout.tsx` — funcionan en cualquier ruta, incluida la ficha pública.
+
+## Módulo de fichas (mascotas)
+
+- Terminología en UI: **ficha** (no «alta»).
+- Formulario compacto: bloques *Lo esencial* / *Más detalles (opcional)*, grid 2 columnas y panel de fotos lateral (escritorio).
+- Hasta **5 fotos** por ficha; carrusel y lightbox en ficha pública.
+- **Estados:** `EN_CASA` → `PERDIDA` → `ENCONTRADA` → `REUNIDA`, con historial en Neon.
+
+Tras cambios de schema:
+
+```bash
+pnpm db:push
+```
+
+O en Neon SQL Editor: `drizzle/0002_modulo_mascotas.sql`.
+
+## Roles
+
+| Rol | Permisos |
+|-----|----------|
+| `CIUDADANO` | Reportar pérdidas, avistamientos y gestionar sus fichas |
+| `DUENO` | Legado en BD; mismos permisos que `CIUDADANO` |
+| `ADMINISTRADOR` | Gestión total (correo de soporte o asignación manual) |
+
+## Estructura del proyecto
 
 ```
-auth.ts                    → Auth.js + Google + credenciales
-src/lib/db/schema.ts       → Tablas Neon (user, account, session, mascota…)
-src/actions/autenticacion.ts
-src/actions/mascotas.ts
-src/app/perfil/
-src/app/mis-mascotas/
-src/app/registro/
-src/componentes/auth/
+auth.ts
+src/
+  app/
+    page.tsx                    → Landing
+    mis-mascotas/               → Listado, ficha nueva, edición
+    mascota/[slug]/             → Ficha pública
+    (app)/perfil, registro, verificar-correo
+    api/auth/                   → Auth.js + verificación
+  actions/
+    autenticacion.ts
+    mascotas.ts
+  componentes/
+    auth/                       → MenuUsuario, formularios
+    landing/                    → BarraNavegacion, modales, secciones
+    layout/                     → BarraNavegacionApp, EnvolturaPaginasApp
+    mascotas/                   → FormularioFicha, FichaPublica, fotos…
+  estilos/
+    paleta.css, landing-pawpatrol.css, auth.css, mascotas.css, responsive.css
+  lib/db/schema.ts              → Drizzle (user, mascota, fotos, historial…)
+drizzle/                        → Migraciones SQL
 ```
 
 ## Google OAuth
 
 1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → OAuth 2.0 Client ID.
-2. URI de redirección: `http://localhost:3000/api/auth/callback/google`
-3. Copia Client ID y Secret a `.env.local`.
+2. URI de redirección: `http://localhost:3000/api/auth/callback/google` (y la URL de producción en Vercel).
+3. Variables `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en `.env.local` y en Vercel.
 
 ## Neon
 
-1. Crea proyecto en [neon.tech](https://neon.tech).
-2. Copia la connection string a `DATABASE_URL`.
-3. Ejecuta `pnpm db:push` o el SQL en `drizzle/0000_esquema_inicial.sql`.
+1. Proyecto en [neon.tech](https://neon.tech).
+2. `DATABASE_URL` en `.env.local` y en Vercel.
+3. `pnpm db:push` o SQL en `drizzle/0000_esquema_inicial.sql`.
+
+## Despliegue (Vercel)
+
+1. Conectar el repositorio de GitHub.
+2. Añadir las mismas variables de entorno que en `.env.local`.
+3. Tras el deploy, ejecutar migraciones en Neon si la BD de producción está vacía.
+
+---
+
+Repositorio: [github.com/Smith2207/PAWPATROLL](https://github.com/Smith2207/PAWPATROLL)

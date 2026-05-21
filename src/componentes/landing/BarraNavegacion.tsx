@@ -2,6 +2,8 @@
 
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
 import { irASeccion } from "@/hooks/useNavegacionSecciones";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 const ENLACES = [
@@ -13,6 +15,8 @@ const ENLACES = [
 ] as const;
 
 export function BarraNavegacion() {
+  const { status } = useSession();
+  const sesionActiva = status === "authenticated";
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   useEffect(() => {
@@ -28,7 +32,7 @@ export function BarraNavegacion() {
   }
 
   return (
-    <nav className="nav-principal">
+    <nav className="nav-principal nav-principal--landing">
       <a
         className="logo"
         href="#inicio"
@@ -42,7 +46,9 @@ export function BarraNavegacion() {
       </a>
 
       <div className="nav-centro nav-centro--escritorio">
-        <div className="nav-links">
+        <div
+          className={`nav-links ${sesionActiva ? "nav-links--con-sesion" : ""}`}
+        >
           {ENLACES.map((enlace) => (
             <a
               key={enlace.id}
@@ -55,11 +61,16 @@ export function BarraNavegacion() {
               {enlace.etiqueta}
             </a>
           ))}
+          {sesionActiva && (
+            <Link href="/mis-mascotas" className="nav-link-externo">
+              Mis fichas
+            </Link>
+          )}
         </div>
       </div>
 
       <div className="nav-actions nav-actions--escritorio">
-        <MenuUsuario />
+        <MenuUsuario compacto={sesionActiva} />
       </div>
 
       <button
@@ -95,9 +106,14 @@ export function BarraNavegacion() {
               {enlace.etiqueta}
             </a>
           ))}
+          {sesionActiva && (
+            <Link href="/mis-mascotas" onClick={() => setMenuAbierto(false)}>
+              Mis fichas
+            </Link>
+          )}
         </div>
         <div className="nav-drawer-actions">
-          <MenuUsuario enMenuMovil />
+          <MenuUsuario enMenuMovil compacto={sesionActiva} />
         </div>
       </div>
     </nav>

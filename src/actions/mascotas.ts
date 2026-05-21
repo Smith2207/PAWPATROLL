@@ -266,7 +266,7 @@ export async function crearMascota(
     estadoAnterior: "EN_CASA",
     estadoNuevo: "EN_CASA",
     userId,
-    notas: "Alta de ficha digital",
+    notas: "Creación de ficha digital",
   });
   await guardarFotos(insertada.id, fotosNuevas);
 

@@ -76,8 +76,8 @@ export function SeccionMascotasRecientes({ mascotas }: Props) {
           }}
         >
           Aún no hay mascotas perdidas publicadas.{" "}
-          <Link href="/mis-mascotas/nueva" style={{ color: "var(--blue)" }}>
-            Registra tu mascota
+          <Link href="/mis-mascotas/ficha" style={{ color: "var(--blue)" }}>
+            Crea la ficha de tu mascota
           </Link>{" "}
           y márcala como perdida si lo necesitas.
         </p>
