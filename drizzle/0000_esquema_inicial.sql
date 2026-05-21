@@ -51,5 +51,5 @@ CREATE TABLE IF NOT EXISTS "mascota" (
   "created_at" timestamp DEFAULT now() NOT NULL
 );
 
--- Primer administrador (cambia el correo):
--- UPDATE "user" SET rol = 'ADMINISTRADOR' WHERE email = 'admin@ejemplo.com';
+-- Único administrador (automático al registrarse con este correo):
+-- paw.patrol.soporte@gmail.com

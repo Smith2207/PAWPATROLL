@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ProveedorSesion } from "@/componentes/auth/ProveedorSesion";
+import { ProveedorModales } from "@/contexto/ContextoModales";
 import { Nunito, Fredoka } from "next/font/google";
 import "./globals.css";
 
@@ -33,7 +34,9 @@ export default function RootLayout({
           fontFamily: "var(--font-nunito), 'Nunito', sans-serif",
         }}
       >
-        <ProveedorSesion>{children}</ProveedorSesion>
+        <ProveedorSesion>
+          <ProveedorModales>{children}</ProveedorModales>
+        </ProveedorSesion>
       </body>
     </html>
   );

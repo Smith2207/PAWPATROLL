@@ -3,24 +3,40 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { users, verificationTokens, type RolUsuario } from "@/lib/db/schema";
-import { enviarCorreoVerificacion } from "@/lib/email/enviarVerificacion";
-import { randomBytes } from "crypto";
+import { users } from "@/lib/db/schema";
+import {
+  esCorreoAdmin,
+  normalizarCorreo,
+  rolParaNuevoUsuario,
+} from "@/lib/auth/admin";
+import { verificarCuentaConToken } from "@/lib/auth/verificar-cuenta";
+import { enviarCorreoBienvenida } from "@/lib/email/enviarBienvenida";
+import {
+  enviarVerificacionCuenta,
+  usuarioPendienteVerificacion,
+} from "@/lib/email/verificacion";
 
 export type ResultadoAuth =
   | { ok: true; mensaje: string }
   | { ok: false; error: string };
 
-const ROLES_REGISTRO: RolUsuario[] = ["CIUDADANO", "DUENO"];
+function mensajeCorreoVerificacion(enviado: boolean, error?: string) {
+  if (enviado) {
+    return "Te enviamos un correo desde paw.patrol.soporte@gmail.com. Abre el enlace para activar tu cuenta (revisa también spam).";
+  }
+  if (error) {
+    return `Cuenta creada, pero no se pudo enviar el correo: ${error}. Puedes reenviarlo desde la página de verificación.`;
+  }
+  return "Cuenta creada. Configura SMTP en .env.local para recibir el correo; el enlace también aparece en la consola del servidor.";
+}
 
 export async function registrarUsuario(datos: {
   nombre: string;
   email: string;
   password: string;
-  rol: RolUsuario;
 }): Promise<ResultadoAuth> {
   const nombre = datos.nombre.trim();
-  const email = datos.email.trim().toLowerCase();
+  const email = normalizarCorreo(datos.email);
   const password = datos.password;
 
   if (!nombre || !email || !password) {
@@ -34,49 +50,85 @@ export async function registrarUsuario(datos: {
     };
   }
 
-  if (!ROLES_REGISTRO.includes(datos.rol)) {
-    return { ok: false, error: "Rol no válido para registro." };
-  }
-
   const [existente] = await db
-    .select({ id: users.id })
+    .select({ id: users.id, emailVerified: users.emailVerified })
     .from(users)
     .where(eq(users.email, email))
     .limit(1);
 
   if (existente) {
+    if (!existente.emailVerified) {
+      const { enviado, error } = await enviarVerificacionCuenta(email, nombre);
+      return {
+        ok: true,
+        mensaje: enviado
+          ? "Ya existía una cuenta sin verificar. Te reenviamos el correo de verificación."
+          : mensajeCorreoVerificacion(false, error),
+      };
+    }
     return { ok: false, error: "Ya existe una cuenta con ese correo." };
   }
 
+  const rol = rolParaNuevoUsuario(email);
+  const esAdmin = esCorreoAdmin(email);
   const passwordHash = await bcrypt.hash(password, 12);
 
   await db.insert(users).values({
     name: nombre,
     email,
     passwordHash,
-    rol: datos.rol,
-    emailVerified: null,
+    rol,
+    emailVerified: esAdmin ? new Date() : null,
   });
 
-  const token = randomBytes(32).toString("hex");
-  const expira = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  if (esAdmin) {
+    await enviarCorreoBienvenida(email, nombre, rol);
+    return {
+      ok: true,
+      mensaje:
+        "Cuenta de administrador creada. Revisa tu correo de bienvenida.",
+    };
+  }
 
-  await db.insert(verificationTokens).values({
-    identifier: email,
-    token,
-    expires: expira,
-  });
+  const { enviado, error } = await enviarVerificacionCuenta(email, nombre);
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const enlace = `${baseUrl}/api/auth/verificar-correo?token=${token}&email=${encodeURIComponent(email)}`;
+  return {
+    ok: true,
+    mensaje: mensajeCorreoVerificacion(enviado, error),
+  };
+}
 
-  await enviarCorreoVerificacion(email, enlace);
+export async function reenviarCorreoVerificacion(
+  email: string
+): Promise<ResultadoAuth> {
+  const correo = normalizarCorreo(email?.trim() ?? "");
+
+  if (!correo) {
+    return { ok: false, error: "Indica tu correo electrónico." };
+  }
+
+  const estado = await usuarioPendienteVerificacion(correo);
+
+  if (!estado.ok) {
+    return { ok: false, error: estado.error };
+  }
+
+  const { enviado, error } = await enviarVerificacionCuenta(
+    correo,
+    estado.nombre
+  );
+
+  if (!enviado) {
+    return {
+      ok: false,
+      error: error ?? "No se pudo enviar el correo. Revisa SMTP en .env.local.",
+    };
+  }
 
   return {
     ok: true,
     mensaje:
-      "Cuenta creada. Revisa tu correo y haz clic en el enlace de verificación antes de iniciar sesión.",
+      "Correo de verificación enviado. Revisa tu bandeja y la carpeta de spam.",
   };
 }
 
@@ -84,34 +136,16 @@ export async function verificarCorreoConToken(
   email: string,
   token: string
 ): Promise<ResultadoAuth> {
-  const correo = email.trim().toLowerCase();
+  const resultado = await verificarCuentaConToken(email, token);
 
-  const [registro] = await db
-    .select()
-    .from(verificationTokens)
-    .where(eq(verificationTokens.identifier, correo))
-    .limit(1);
-
-  if (!registro || registro.token !== token) {
-    return { ok: false, error: "Enlace de verificación inválido." };
+  if (!resultado.ok) {
+    return { ok: false, error: resultado.error };
   }
-
-  if (registro.expires < new Date()) {
-    return { ok: false, error: "El enlace ha expirado. Regístrate de nuevo." };
-  }
-
-  await db
-    .update(users)
-    .set({ emailVerified: new Date() })
-    .where(eq(users.email, correo));
-
-  await db
-    .delete(verificationTokens)
-    .where(eq(verificationTokens.identifier, correo));
 
   return {
     ok: true,
-    mensaje: "Correo verificado correctamente. Ya puedes iniciar sesión.",
+    mensaje:
+      "Correo verificado. Te enviamos un mensaje de bienvenida. Ya puedes iniciar sesión.",
   };
 }
 

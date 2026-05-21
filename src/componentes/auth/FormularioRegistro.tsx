@@ -1,17 +1,21 @@
 "use client";
 
 import { registrarUsuario } from "@/actions/autenticacion";
-import type { RolUsuario } from "@/lib/db/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export function FormularioRegistro() {
   const router = useRouter();
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") router.replace("/perfil");
+  }, [status, router]);
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState<RolUsuario>("CIUDADANO");
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -26,7 +30,6 @@ export function FormularioRegistro() {
       nombre,
       email,
       password,
-      rol,
     });
 
     setCargando(false);
@@ -37,7 +40,8 @@ export function FormularioRegistro() {
     }
 
     setMensaje(resultado.mensaje);
-    router.push("/iniciar-sesion?registrado=1");
+    const correo = encodeURIComponent(email.trim().toLowerCase());
+    router.push(`/verificar-correo?pendiente=1&email=${correo}`);
   }
 
   return (
@@ -45,8 +49,14 @@ export function FormularioRegistro() {
       <div className="auth-card">
         <h1>🐾 Crear cuenta</h1>
         <p className="auth-sub">
-          Registro con correo y contraseña. Verifica tu email para activar la
-          cuenta.
+          Con tu cuenta puedes reportar mascotas perdidas, registrar avistamientos
+          y guardar el perfil de tus mascotas. Con correo y contraseña debes
+          verificar tu email antes de entrar.
+        </p>
+        <p className="auth-ayuda" style={{ marginBottom: "1rem" }}>
+          ¿Prefieres Google?{" "}
+          <Link href="/iniciar-sesion">Inicia sesión aquí</Link> — no necesitas
+          este formulario.
         </p>
 
         {error && <p className="auth-alerta auth-alerta--error">{error}</p>}
@@ -83,19 +93,6 @@ export function FormularioRegistro() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
             />
-          </div>
-          <div className="form-group">
-            <label>Tipo de cuenta *</label>
-            <select
-              value={rol}
-              onChange={(e) => setRol(e.target.value as RolUsuario)}
-            >
-              <option value="CIUDADANO">Ciudadano — reportar avistamientos</option>
-              <option value="DUENO">Dueño — registrar mis mascotas</option>
-            </select>
-            <p className="auth-ayuda">
-              El rol Administrador solo lo asigna un administrador del sistema.
-            </p>
           </div>
           <button type="submit" disabled={cargando} className="submit-btn">
             {cargando ? "Creando cuenta..." : "Registrarme"}
