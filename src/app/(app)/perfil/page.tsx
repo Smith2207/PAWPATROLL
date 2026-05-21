@@ -4,9 +4,6 @@ import { FormularioPerfil } from "@/componentes/auth/FormularioPerfil";
 import { etiquetaRol } from "@/lib/auth/roles";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import "@/estilos/auth.css";
-import "@/estilos/landing-pawpatrol.css";
-
 export default async function PaginaPerfil() {
   const sesion = await auth();
   if (!sesion?.user) redirect("/");
@@ -22,29 +19,14 @@ export default async function PaginaPerfil() {
             alt=""
             width={64}
             height={64}
-            style={{ borderRadius: "50%", border: "2px solid var(--border)" }}
+            className="avatar-perfil"
           />
         ) : (
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: "50%",
-              background: "var(--blue-light)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.75rem",
-            }}
-          >
-            👤
-          </div>
+          <div className="avatar-perfil avatar-perfil--placeholder">👤</div>
         )}
         <div style={{ flex: 1 }}>
           <h1 style={{ marginBottom: 4 }}>{user.name ?? "Usuario"}</h1>
-          <p style={{ color: "var(--muted)", fontWeight: 600, margin: 0 }}>
-            {user.email}
-          </p>
+          <p className="panel-cuenta-subtitulo">{user.email}</p>
           <span className="badge-rol">{etiquetaRol(user.rol)}</span>
         </div>
         <BotonSalirSesion />

@@ -228,9 +228,6 @@
     gap: 0.75rem;
   }
 
-  .ficha-publica-datos {
-    grid-template-columns: 1fr !important;
-  }
 }
 
 /* ─── Móvil pequeño (≤640px) ─── */
@@ -328,15 +325,23 @@
   }
 
   .ficha-publica {
-    padding: 1.25rem 1rem;
+    padding: 0.85rem 0.75rem 1.25rem;
   }
 
   .ficha-publica-cuerpo {
     padding: 1.15rem !important;
   }
 
-  .ficha-publica-miniaturas {
-    grid-template-columns: 1fr 1fr;
+  .carrusel-ficha-flecha {
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+
+  .carrusel-ficha-mini {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
   }
 
   .btn-orange-nav,

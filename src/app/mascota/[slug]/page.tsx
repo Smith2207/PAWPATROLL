@@ -1,8 +1,7 @@
 import { obtenerMascotaPublica } from "@/actions/mascotas";
 import { FichaPublicaMascota } from "@/componentes/mascotas/FichaPublicaMascota";
 import { notFound } from "next/navigation";
-import "@/estilos/mascotas.css";
-import "@/estilos/landing-pawpatrol.css";
+import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -25,5 +24,9 @@ export default async function PaginaFichaPublicaMascota({ params }: Props) {
 
   if (!datos) notFound();
 
-  return <FichaPublicaMascota datos={datos} />;
+  return (
+    <EnvolturaPaginasApp>
+      <FichaPublicaMascota datos={datos} />
+    </EnvolturaPaginasApp>
+  );
 }

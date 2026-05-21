@@ -1,7 +1,5 @@
 import { FormularioReenviarVerificacion } from "@/componentes/auth/FormularioReenviarVerificacion";
 import Link from "next/link";
-import "@/estilos/auth.css";
-
 type Props = {
   searchParams: Promise<{
     estado?: string;

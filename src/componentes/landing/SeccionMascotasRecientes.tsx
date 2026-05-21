@@ -1,6 +1,5 @@
 "use client";
 
-import "@/estilos/mascotas.css";
 import { useModales } from "@/contexto/ContextoModales";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import type { EstadoMascota } from "@/lib/db/schema";

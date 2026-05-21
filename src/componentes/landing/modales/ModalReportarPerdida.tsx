@@ -12,12 +12,7 @@ export function ModalReportarPerdida() {
   return (
     <ModalContenedor tipo="report">
       <div className="modal-header">
-        <div
-          className="modal-header-accent"
-          style={{
-            background: "linear-gradient(90deg,var(--orange),var(--orange2))",
-          }}
-        />
+        <div className="modal-header-accent" />
         <BotonCerrarModal tipo="report" />
         <div className="modal-title">🚨 Reportar mascota perdida</div>
         <div className="modal-sub">

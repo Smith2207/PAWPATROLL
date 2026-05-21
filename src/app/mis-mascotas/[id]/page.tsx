@@ -7,8 +7,7 @@ import { PanelCambioEstado } from "@/componentes/mascotas/PanelCambioEstado";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import "@/estilos/auth.css";
-import "@/estilos/mascotas.css";
+import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -26,6 +25,7 @@ export default async function PaginaEditarMascota({ params }: Props) {
   const { mascota, fotos, historial } = datos;
 
   return (
+    <EnvolturaPaginasApp>
     <div className="panel-cuenta">
       <div className="mascotas-toolbar">
         <div>
@@ -59,5 +59,6 @@ export default async function PaginaEditarMascota({ params }: Props) {
         </div>
       </div>
     </div>
+    </EnvolturaPaginasApp>
   );
 }
