@@ -1,9 +1,14 @@
+import { auth } from "@/auth";
 import { FormularioInicioSesion } from "@/componentes/auth/FormularioInicioSesion";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import "@/estilos/auth.css";
 
-export default function PaginaIniciarSesion() {
+export default async function PaginaIniciarSesion() {
+  const sesion = await auth();
+  if (sesion?.user) redirect("/perfil");
+
   return (
     <div className="auth-pagina">
       <div className="auth-card">

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { FormularioPerfil } from "@/componentes/auth/FormularioPerfil";
-import { ETIQUETAS_ROL } from "@/lib/auth/roles";
+import { etiquetaRol } from "@/lib/auth/roles";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import "@/estilos/auth.css";
@@ -14,13 +14,46 @@ export default async function PaginaPerfil() {
 
   return (
     <div className="panel-cuenta">
-      <h1>Mi perfil</h1>
-      <p style={{ color: "var(--muted)", fontWeight: 600 }}>
-        {user.email}
-        <span className="badge-rol" style={{ marginLeft: 12 }}>
-          {ETIQUETAS_ROL[user.rol]}
-        </span>
-      </p>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1rem",
+          marginBottom: "1.5rem",
+        }}
+      >
+        {user.image ? (
+          <img
+            src={user.image}
+            alt=""
+            width={64}
+            height={64}
+            style={{ borderRadius: "50%", border: "2px solid var(--border)" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "var(--blue-light)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.75rem",
+            }}
+          >
+            👤
+          </div>
+        )}
+        <div>
+          <h1 style={{ marginBottom: 4 }}>{user.name ?? "Usuario"}</h1>
+          <p style={{ color: "var(--muted)", fontWeight: 600, margin: 0 }}>
+            {user.email}
+          </p>
+          <span className="badge-rol">{etiquetaRol(user.rol)}</span>
+        </div>
+      </div>
 
       <div className="panel-cuenta-grid">
         <div className="tarjeta-panel">

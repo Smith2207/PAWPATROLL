@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import { authConfig } from "./auth.config";
 import { db } from "@/lib/db";
 import {
   accounts,
@@ -12,21 +13,16 @@ import {
   verificationTokens,
 } from "@/lib/db/schema";
 import type { RolUsuario } from "@/lib/db/schema";
+import { normalizarCorreo, rolParaNuevoUsuario } from "@/lib/auth/admin";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: process.env.AUTH_SECRET,
-  trustHost: true,
+  ...authConfig,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/iniciar-sesion",
-    newUser: "/registro",
-  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -71,20 +67,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    ...authConfig.callbacks,
+    async signIn({ user, account, profile }) {
       if (account?.provider === "google" && user.email) {
-        const [existente] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, user.email))
-          .limit(1);
+        const nombreGoogle =
+          user.name ??
+          (profile as { name?: string } | undefined)?.name ??
+          null;
+        const fotoGoogle =
+          user.image ??
+          (profile as { picture?: string } | undefined)?.picture ??
+          null;
 
-        if (existente && !existente.emailVerified) {
-          await db
-            .update(users)
-            .set({ emailVerified: new Date() })
-            .where(eq(users.id, existente.id));
-        }
+        const correo = normalizarCorreo(user.email);
+
+        await db
+          .update(users)
+          .set({
+            name: nombreGoogle,
+            image: fotoGoogle,
+            emailVerified: new Date(),
+            rol: rolParaNuevoUsuario(correo),
+          })
+          .where(eq(users.email, correo));
       }
       return true;
     },
@@ -92,11 +97,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.rol = (user as { rol?: RolUsuario }).rol ?? "CIUDADANO";
+        token.name = user.name;
+        token.picture = user.image;
       }
 
-      if (token.email && !token.rol) {
+      if (token.email) {
         const [usuario] = await db
-          .select({ rol: users.rol, id: users.id })
+          .select({
+            id: users.id,
+            rol: users.rol,
+            name: users.name,
+            image: users.image,
+          })
           .from(users)
           .where(eq(users.email, token.email))
           .limit(1);
@@ -104,35 +116,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (usuario) {
           token.id = usuario.id;
           token.rol = usuario.rol;
+          token.name = usuario.name;
+          token.picture = usuario.image;
         }
       }
 
       return token;
     },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.rol = (token.rol as RolUsuario) ?? "CIUDADANO";
-      }
-      return session;
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith(baseUrl)) return url;
+      return `${baseUrl}/perfil`;
     },
   },
   events: {
     async createUser({ user }) {
-      if (user.email) {
-        const [existente] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, user.email))
-          .limit(1);
+      if (!user.email || !user.id) return;
 
-        if (existente && !existente.emailVerified) {
-          await db
-            .update(users)
-            .set({ emailVerified: new Date() })
-            .where(eq(users.id, existente.id));
-        }
-      }
+      const correo = normalizarCorreo(user.email);
+      const rol = rolParaNuevoUsuario(correo);
+
+      await db
+        .update(users)
+        .set({
+          rol,
+          emailVerified: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      const { enviarCorreoBienvenida } = await import(
+        "@/lib/email/enviarBienvenida"
+      );
+      await enviarCorreoBienvenida(correo, user.name ?? "Usuario", rol);
     },
   },
 });

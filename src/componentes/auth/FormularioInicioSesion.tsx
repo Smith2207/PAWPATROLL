@@ -1,9 +1,9 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useModales } from "@/contexto/ContextoModales";
 
 type Props = {
@@ -13,7 +13,15 @@ type Props = {
 export function FormularioInicioSesion({ enModal = false }: Props) {
   const router = useRouter();
   const params = useSearchParams();
+  const { data: sesion, status } = useSession();
   const { cerrarModal } = useModales();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      if (enModal) cerrarModal("login");
+      router.replace("/perfil");
+    }
+  }, [status, enModal, cerrarModal, router]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +32,7 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
 
   async function iniciarConGoogle() {
     setCargando(true);
-    await signIn("google", { callbackUrl: "/" });
+    await signIn("google", { callbackUrl: "/perfil" });
   }
 
   async function iniciarConCorreo(e: React.FormEvent) {
@@ -43,7 +51,7 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
     if (resultado?.error) {
       if (resultado.error === "CredentialsSignin") {
         setError(
-          "Correo o contraseña incorrectos, o tu correo aún no está verificado."
+          "Correo o contraseña incorrectos, o tu correo aún no está verificado. Revisa tu bandeja o reenvía el enlace."
         );
       } else {
         setError("No se pudo iniciar sesión. Intenta de nuevo.");
@@ -52,13 +60,29 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
     }
 
     if (enModal) cerrarModal("login");
-    router.push("/perfil");
+    router.replace("/perfil");
     router.refresh();
   }
 
   return (
     <div>
-      {(registrado || verificado) && !enModal && (
+      {registrado && !enModal && (
+        <p
+          style={{
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 12,
+            padding: "12px 14px",
+            marginBottom: "1rem",
+            fontSize: "0.9rem",
+          }}
+        >
+          Revisa tu correo para verificar la cuenta.{" "}
+          <Link href="/verificar-correo">Reenviar correo de verificación</Link>
+        </p>
+      )}
+
+      {verificado && !enModal && (
         <p
           style={{
             background: "#ECFDF5",
@@ -71,9 +95,7 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
             color: "#065F46",
           }}
         >
-          {verificado
-            ? "✅ Correo verificado. Ya puedes iniciar sesión."
-            : "📧 Cuenta creada. Verifica tu correo antes de entrar."}
+          ✅ Correo verificado. Ya puedes iniciar sesión.
         </p>
       )}
 
@@ -170,19 +192,24 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
         </button>
       </form>
 
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: "0.82rem",
-          color: "var(--muted)",
-          fontWeight: 700,
-        }}
-      >
-        ¿No tienes cuenta?{" "}
-        <Link href="/registro" style={{ color: "var(--blue)", fontWeight: 800 }}>
-          Regístrate gratis
-        </Link>
-      </p>
+      {!sesion?.user && (
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "0.82rem",
+            color: "var(--muted)",
+            fontWeight: 700,
+          }}
+        >
+          ¿No tienes cuenta?{" "}
+          <Link
+            href="/registro"
+            style={{ color: "var(--blue)", fontWeight: 800 }}
+          >
+            Regístrate con correo
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

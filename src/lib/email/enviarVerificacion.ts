@@ -1,21 +1,44 @@
-/**
- * Envía el enlace de verificación de correo.
- * En desarrollo (o sin SMTP) imprime el enlace en consola del servidor.
- */
+import { plantillaVerificacion } from "@/lib/email/plantillas";
+import {
+  correoSoporteConfigurado,
+  obtenerTransporte,
+  remitentePorDefecto,
+} from "@/lib/email/transporte";
+
 export async function enviarCorreoVerificacion(
   email: string,
-  enlace: string
-): Promise<void> {
-  const host = process.env.SMTP_HOST;
+  enlace: string,
+  nombre?: string
+): Promise<{ enviado: boolean; error?: string }> {
+  const transporte = obtenerTransporte();
 
-  if (!host) {
-    console.info("\n📧 [PawPatrol] Verificación de correo para:", email);
+  if (!transporte) {
+    console.info("\n📧 [PawPatrol] Verificación (SMTP no configurado)");
+    console.info("   Para:", email);
     console.info("   Enlace:", enlace, "\n");
-    return;
+    return {
+      enviado: false,
+      error:
+        "SMTP no configurado. Añade SMTP_HOST, SMTP_USER y SMTP_PASS en .env.local.",
+    };
   }
 
-  // Integración SMTP: instala nodemailer y configura SMTP_* en .env.local
-  console.info("\n📧 [PawPatrol] SMTP configurado. Enlace de verificación:");
-  console.info("   Para:", email);
-  console.info("   ", enlace, "\n");
+  try {
+    await transporte.sendMail({
+      from: remitentePorDefecto(),
+      to: email,
+      subject: "Verifica tu correo — PawPatrol",
+      html: plantillaVerificacion(nombre ?? "", enlace),
+    });
+    return { enviado: true };
+  } catch (err) {
+    const mensaje =
+      err instanceof Error ? err.message : "No se pudo enviar el correo.";
+    console.error("[PawPatrol] SMTP verificación:", mensaje);
+    return { enviado: false, error: mensaje };
+  }
+}
+
+export function smtpListo() {
+  return correoSoporteConfigurado();
 }

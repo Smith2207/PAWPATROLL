@@ -1,24 +1,35 @@
+import { FormularioReenviarVerificacion } from "@/componentes/auth/FormularioReenviarVerificacion";
 import Link from "next/link";
 import "@/estilos/auth.css";
 
 type Props = {
-  searchParams: Promise<{ estado?: string; motivo?: string }>;
+  searchParams: Promise<{
+    estado?: string;
+    motivo?: string;
+    pendiente?: string;
+    email?: string;
+  }>;
 };
 
 export default async function PaginaVerificarCorreo({ searchParams }: Props) {
   const params = await searchParams;
   const ok = params.estado === "ok";
   const error = params.estado === "error";
+  const pendiente = params.pendiente === "1";
+  const email = params.email ? decodeURIComponent(params.email) : "";
 
   return (
     <div className="auth-pagina">
       <div className="auth-card">
         <h1>📧 Verificación de correo</h1>
+
         {ok && (
           <p className="auth-alerta auth-alerta--ok">
-            Tu correo fue verificado correctamente. Ya puedes iniciar sesión.
+            Tu correo fue verificado correctamente. Revisa también el mensaje de
+            bienvenida y ya puedes iniciar sesión.
           </p>
         )}
+
         {error && (
           <p className="auth-alerta auth-alerta--error">
             {params.motivo
@@ -26,13 +37,32 @@ export default async function PaginaVerificarCorreo({ searchParams }: Props) {
               : "No se pudo verificar el correo."}
           </p>
         )}
-        {!ok && !error && (
-          <p className="auth-sub">
-            Revisa tu bandeja de entrada y haz clic en el enlace que te enviamos.
-            En desarrollo, el enlace también aparece en la consola del servidor.
+
+        {pendiente && !ok && (
+          <p className="auth-alerta auth-alerta--ok">
+            Cuenta creada. Te enviamos un correo automático desde{" "}
+            <strong>paw.patrol.soporte@gmail.com</strong> con el enlace de
+            verificación (válido 24 h). Revisa también spam.
           </p>
         )}
-        <p className="auth-enlace">
+
+        {!ok && !error && !pendiente && (
+          <p className="auth-sub">
+            Revisa tu bandeja (y carpeta spam). El correo llega desde{" "}
+            <strong>paw.patrol.soporte@gmail.com</strong>.
+          </p>
+        )}
+
+        {!ok && (
+          <>
+            <p className="auth-sub" style={{ marginTop: "1rem" }}>
+              ¿No llegó el correo? Puedes pedir otro aquí:
+            </p>
+            <FormularioReenviarVerificacion emailInicial={email} />
+          </>
+        )}
+
+        <p className="auth-enlace" style={{ marginTop: "1.5rem" }}>
           <Link href="/iniciar-sesion">Ir a iniciar sesión</Link>
         </p>
       </div>
