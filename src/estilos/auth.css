@@ -1,0 +1,160 @@
+.auth-pagina {
+  min-height: calc(100vh - 68px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem var(--padding-pagina, 2rem);
+  background: var(--bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.auth-card h1 {
+  font-family: var(--font-fredoka), "Fredoka", cursive;
+  font-size: 1.75rem;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+}
+
+.auth-sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.auth-alerta {
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.auth-alerta--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.auth-alerta--ok {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.auth-ayuda {
+  font-size: 0.75rem;
+  color: var(--muted2);
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.auth-enlace {
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.auth-enlace a {
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.panel-cuenta {
+  max-width: var(--ancho-contenido, 1680px);
+  margin: 0 auto;
+  padding: 2.5rem var(--padding-pagina, 2rem);
+  width: 100%;
+}
+
+.panel-cuenta h1 {
+  font-family: var(--font-fredoka), "Fredoka", cursive;
+  font-size: 2rem;
+  color: var(--navy);
+  margin-bottom: 0.25rem;
+}
+
+.panel-cuenta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .panel-cuenta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tarjeta-panel {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.tarjeta-panel h2 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 1rem;
+}
+
+.badge-rol {
+  display: inline-block;
+  background: #eff6ff;
+  color: var(--blue);
+  border: 1px solid #bfdbfe;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-top: 0.5rem;
+}
+
+.lista-mascotas {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item-mascota {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.nav-usuario {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-usuario a {
+  color: var(--navy2);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.nav-usuario a:hover {
+  color: var(--blue);
+}
