@@ -61,6 +61,8 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 **Flujo:** registro → email de verificación → tras verificar (o Google) → email de bienvenida.
 
+**Recuperar contraseña:** en login, «¿Olvidaste tu contraseña?» → correo con enlace (1 h) → nueva contraseña con bcrypt. No aplica a cuentas solo con Google. Sin SMTP, el enlace se imprime en la consola del servidor.
+
 ### API verificar cuenta
 
 | Método | Ruta | Uso |
@@ -86,6 +88,8 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 |------|-------------|
 | `/registro` | Alta de cuenta con correo |
 | `/verificar-correo` | Estado de verificación |
+| `/recuperar-contrasena` | Solicitar enlace para restablecer contraseña (correo + contraseña) |
+| `/restablecer-contrasena?email=...&token=...` | Elegir nueva contraseña (enlace del correo, válido 1 h) |
 | `/perfil` | Datos de usuario y accesos rápidos |
 | `/mis-mascotas` | Listado de **mis fichas** |
 | `/mis-mascotas/ficha` | **Nueva ficha** (formulario en dos columnas: datos + fotos) |

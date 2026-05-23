@@ -3,13 +3,19 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { sessions, users } from "@/lib/db/schema";
 import {
   esCorreoAdmin,
   normalizarCorreo,
   rolParaNuevoUsuario,
 } from "@/lib/auth/admin";
+import {
+  eliminarTokenRecuperacion,
+  guardarTokenRecuperacion,
+  validarTokenRecuperacion,
+} from "@/lib/auth/recuperar-contrasena";
 import { verificarCuentaConToken } from "@/lib/auth/verificar-cuenta";
+import { enviarCorreoRecuperacion } from "@/lib/email/enviarRecuperacion";
 import { enviarCorreoBienvenida } from "@/lib/email/enviarBienvenida";
 import {
   enviarVerificacionCuenta,
@@ -146,6 +152,98 @@ export async function verificarCorreoConToken(
     ok: true,
     mensaje:
       "Correo verificado. Te enviamos un mensaje de bienvenida. Ya puedes iniciar sesión.",
+  };
+}
+
+const MENSAJE_RECUPERACION_ENVIADA =
+  "Si existe una cuenta con ese correo y contraseña, te enviamos un enlace para restablecerla (revisa también spam). El enlace vale 1 hora.";
+
+export async function solicitarRecuperacionContrasena(
+  email: string
+): Promise<ResultadoAuth> {
+  const correo = normalizarCorreo(email?.trim() ?? "");
+
+  if (!correo) {
+    return { ok: false, error: "Indica tu correo electrónico." };
+  }
+
+  const [usuario] = await db
+    .select({
+      name: users.name,
+      passwordHash: users.passwordHash,
+      emailVerified: users.emailVerified,
+    })
+    .from(users)
+    .where(eq(users.email, correo))
+    .limit(1);
+
+  if (
+    !usuario?.passwordHash ||
+    !usuario.emailVerified
+  ) {
+    return { ok: true, mensaje: MENSAJE_RECUPERACION_ENVIADA };
+  }
+
+  const { enlace } = await guardarTokenRecuperacion(correo);
+  const { enviado, error } = await enviarCorreoRecuperacion(
+    correo,
+    enlace,
+    usuario.name ?? undefined
+  );
+
+  if (!enviado) {
+    console.info("[PawPatrol] Enlace recuperación (consola):", enlace);
+    return {
+      ok: true,
+      mensaje: error
+        ? `${MENSAJE_RECUPERACION_ENVIADA} (aviso: ${error})`
+        : `${MENSAJE_RECUPERACION_ENVIADA} En desarrollo, el enlace también está en la consola del servidor.`,
+    };
+  }
+
+  return { ok: true, mensaje: MENSAJE_RECUPERACION_ENVIADA };
+}
+
+export async function restablecerContrasenaConToken(datos: {
+  email: string;
+  token: string;
+  password: string;
+}): Promise<ResultadoAuth> {
+  const correo = normalizarCorreo(datos.email?.trim() ?? "");
+  const token = datos.token?.trim() ?? "";
+  const password = datos.password ?? "";
+
+  if (!correo || !token) {
+    return { ok: false, error: "Enlace inválido. Solicita recuperar la contraseña de nuevo." };
+  }
+
+  if (password.length < 8) {
+    return {
+      ok: false,
+      error: "La contraseña debe tener al menos 8 caracteres.",
+    };
+  }
+
+  const validacion = await validarTokenRecuperacion(correo, token);
+  if (!validacion.ok) {
+    return { ok: false, error: validacion.error };
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  await db
+    .update(users)
+    .set({ passwordHash })
+    .where(eq(users.id, validacion.userId));
+
+  await eliminarTokenRecuperacion(correo);
+
+  await db.delete(sessions).where(eq(sessions.userId, validacion.userId));
+
+  return {
+    ok: true,
+    mensaje:
+      "Contraseña actualizada. Ya puedes iniciar sesión con tu nueva contraseña.",
   };
 }
 

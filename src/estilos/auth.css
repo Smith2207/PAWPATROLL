@@ -82,6 +82,32 @@
   color: var(--blue2);
 }
 
+.auth-enlace-inline {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--blue);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.auth-enlace-inline:hover {
+  color: var(--blue2);
+  text-decoration: underline;
+}
+
+.form-group-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.form-group-label-row label {
+  margin-bottom: 0;
+}
+
 .btn-google {
   width: 100%;
   background: var(--white);

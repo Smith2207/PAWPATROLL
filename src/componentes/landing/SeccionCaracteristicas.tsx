@@ -6,7 +6,6 @@ const CARACTERISTICAS = [
     titulo: "Reconocimiento por foto",
     desc: "Sube una foto de la mascota perdida. Nuestra IA analiza rasgos, color de pelaje, raza y marcas únicas para encontrar coincidencias en la base de datos con puntuación de similitud.",
     tag: "tag-or",
-    etiqueta: "IA · CNN · MobileNet · ResNet",
   },
   {
     clase: "fc-blue",
@@ -15,16 +14,14 @@ const CARACTERISTICAS = [
     titulo: "Mapa interactivo",
     desc: "Visualiza en tiempo real todos los avistamientos, la zona de pérdida y el radio estimado de búsqueda inteligente. Mapa de calor de zonas históricas incluido.",
     tag: "tag-bl",
-    etiqueta: "Leaflet.js · OpenStreetMap · Tiempo real",
   },
   {
-    clase: "fc-mint",
-    iconoClase: "fi-mi",
+    clase: "fc-blue",
+    iconoClase: "fi-bl",
     icono: "🧠",
     titulo: "Análisis de comportamiento",
     desc: "Predicciones según raza y tamaño: distancia probable recorrida, zonas de refugio, horarios de actividad y consejos personalizados de búsqueda generados con ML.",
-    tag: "tag-mi",
-    etiqueta: "ML · Análisis predictivo · Por raza",
+    tag: "tag-bl",
   },
   {
     clase: "fc-yellow",
@@ -33,7 +30,6 @@ const CARACTERISTICAS = [
     titulo: "Alertas inteligentes",
     desc: "Notificaciones automáticas por correo a usuarios dentro del radio de búsqueda. Alertas al dueño cuando alguien reporta una coincidencia visual cercana.",
     tag: "tag-or",
-    etiqueta: "Tiempo real · Email · Nodemailer",
   },
   {
     clase: "fc-purple",
@@ -42,7 +38,6 @@ const CARACTERISTICAS = [
     titulo: "Chat seguro con la comunidad",
     desc: "Conecta en tiempo real con quien avistó a tu mascota. Chat seguro y privado: tu número de teléfono nunca es público sin consentimiento mutuo.",
     tag: "tag-pu",
-    etiqueta: "Socket.io · Privado · Seguro",
   },
   {
     clase: "fc-red",
@@ -50,8 +45,7 @@ const CARACTERISTICAS = [
     icono: "👥",
     titulo: "Red ciudadana colaborativa",
     desc: "Comunidad activa que reporta avistamientos con foto, ubicación GPS y descripción. Historial de avistamientos y línea de tiempo del desplazamiento de la mascota.",
-    tag: "tag-mi",
-    etiqueta: "Comunidad · Avistamientos · Historial",
+    tag: "tag-bl",
   },
 ] as const;
 
@@ -71,7 +65,6 @@ export function SeccionCaracteristicas() {
             <div className={`feature-icon ${c.iconoClase}`}>{c.icono}</div>
             <div className="feature-title">{c.titulo}</div>
             <div className="feature-desc">{c.desc}</div>
-            <span className={`feature-tag ${c.tag}`}>{c.etiqueta}</span>
           </div>
         ))}
       </div>

@@ -1,40 +1,46 @@
-/* Paleta PawPatrol — misma que la landing (fuente única de verdad) */
+/* Paleta PawPatrol — azul marino, azul medio, naranja de acción, neutros */
 :root {
-  --navy: #0f2a52;
-  --navy2: #1a3c6e;
-  --blue: #2563eb;
-  --blue2: #3b82f6;
-  --blue-light: #dbeafe;
-  --orange: #c2410c;
-  --orange2: #b45309;
-  --orange-glow: rgba(194, 65, 12, 0.18);
-  --orange-light: #fff0e6;
-  --orange-light2: #ffe4cc;
+  /* Marca */
+  --navy: #1a3c6e;
+  --navy2: #153456;
+  --blue: #2e6db4;
+  --blue2: #4a8fd4;
+  --blue-light: #e8f1fa;
+  --orange: #e87c2a;
+  --orange2: #d66a1f;
+  --orange-glow: rgba(232, 124, 42, 0.2);
+  --orange-light: #fff4eb;
+  --orange-light2: #ffe8d4;
+
+  /* Acentos (sin cambiar semántica) */
   --mint: #10b981;
   --mint-light: #d1fae5;
   --yellow: #fbbf24;
   --yellow-light: #fef3c7;
-  --bg: #f0f7ff;
-  --bg2: #e8f1fd;
+
+  /* Neutros */
   --white: #ffffff;
-  --text: #0f2a52;
-  --muted: #4a5568;
-  --muted2: #505a6b;
+  --bg: #f5f7fa;
+  --bg2: #eef2f7;
+  --text: #1a3c6e;
+  --muted: #5c6573;
+  --muted2: #7a8494;
   --card: #ffffff;
-  --border: #e2eaf8;
+  --border: #dde3ec;
+
   --radius: 20px;
   --radius-sm: 12px;
-  --shadow: 0 8px 32px rgba(15, 42, 82, 0.1);
-  --shadow-lg: 0 20px 60px rgba(15, 42, 82, 0.16);
-  --shadow-orange: 0 8px 32px rgba(249, 115, 22, 0.25);
+  --shadow: 0 8px 32px rgba(26, 60, 110, 0.1);
+  --shadow-lg: 0 20px 60px rgba(26, 60, 110, 0.14);
+  --shadow-orange: 0 8px 32px rgba(232, 124, 42, 0.28);
 
   --ancho-contenido: min(1680px, calc(100% - 3rem));
   --padding-pagina: clamp(1.25rem, 3vw, 3rem);
 
-  /* Semánticos alineados a la landing */
+  /* Semánticos */
   --info-bg: var(--blue-light);
-  --info-border: rgba(37, 99, 235, 0.28);
-  --info-text: var(--navy2);
+  --info-border: rgba(46, 109, 180, 0.32);
+  --info-text: var(--navy);
 
   --ok-bg: var(--mint-light);
   --ok-border: rgba(16, 185, 129, 0.35);
@@ -44,7 +50,12 @@
   --warn-border: #fde68a;
   --warn-text: #78350f;
 
-  --danger-bg: rgba(249, 115, 22, 0.1);
-  --danger-border: rgba(194, 65, 12, 0.28);
-  --danger-text: #9a3412;
+  --danger-bg: rgba(232, 124, 42, 0.1);
+  --danger-border: rgba(232, 124, 42, 0.32);
+  --danger-text: #9a4a12;
+
+  /* RGB para rgba() en componentes legacy */
+  --navy-rgb: 26, 60, 110;
+  --blue-rgb: 46, 109, 180;
+  --orange-rgb: 232, 124, 42;
 }

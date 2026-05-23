@@ -30,6 +30,14 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
 
   const registrado = params.get("registrado") === "1";
   const verificado = params.get("verificado") === "1";
+  const passwordRestablecida = params.get("passwordRestablecida") === "1";
+
+  function irRecuperarContrasena(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!enModal) return;
+    e.preventDefault();
+    cerrarModal("login");
+    router.push("/recuperar-contrasena");
+  }
 
   async function iniciarConGoogle() {
     setCargando(true);
@@ -80,6 +88,12 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
         </p>
       )}
 
+      {passwordRestablecida && (
+        <p className="auth-alerta auth-alerta--ok">
+          ✅ Contraseña actualizada. Inicia sesión con tu nueva contraseña.
+        </p>
+      )}
+
       {error && <p className="auth-alerta auth-alerta--error">{error}</p>}
 
       <button
@@ -123,7 +137,16 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
           />
         </div>
         <div className="form-group">
-          <label>Contraseña</label>
+          <div className="form-group-label-row">
+            <label>Contraseña</label>
+            <Link
+              href="/recuperar-contrasena"
+              className="auth-enlace-inline"
+              onClick={irRecuperarContrasena}
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
           <input
             type="password"
             required
