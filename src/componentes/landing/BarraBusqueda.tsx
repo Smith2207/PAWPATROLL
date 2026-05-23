@@ -23,19 +23,25 @@ export function BarraBusqueda() {
             placeholder="Buscar por nombre, raza, color, zona..."
           />
         </div>
-        {FILTROS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            className={`filter-btn${filtroActivo === f.id ? " active" : ""}`}
-            onClick={() => setFiltroActivo(f.id)}
-          >
-            {f.emoji} {f.texto}
-          </button>
-        ))}
         <button type="button" className="search-btn">
           🔍 Buscar
         </button>
+        <div
+          className="search-filtros"
+          role="group"
+          aria-label="Filtros de búsqueda"
+        >
+          {FILTROS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              className={`filter-btn${filtroActivo === f.id ? " active" : ""}`}
+              onClick={() => setFiltroActivo(f.id)}
+            >
+              {f.emoji} {f.texto}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

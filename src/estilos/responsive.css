@@ -27,7 +27,7 @@
   position: fixed;
   inset: 68px 0 0;
   z-index: 150;
-  background: rgba(15, 42, 82, 0.45);
+  background: rgba(var(--navy-rgb), 0.45);
   border: none;
   cursor: pointer;
 }
@@ -43,7 +43,7 @@
   overflow-y: auto;
   background: white;
   border-left: 1.5px solid var(--border);
-  box-shadow: -8px 0 32px rgba(15, 42, 82, 0.12);
+  box-shadow: -8px 0 32px rgba(var(--navy-rgb), 0.12);
   padding: 1.25rem;
   transform: translateX(100%);
   transition: transform 0.25s ease;
@@ -126,16 +126,6 @@
   .stat {
     border-right: none;
     padding: 0 1rem 0 0;
-  }
-
-  .search-inner {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-box {
-    min-width: 0 !important;
-    width: 100%;
   }
 
   .pets-header {
@@ -230,8 +220,13 @@
   }
 
   .behavior-banner {
-    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
     text-align: center;
+    padding: 1.5rem 1.25rem !important;
+  }
+
+  .behavior-visual {
+    order: -1;
   }
 
   .mascotas-toolbar {
@@ -397,5 +392,31 @@
 
   .galeria-fotos {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Barra de búsqueda: sin superposición en pantallas estrechas */
+@media (max-width: 720px) {
+  .search-inner {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "campo"
+      "boton"
+      "filtros";
+    gap: 0.65rem;
+  }
+
+  .search-btn {
+    width: 100%;
+  }
+
+  .search-filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 400px) {
+  .search-filtros {
+    grid-template-columns: 1fr;
   }
 }
