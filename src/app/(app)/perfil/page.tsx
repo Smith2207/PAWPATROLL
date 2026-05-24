@@ -41,7 +41,7 @@ export default async function PaginaPerfil() {
           <h2>Accesos rápidos</h2>
           <ul style={{ listStyle: "none", fontWeight: 700, lineHeight: 2 }}>
             <li>
-              <Link href="/mis-mascotas">🐾 Mis fichas</Link>
+              <Link href="/mis-mascotas">🐾 Mis mascotas</Link>
             </li>
             <li>
               <Link href="/">🏠 Volver al inicio</Link>

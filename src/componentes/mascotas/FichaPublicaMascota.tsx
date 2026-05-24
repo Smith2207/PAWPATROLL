@@ -22,7 +22,17 @@ export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
   const datosFicha = [
     mascota.color && { label: "Color", valor: mascota.color, icono: "🎨" },
     mascota.tamano && { label: "Tamaño", valor: mascota.tamano, icono: "📏" },
-    mascota.collar && { label: "Collar", valor: mascota.collar, icono: "🏷️" },
+    mascota.peso && { label: "Peso", valor: mascota.peso, icono: "⚖️" },
+    mascota.collar && {
+      label: "Collar / placa",
+      valor: mascota.collar,
+      icono: "🏷️",
+    },
+    mascota.microchip && {
+      label: "Microchip",
+      valor: mascota.microchip,
+      icono: "💉",
+    },
     mascota.fechaPerdida && {
       label: "Desde",
       valor: new Date(mascota.fechaPerdida).toLocaleString("es-PE", {
@@ -121,11 +131,17 @@ export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
             </section>
           )}
 
-          {(mascota.descripcion || mascota.senasParticulares) && (
+          {(mascota.descripcion || mascota.enfermedades || mascota.senasParticulares) && (
             <section className="ficha-publica-seccion">
               <h2 className="ficha-publica-seccion-titulo">Detalles</h2>
               {mascota.descripcion && (
                 <p className="ficha-publica-bloque-texto">{mascota.descripcion}</p>
+              )}
+              {mascota.enfermedades && (
+                <p className="ficha-publica-bloque-texto">
+                  <span className="ficha-publica-bloque-etiqueta">Salud / enfermedades</span>
+                  {mascota.enfermedades}
+                </p>
               )}
               {mascota.senasParticulares && (
                 <p className="ficha-publica-bloque-texto">

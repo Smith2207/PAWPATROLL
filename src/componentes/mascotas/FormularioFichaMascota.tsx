@@ -6,6 +6,23 @@ import {
 } from "@/actions/mascotas";
 import { SubirFotosMascota } from "@/componentes/mascotas/SubirFotosMascota";
 import type { DatosFichaMascota, Mascota } from "@/lib/db/schema";
+import {
+  componerContactoPublico,
+  componerEdad,
+  componerMicrochip,
+  componerPeso,
+  parsearContactoPublico,
+  parsearEdad,
+  parsearMicrochip,
+  parsearPeso,
+  type UnidadEdad,
+} from "@/lib/mascotas/formatoFicha";
+import {
+  componerRaza,
+  obtenerRazasPorTipo,
+  OPCION_RAZA_OTRA,
+  parsearRaza,
+} from "@/lib/mascotas/razas";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -30,13 +47,46 @@ export function FormularioFichaMascota({
   fotosIniciales = [],
 }: Props) {
   const router = useRouter();
+  const tipoInicial = mascota?.tipo ?? "";
+  const razaInicial = parsearRaza(tipoInicial, mascota?.raza);
+  const edadInicial = parsearEdad(mascota?.edad);
+  const pesoInicial = parsearPeso(mascota?.peso);
+  const microchipInicial = parsearMicrochip(mascota?.microchip);
+  const contactoInicial = parsearContactoPublico(mascota?.contactoPublico);
+
   const [fotos, setFotos] = useState<string[]>(fotosIniciales);
+  const [tipo, setTipo] = useState(tipoInicial);
+  const [razaSeleccion, setRazaSeleccion] = useState(razaInicial.seleccion);
+  const [razaOtra, setRazaOtra] = useState(razaInicial.otra);
+  const [edadValor, setEdadValor] = useState(edadInicial.valor);
+  const [edadUnidad, setEdadUnidad] = useState<UnidadEdad>(edadInicial.unidad);
+  const [pesoValor, setPesoValor] = useState(pesoInicial.valor.replace(/\s*kg\s*$/i, "").trim());
+  const [microchipTiene, setMicrochipTiene] = useState<"" | "si" | "no">(
+    microchipInicial.tiene
+  );
+  const [microchipNumero, setMicrochipNumero] = useState(microchipInicial.numero);
+  const [contactoTelefono, setContactoTelefono] = useState(contactoInicial.telefono);
+  const [contactoEmail, setContactoEmail] = useState(contactoInicial.email);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
   const onFotosChange = useCallback((nuevas: string[]) => {
     setFotos(nuevas);
   }, []);
+
+  const razasDisponibles = obtenerRazasPorTipo(tipo);
+
+  function onTipoChange(nuevoTipo: string) {
+    setTipo(nuevoTipo);
+    if (
+      razaSeleccion &&
+      razaSeleccion !== OPCION_RAZA_OTRA &&
+      !obtenerRazasPorTipo(nuevoTipo).includes(razaSeleccion)
+    ) {
+      setRazaSeleccion("");
+      setRazaOtra("");
+    }
+  }
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,17 +97,18 @@ export function FormularioFichaMascota({
     const datos: DatosFichaMascota = {
       nombre: fd.get("nombre")?.toString() ?? "",
       tipo: fd.get("tipo")?.toString() ?? "",
-      raza: fd.get("raza")?.toString(),
+      raza: componerRaza(razaSeleccion, razaOtra),
       sexo: fd.get("sexo")?.toString(),
       color: fd.get("color")?.toString(),
       tamano: fd.get("tamano")?.toString(),
-      edad: fd.get("edad")?.toString(),
-      peso: fd.get("peso")?.toString(),
+      edad: componerEdad(edadValor, edadUnidad, true),
+      peso: componerPeso(pesoValor, true),
       descripcion: fd.get("descripcion")?.toString(),
       senasParticulares: fd.get("senasParticulares")?.toString(),
       collar: fd.get("collar")?.toString(),
-      microchip: fd.get("microchip")?.toString(),
-      contactoPublico: fd.get("contactoPublico")?.toString(),
+      microchip: componerMicrochip(microchipTiene, microchipNumero),
+      contactoPublico: componerContactoPublico(contactoTelefono, contactoEmail),
+      enfermedades: fd.get("enfermedades")?.toString(),
     };
 
     const resultado =
@@ -114,7 +165,12 @@ export function FormularioFichaMascota({
                 <label>
                   Tipo <span className="form-ficha-req">*</span>
                 </label>
-                <select name="tipo" required defaultValue={mascota?.tipo ?? ""}>
+                <select
+                  name="tipo"
+                  required
+                  value={tipo}
+                  onChange={(e) => onTipoChange(e.target.value)}
+                >
                   <option value="">Elegir...</option>
                   {TIPOS.map((t) => (
                     <option key={t} value={t}>
@@ -124,13 +180,30 @@ export function FormularioFichaMascota({
                 </select>
               </div>
               <div className="form-group">
-                <label>Raza</label>
-                <input
-                  name="raza"
-                  type="text"
-                  defaultValue={mascota?.raza ?? ""}
-                  placeholder="Ej: Mestizo"
-                />
+                <label htmlFor="raza-select">Raza</label>
+                <select
+                  id="raza-select"
+                  value={razaSeleccion}
+                  onChange={(e) => setRazaSeleccion(e.target.value)}
+                  disabled={!tipo}
+                >
+                  <option value="">{tipo ? "Elegir..." : "Primero elige el tipo"}</option>
+                  {razasDisponibles.map((r) => (
+                    <option key={r} value={r}>
+                      {r === OPCION_RAZA_OTRA ? "Otro (escribir raza)" : r}
+                    </option>
+                  ))}
+                </select>
+                {razaSeleccion === OPCION_RAZA_OTRA && (
+                  <input
+                    type="text"
+                    className="form-ficha-campo-secundario"
+                    value={razaOtra}
+                    onChange={(e) => setRazaOtra(e.target.value)}
+                    placeholder="Escribe la raza de tu mascota"
+                    aria-label="Raza personalizada"
+                  />
+                )}
               </div>
               <div className="form-group">
                 <label>Sexo</label>
@@ -173,37 +246,105 @@ export function FormularioFichaMascota({
               </div>
               <div className="form-group">
                 <label>Edad</label>
-                <input
-                  name="edad"
-                  type="text"
-                  defaultValue={mascota?.edad ?? ""}
-                  placeholder="Ej: 3 años"
-                />
+                <p className="form-ficha-ayuda">
+                  Puede ser aproximada si no recuerdas la exacta.
+                </p>
+                <div className="form-ficha-campo-compuesto">
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={edadValor}
+                    onChange={(e) => setEdadValor(e.target.value)}
+                    placeholder="Ej: 3 (aprox.)"
+                    aria-label="Edad aproximada"
+                  />
+                  <select
+                    value={edadUnidad}
+                    onChange={(e) => setEdadUnidad(e.target.value as UnidadEdad)}
+                    aria-label="Unidad de edad"
+                  >
+                    <option value="años">años</option>
+                    <option value="meses">meses</option>
+                  </select>
+                </div>
               </div>
               <div className="form-group">
                 <label>Peso</label>
+                <p className="form-ficha-ayuda">
+                  Puede ser aproximado si no recuerdas el exacto.
+                </p>
+                <div className="form-ficha-campo-compuesto">
+                  <input
+                    type="text"
+                    value={pesoValor}
+                    onChange={(e) => setPesoValor(e.target.value)}
+                    placeholder="Ej: 12 (aprox.)"
+                    aria-label="Peso aproximado en kilogramos"
+                  />
+                  <span className="form-ficha-sufijo">kg</span>
+                </div>
+              </div>
+              <div className="form-group form-ficha-grid--ancho">
+                <label htmlFor="collar">
+                  ¿Lleva collar o placa identificatoria?
+                </label>
+                <p className="form-ficha-ayuda">
+                  Describe el collar, la placa o cualquier dato que ayude a reconocerla
+                  (color, nombre grabado, teléfono en la placa, etc.).
+                </p>
                 <input
-                  name="peso"
+                  id="collar"
+                  name="collar"
                   type="text"
-                  defaultValue={mascota?.peso ?? ""}
-                  placeholder="Ej: 12 kg"
+                  defaultValue={mascota?.collar ?? ""}
+                  placeholder="Ej: Collar rojo con placa plateada que dice 'Luna'"
                 />
               </div>
               <div className="form-group">
-                <label>Collar / placa</label>
-                <input name="collar" type="text" defaultValue={mascota?.collar ?? ""} />
-              </div>
-              <div className="form-group">
-                <label>Microchip</label>
-                <input name="microchip" type="text" defaultValue={mascota?.microchip ?? ""} />
+                <label htmlFor="microchip-tiene">Microchip</label>
+                <select
+                  id="microchip-tiene"
+                  value={microchipTiene}
+                  onChange={(e) =>
+                    setMicrochipTiene(e.target.value as "" | "si" | "no")
+                  }
+                >
+                  <option value="">Elegir...</option>
+                  <option value="si">Sí cuenta con microchip</option>
+                  <option value="no">No cuenta con microchip</option>
+                </select>
+                {microchipTiene === "si" && (
+                  <input
+                    type="text"
+                    className="form-ficha-campo-secundario"
+                    value={microchipNumero}
+                    onChange={(e) => setMicrochipNumero(e.target.value)}
+                    placeholder="Número del microchip (opcional)"
+                    aria-label="Número de microchip"
+                  />
+                )}
               </div>
               <div className="form-group form-ficha-grid--ancho">
                 <label>Contacto si se pierde</label>
+                <p className="form-ficha-ayuda">
+                  Indica teléfono y/o correo para que quien encuentre a tu mascota
+                  pueda contactarte. Entre más datos, mejor.
+                </p>
                 <input
-                  name="contactoPublico"
-                  type="text"
-                  defaultValue={mascota?.contactoPublico ?? ""}
-                  placeholder="Teléfono o correo"
+                  type="tel"
+                  value={contactoTelefono}
+                  onChange={(e) => setContactoTelefono(e.target.value)}
+                  placeholder="Celular o teléfono"
+                  aria-label="Teléfono de contacto"
+                />
+                <input
+                  type="email"
+                  className="form-ficha-campo-secundario"
+                  value={contactoEmail}
+                  onChange={(e) => setContactoEmail(e.target.value)}
+                  placeholder="Correo electrónico"
+                  aria-label="Correo de contacto"
                 />
               </div>
               <div className="form-group form-ficha-grid--ancho">
@@ -213,6 +354,19 @@ export function FormularioFichaMascota({
                   rows={2}
                   defaultValue={mascota?.descripcion ?? ""}
                   placeholder="Personalidad, pelaje..."
+                />
+              </div>
+              <div className="form-group form-ficha-grid--ancho">
+                <label>¿Tiene alguna enfermedad o condición de salud?</label>
+                <p className="form-ficha-ayuda">
+                  Información importante si se pierde: alergias, medicación, diabetes,
+                  problemas cardíacos, etc. Si no tiene, puedes dejarlo en blanco.
+                </p>
+                <textarea
+                  name="enfermedades"
+                  rows={2}
+                  defaultValue={mascota?.enfermedades ?? ""}
+                  placeholder="Ej: Toma medicamento para el corazón / No tiene enfermedades conocidas"
                 />
               </div>
               <div className="form-group form-ficha-grid--ancho">
@@ -232,7 +386,7 @@ export function FormularioFichaMascota({
           <section className="form-ficha-bloque form-ficha-bloque--fotos">
             <h3 className="form-ficha-bloque-titulo">Fotos</h3>
             <p className="form-ficha-tip">
-              Sube hasta 5. La primera será la principal en la ficha pública.
+              Sube hasta 5 imágenes. La primera será la principal en la ficha pública.
             </p>
             <SubirFotosMascota fotos={fotos} onFotosChange={onFotosChange} />
           </section>

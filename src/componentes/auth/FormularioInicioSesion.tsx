@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn, useSession } from "next-auth/react";
+import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,7 +15,7 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const { data: sesion, status } = useSession();
-  const { cerrarModal } = useModales();
+  const { cerrarModal, abrirModal } = useModales();
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -37,6 +38,12 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
     e.preventDefault();
     cerrarModal("login");
     router.push("/recuperar-contrasena");
+  }
+
+  function irRegistro(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    if (enModal) cerrarModal("login");
+    abrirModal("registro");
   }
 
   async function iniciarConGoogle() {
@@ -136,9 +143,14 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
             placeholder="tucorreo@ejemplo.com"
           />
         </div>
-        <div className="form-group">
-          <div className="form-group-label-row">
-            <label>Contraseña</label>
+        <CampoContrasena
+          id="login-password"
+          label="Contraseña"
+          value={password}
+          onChange={setPassword}
+          autoComplete="current-password"
+          minLength={0}
+          labelExtra={
             <Link
               href="/recuperar-contrasena"
               className="auth-enlace-inline"
@@ -146,15 +158,8 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
             >
               ¿Olvidaste tu contraseña?
             </Link>
-          </div>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-          />
-        </div>
+          }
+        />
         <button
           type="submit"
           disabled={cargando}
@@ -176,8 +181,9 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
         >
           ¿No tienes cuenta?{" "}
           <Link
-            href="/registro"
+            href="/?registro=1"
             style={{ color: "var(--blue)", fontWeight: 800 }}
+            onClick={irRegistro}
           >
             Regístrate con correo
           </Link>

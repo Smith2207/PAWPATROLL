@@ -4,7 +4,7 @@ import { useModales } from "@/contexto/ContextoModales";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-/** Abre el modal de login si la URL trae ?login=1 (p. ej. enlaces antiguos a /iniciar-sesion). */
+/** Abre modales de auth si la URL trae ?login=1 o ?registro=1 */
 export function AbrirLoginDesdeUrl() {
   const params = useSearchParams();
   const { abrirModal } = useModales();
@@ -12,6 +12,9 @@ export function AbrirLoginDesdeUrl() {
   useEffect(() => {
     if (params.get("login") === "1") {
       abrirModal("login");
+    }
+    if (params.get("registro") === "1") {
+      abrirModal("registro");
     }
   }, [params, abrirModal]);
 

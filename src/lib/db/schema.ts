@@ -33,6 +33,9 @@ export const users = pgTable("user", {
   image: text("image"),
   passwordHash: text("password_hash"),
   rol: rolEnum("rol").default("CIUDADANO").notNull(),
+  bienvenidaCompletada: boolean("bienvenida_completada").default(true).notNull(),
+  telefono: text("telefono"),
+  ciudad: text("ciudad"),
 });
 
 export const accounts = pgTable(
@@ -105,6 +108,7 @@ export const mascotas = pgTable("mascota", {
   fechaPerdida: timestamp("fecha_perdida", { mode: "date" }),
   lugarPerdida: text("lugar_perdida"),
   contactoPublico: text("contacto_publico"),
+  enfermedades: text("enfermedades"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -157,4 +161,5 @@ export type DatosFichaMascota = {
   collar?: string;
   microchip?: string;
   contactoPublico?: string;
+  enfermedades?: string;
 };

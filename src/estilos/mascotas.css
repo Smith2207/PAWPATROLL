@@ -1175,3 +1175,57 @@ footer.ficha-publica-pie {
   color: var(--muted);
   font-weight: 600;
 }
+
+.form-ficha-campo-compuesto {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.form-ficha-campo-compuesto input,
+.form-ficha-campo-compuesto select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--white);
+}
+
+.form-ficha-sufijo {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--muted);
+  padding: 0 0.35rem;
+}
+
+.form-ficha-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.form-ficha-check input {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.form-ficha-ayuda {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted2);
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+
+.form-ficha-campo-secundario {
+  margin-top: 0.5rem;
+}

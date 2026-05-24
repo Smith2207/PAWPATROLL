@@ -16,7 +16,7 @@ export default async function PaginaMisMascotas() {
     <EnvolturaPaginasApp>
     <div className="panel-cuenta">
       <EncabezadoModuloMascotas
-        titulo="🐾 Mis fichas"
+        titulo="🐾 Mis mascotas"
         subtitulo="Cada mascota tiene su ficha digital, fotos y estados (en casa, perdida, encontrada, reunida)."
       />
 

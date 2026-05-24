@@ -4,12 +4,11 @@ import { db } from "@/lib/db";
 import { users, verificationTokens } from "@/lib/db/schema";
 import { normalizarCorreo } from "@/lib/auth/admin";
 import { enviarCorreoVerificacion } from "@/lib/email/enviarVerificacion";
+import { urlBaseApp } from "@/lib/url-app";
+
+export { urlBaseApp };
 
 const HORAS_VALIDEZ = 24;
-
-export function urlBaseApp() {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-}
 
 export function enlaceVerificacionCorreo(email: string, token: string) {
   const base = urlBaseApp();
