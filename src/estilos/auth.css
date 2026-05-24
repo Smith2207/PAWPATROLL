@@ -178,6 +178,75 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+.campo-ciudad {
+  position: relative;
+}
+
+.campo-ciudad-lista {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+}
+
+.campo-ciudad-lista li {
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.campo-ciudad-distrito {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+.campo-ciudad-ruta {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.campo-ciudad-estado {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: default;
+}
+
+.campo-ciudad-error {
+  color: #dc2626 !important;
+}
+
+.campo-ciudad-opcion--activa,
+.campo-ciudad-lista li:hover:not(.campo-ciudad-estado) {
+  background: var(--blue-light);
+}
+
+.campo-ciudad-opcion--activa .campo-ciudad-distrito,
+.campo-ciudad-lista li:hover:not(.campo-ciudad-estado) .campo-ciudad-distrito {
+  color: var(--blue);
+}
+
+.campo-ciudad-lista li.campo-ciudad-opcion--activa .campo-ciudad-ruta {
+  color: var(--navy2);
+}
+
 .panel-cuenta {
   max-width: var(--ancho-contenido, 1680px);
   margin: 0 auto;
@@ -311,6 +380,18 @@
   color: var(--navy) !important;
 }
 
+.nav-usuario-chip--actual {
+  cursor: default;
+  border-color: rgba(var(--blue-rgb), 0.4);
+  background: var(--blue-light);
+}
+
+.nav-usuario-chip--actual:hover {
+  border-color: rgba(var(--blue-rgb), 0.4);
+  background: var(--blue-light);
+  color: var(--navy) !important;
+}
+
 .nav-usuario-chip--bloque {
   max-width: none;
   width: 100%;
@@ -330,6 +411,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.nav-usuario-foto {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
 }
 
 .nav-usuario-nombre {

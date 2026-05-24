@@ -1,3 +1,4 @@
+import { obtenerContactoPerfil } from "@/actions/autenticacion";
 import { auth } from "@/auth";
 import { EncabezadoModuloMascotas } from "@/componentes/mascotas/EncabezadoModuloMascotas";
 import { FormularioFichaMascota } from "@/componentes/mascotas/FormularioFichaMascota";
@@ -9,6 +10,8 @@ export default async function PaginaNuevaFichaMascota() {
   const sesion = await auth();
   if (!sesion?.user) redirect("/");
 
+  const contactoPerfil = await obtenerContactoPerfil();
+
   return (
     <EnvolturaPaginasApp>
       <div className="panel-cuenta panel-cuenta--form-ficha">
@@ -19,7 +22,10 @@ export default async function PaginaNuevaFichaMascota() {
         />
 
         <div className="tarjeta-panel tarjeta-panel--form-ficha">
-          <FormularioFichaMascota modo="crear" />
+          <FormularioFichaMascota
+            modo="crear"
+            contactoPerfil={contactoPerfil ?? undefined}
+          />
         </div>
 
         <p className="auth-enlace form-ficha-volver">

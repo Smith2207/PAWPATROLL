@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import type { RolUsuario } from "@/lib/db/schema";
+import { imagenParaJwt } from "@/lib/auth/imagen-token";
 
 /**
  * Configuración ligera para proxy (protección de rutas).
@@ -19,7 +20,7 @@ export const authConfig = {
         token.id = user.id;
         token.rol = (user as { rol?: RolUsuario }).rol ?? "CIUDADANO";
         token.name = user.name;
-        token.picture = user.image;
+        token.picture = imagenParaJwt(user.image);
       }
       return token;
     },

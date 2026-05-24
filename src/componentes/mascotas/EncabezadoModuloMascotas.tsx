@@ -23,9 +23,6 @@ export function EncabezadoModuloMascotas({
             + Nueva ficha
           </Link>
         )}
-        <Link href="/perfil" className="btn-mascota btn-mascota--secundario">
-          Mi perfil
-        </Link>
       </div>
     </div>
   );

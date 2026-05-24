@@ -1,6 +1,7 @@
 "use client";
 
 import { completarBienvenida } from "@/actions/autenticacion";
+import { CampoCiudad } from "@/componentes/formulario/CampoCiudad";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -92,16 +93,13 @@ export function ModalBienvenida({
                 placeholder="Ej: 999 888 777"
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="bienvenida-ciudad">Ciudad (opcional)</label>
-              <input
-                id="bienvenida-ciudad"
-                type="text"
-                value={ciudad}
-                onChange={(e) => setCiudad(e.target.value)}
-                placeholder="Ej: Lima"
-              />
-            </div>
+            <CampoCiudad
+              id="bienvenida-ciudad"
+              label="Ciudad (opcional)"
+              value={ciudad}
+              onChange={setCiudad}
+              placeholder="Ej: Juliaca"
+            />
           </div>
 
           <div className="modal-bienvenida-acciones">

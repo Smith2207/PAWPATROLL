@@ -5,6 +5,7 @@ import {
   ModalContenedor,
 } from "@/componentes/landing/modales/ModalContenedor";
 import { SelectorUbicacionMapa } from "@/componentes/landing/ui/SelectorUbicacionMapa";
+import { OPCIONES_TIPO_CON_EMOJI } from "@/lib/mascotas/tipos";
 
 export function ModalReportarAvistamiento() {
   return (
@@ -22,13 +23,14 @@ export function ModalReportarAvistamiento() {
 
         <div className="form-row">
           <div className="form-group">
-            <label>Tipo de animal *</label>
+            <label>¿Perro o gato? *</label>
             <select defaultValue="">
               <option value="">Seleccionar...</option>
-              <option>🐕 Perro</option>
-              <option>🐱 Gato</option>
-              <option>🐦 Ave</option>
-              <option>Otro</option>
+              {OPCIONES_TIPO_CON_EMOJI.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="form-group">

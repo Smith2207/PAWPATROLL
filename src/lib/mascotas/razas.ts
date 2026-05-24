@@ -36,34 +36,22 @@ const RAZAS_GATO = [
   "Scottish Fold",
 ] as const;
 
-const RAZAS_AVE = [
-  "Canario",
-  "Periquito",
-  "Agapornis",
-  "Cacatúa",
-  "Loro",
-  "Ninfa",
-  "Diamante Mandarín",
-] as const;
-
-const RAZAS_OTRO = ["Mestizo / Cruzado"] as const;
-
 export const OPCION_RAZA_OTRA = "Otro";
 
 const RAZAS_POR_TIPO: Record<string, readonly string[]> = {
   Perro: RAZAS_PERRO,
   Gato: RAZAS_GATO,
-  Ave: RAZAS_AVE,
-  Otro: RAZAS_OTRO,
 };
 
 export function obtenerRazasPorTipo(tipo: string): string[] {
   if (!tipo) return [];
-  return [...(RAZAS_POR_TIPO[tipo] ?? RAZAS_OTRO), OPCION_RAZA_OTRA];
+  const razas = RAZAS_POR_TIPO[tipo];
+  if (!razas) return [];
+  return [...razas, OPCION_RAZA_OTRA];
 }
 
 function listaRazasConocidas(tipo: string): string[] {
-  return [...(RAZAS_POR_TIPO[tipo] ?? RAZAS_OTRO)];
+  return [...(RAZAS_POR_TIPO[tipo] ?? [])];
 }
 
 export function parsearRaza(tipo: string, raza: string | null | undefined) {

@@ -1,3 +1,5 @@
+import { OPCIONES_TIPO_CON_EMOJI } from "@/lib/mascotas/tipos";
+
 export function FormularioDatosMascota() {
   return (
     <>
@@ -9,13 +11,14 @@ export function FormularioDatosMascota() {
           <input type="text" placeholder="Ej: Max" />
         </div>
         <div className="form-group">
-          <label>Tipo *</label>
+          <label>Perro o gato *</label>
           <select defaultValue="">
             <option value="">Seleccionar...</option>
-            <option>🐕 Perro</option>
-            <option>🐱 Gato</option>
-            <option>🐦 Ave</option>
-            <option>Otro</option>
+            {OPCIONES_TIPO_CON_EMOJI.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
