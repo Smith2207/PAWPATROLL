@@ -97,3 +97,18 @@ export function parsearContactoPublico(contacto: string | null | undefined): {
 
   return { telefono, email };
 }
+
+/** Contacto de ficha: usa lo guardado en la mascota o, si falta, el perfil del dueño. */
+export function resolverContactoInicial(
+  contactoGuardado: string | null | undefined,
+  perfil: { email: string; telefono?: string | null } | null | undefined
+): { telefono: string; email: string } {
+  const guardado = parsearContactoPublico(contactoGuardado);
+  const telPerfil = perfil?.telefono?.trim() ?? "";
+  const mailPerfil = perfil?.email?.trim() ?? "";
+
+  return {
+    telefono: guardado.telefono || telPerfil,
+    email: guardado.email || mailPerfil,
+  };
+}

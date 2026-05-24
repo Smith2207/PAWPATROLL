@@ -44,7 +44,11 @@ export function BarraNavegacionApp() {
       {sesionActiva && (
         <div className="nav-centro nav-centro--escritorio">
           <div className="nav-links nav-links--app">
-            {ENLACES_SESION.map((enlace) => (
+            {ENLACES_SESION.filter((e) => {
+              if (e.href === "/perfil" && pathname.startsWith("/perfil")) return false;
+              if (e.href === "/mis-mascotas" && pathname === "/mis-mascotas") return false;
+              return true;
+            }).map((enlace) => (
               <Link
                 key={enlace.href}
                 href={enlace.href}
@@ -92,7 +96,11 @@ export function BarraNavegacionApp() {
       <div className={`nav-drawer ${menuAbierto ? "nav-drawer--abierto" : ""}`}>
         {sesionActiva && (
           <div className="nav-drawer-links">
-            {ENLACES_SESION.map((enlace) => (
+            {ENLACES_SESION.filter((e) => {
+              if (e.href === "/perfil" && pathname.startsWith("/perfil")) return false;
+              if (e.href === "/mis-mascotas" && pathname === "/mis-mascotas") return false;
+              return true;
+            }).map((enlace) => (
               <Link
                 key={enlace.href}
                 href={enlace.href}

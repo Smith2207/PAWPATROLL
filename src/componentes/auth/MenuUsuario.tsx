@@ -1,8 +1,11 @@
 "use client";
 
+import { obtenerImagenPerfilSesion } from "@/actions/autenticacion";
 import { useModales } from "@/contexto/ContextoModales";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type Props = {
   enMenuMovil?: boolean;
@@ -15,9 +18,66 @@ function inicialUsuario(nombre?: string | null, correo?: string | null) {
   return base.charAt(0).toUpperCase();
 }
 
+function AvatarUsuario({
+  imagenSesion,
+  nombre,
+  correo,
+  sesionActiva,
+}: {
+  imagenSesion?: string | null;
+  nombre?: string | null;
+  correo?: string | null;
+  sesionActiva: boolean;
+}) {
+  const inicial = inicialUsuario(nombre, correo);
+  const [imagen, setImagen] = useState<string | null>(imagenSesion ?? null);
+
+  useEffect(() => {
+    if (!sesionActiva) {
+      setImagen(null);
+      return;
+    }
+
+    if (imagenSesion?.startsWith("http")) {
+      setImagen(imagenSesion);
+      return;
+    }
+
+    let activo = true;
+
+    obtenerImagenPerfilSesion().then((url) => {
+      if (activo) setImagen(url);
+    });
+
+    return () => {
+      activo = false;
+    };
+  }, [sesionActiva, imagenSesion]);
+
+  if (imagen) {
+    return (
+      <img
+        src={imagen}
+        alt=""
+        width={32}
+        height={32}
+        className="nav-usuario-foto"
+      />
+    );
+  }
+
+  return (
+    <span className="nav-usuario-inicial" aria-hidden>
+      {inicial}
+    </span>
+  );
+}
+
 export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
   const { data: sesion, status } = useSession();
   const { abrirModal } = useModales();
+  const pathname = usePathname();
+  const enPerfil = pathname.startsWith("/perfil");
 
   const claseContenedor = enMenuMovil
     ? "nav-usuario nav-usuario--movil"
@@ -59,15 +119,39 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
 
   const nombre = sesion.user.name ?? sesion.user.email?.split("@")[0] ?? "Cuenta";
 
+  const chipUsuario = enPerfil ? (
+    <span
+      className={`nav-usuario-chip nav-usuario-chip--actual${enMenuMovil ? " nav-usuario-chip--bloque" : ""}`}
+      title="Estás en tu perfil"
+    >
+      <AvatarUsuario
+        imagenSesion={sesion.user.image}
+        nombre={sesion.user.name}
+        correo={sesion.user.email}
+        sesionActiva
+      />
+      <span className="nav-usuario-nombre">{nombre}</span>
+    </span>
+  ) : (
+    <Link
+      href="/perfil"
+      className={`nav-usuario-chip${enMenuMovil ? " nav-usuario-chip--bloque" : ""}`}
+      title="Mi perfil"
+    >
+      <AvatarUsuario
+        imagenSesion={sesion.user.image}
+        nombre={sesion.user.name}
+        correo={sesion.user.email}
+        sesionActiva
+      />
+      <span className="nav-usuario-nombre">{nombre}</span>
+    </Link>
+  );
+
   if (enMenuMovil) {
     return (
       <div className={claseContenedor}>
-        <Link href="/perfil" className="nav-usuario-chip nav-usuario-chip--bloque">
-          <span className="nav-usuario-inicial" aria-hidden>
-            {inicialUsuario(sesion.user.name, sesion.user.email)}
-          </span>
-          <span className="nav-usuario-nombre">{nombre}</span>
-        </Link>
+        {chipUsuario}
         <button
           type="button"
           className="btn-ghost"
@@ -91,12 +175,7 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
 
   return (
     <div className={claseContenedor}>
-      <Link href="/perfil" className="nav-usuario-chip" title="Mi perfil">
-        <span className="nav-usuario-inicial" aria-hidden>
-          {inicialUsuario(sesion.user.name, sesion.user.email)}
-        </span>
-        <span className="nav-usuario-nombre">{nombre}</span>
-      </Link>
+      {chipUsuario}
       <button
         type="button"
         className="btn-ghost btn-ghost--nav-salir"

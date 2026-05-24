@@ -14,6 +14,7 @@ import {
 } from "@/lib/db/schema";
 import type { RolUsuario } from "@/lib/db/schema";
 import { normalizarCorreo, rolParaNuevoUsuario } from "@/lib/auth/admin";
+import { imagenParaJwt } from "@/lib/auth/imagen-token";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -60,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: usuario.id,
           email: usuario.email,
           name: usuario.name,
-          image: usuario.image,
+          image: imagenParaJwt(usuario.image),
           rol: usuario.rol,
         };
       },
@@ -81,11 +82,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const correo = normalizarCorreo(user.email);
 
+        const [existente] = await db
+          .select({ image: users.image })
+          .from(users)
+          .where(eq(users.email, correo))
+          .limit(1);
+
+        const imagenPersonalizada =
+          existente?.image?.startsWith("data:image/") ?? false;
+
         await db
           .update(users)
           .set({
             name: nombreGoogle,
-            image: fotoGoogle,
+            ...(imagenPersonalizada ? {} : { image: fotoGoogle }),
             emailVerified: new Date(),
             rol: rolParaNuevoUsuario(correo),
           })
@@ -93,15 +103,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      if (trigger === "update" && token.email) {
+        const [usuario] = await db
+          .select({
+            id: users.id,
+            rol: users.rol,
+            name: users.name,
+          })
+          .from(users)
+          .where(eq(users.email, token.email as string))
+          .limit(1);
+
+        if (usuario) {
+          token.id = usuario.id;
+          token.rol = usuario.rol;
+          token.name = usuario.name;
+        }
+
+        return token;
+      }
+
       if (user) {
         token.id = user.id;
         token.rol = (user as { rol?: RolUsuario }).rol ?? "CIUDADANO";
         token.name = user.name;
-        token.picture = user.image;
-      }
-
-      if (token.email) {
+        token.picture = imagenParaJwt(user.image);
+      } else if (token.email && !token.id) {
         const [usuario] = await db
           .select({
             id: users.id,
@@ -117,7 +145,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.id = usuario.id;
           token.rol = usuario.rol;
           token.name = usuario.name;
-          token.picture = usuario.image;
+          token.picture = imagenParaJwt(usuario.image);
         }
       }
 

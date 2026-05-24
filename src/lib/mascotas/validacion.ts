@@ -1,3 +1,5 @@
+import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
+
 const MAX_FOTOS = 5;
 const MAX_DATA_URL_BYTES = 900_000;
 
@@ -13,6 +15,9 @@ export function validarDatosMascota(datos: {
   }
   if (!tipo) {
     return { ok: false as const, error: "Selecciona el tipo de mascota." };
+  }
+  if (!TIPOS_MASCOTA.includes(tipo as (typeof TIPOS_MASCOTA)[number])) {
+    return { ok: false as const, error: "Solo se permiten perros y gatos." };
   }
 
   return { ok: true as const, nombre, tipo };

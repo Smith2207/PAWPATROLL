@@ -18,6 +18,11 @@ import {
   validarDatosMascota,
   validarFotosDataUrl,
 } from "@/lib/mascotas/validacion";
+import { TIPOS_MASCOTA, esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
+
+function soloPerrosYGatos() {
+  return inArray(mascotas.tipo, [...TIPOS_MASCOTA]);
+}
 
 async function sesionUsuario() {
   const { auth } = await import("@/auth");
@@ -94,7 +99,7 @@ export async function listarMisMascotas() {
   const lista = await db
     .select()
     .from(mascotas)
-    .where(eq(mascotas.userId, userId))
+    .where(and(eq(mascotas.userId, userId), soloPerrosYGatos()))
     .orderBy(desc(mascotas.updatedAt));
 
   if (lista.length === 0) return [];
@@ -141,7 +146,12 @@ export async function listarMascotasPerdidasPublicas(limite = 8) {
       updatedAt: mascotas.updatedAt,
     })
     .from(mascotas)
-    .where(inArray(mascotas.estado, ["PERDIDA", "ENCONTRADA"]))
+    .where(
+      and(
+        inArray(mascotas.estado, ["PERDIDA", "ENCONTRADA"]),
+        soloPerrosYGatos()
+      )
+    )
     .orderBy(desc(mascotas.updatedAt))
     .limit(limite);
 
@@ -175,7 +185,7 @@ export async function obtenerMascotaPropia(id: string) {
     .where(and(eq(mascotas.id, id), eq(mascotas.userId, userId)))
     .limit(1);
 
-  if (!mascota) return null;
+  if (!mascota || !esTipoMascotaPermitido(mascota.tipo)) return null;
 
   const fotos = await db
     .select()
@@ -204,6 +214,10 @@ export async function obtenerMascotaPublica(slug: string) {
     .limit(1);
 
   if (!fila || !esFichaPublica(fila.mascota.estado)) {
+    return null;
+  }
+
+  if (!esTipoMascotaPermitido(fila.mascota.tipo)) {
     return null;
   }
 
@@ -301,6 +315,13 @@ export async function actualizarMascota(
     return { ok: false, error: "Mascota no encontrada." };
   }
 
+  if (!esTipoMascotaPermitido(actual.tipo)) {
+    return {
+      ok: false,
+      error: "Esta ficha no es válida en PawPatroll (solo perros y gatos).",
+    };
+  }
+
   const validacion = validarDatosMascota(datos);
   if (!validacion.ok) return { ok: false, error: validacion.error };
 
@@ -347,6 +368,13 @@ export async function cambiarEstadoMascota(
 
   if (!actual) {
     return { ok: false, error: "Mascota no encontrada." };
+  }
+
+  if (!esTipoMascotaPermitido(actual.tipo)) {
+    return {
+      ok: false,
+      error: "Esta ficha no es válida en PawPatrol (solo perros y gatos).",
+    };
   }
 
   const permitidos = TRANSICIONES_ESTADO[actual.estado];

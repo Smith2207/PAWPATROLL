@@ -52,6 +52,63 @@
   margin: 0;
 }
 
+.mascotas-lista-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 1.35rem;
+}
+
+.mascotas-lista-cabecera h1 {
+  font-family: var(--font-fredoka), "Fredoka", cursive;
+  color: var(--navy);
+  font-size: 1.85rem;
+  margin: 0 0 0.2rem;
+  line-height: 1.15;
+}
+
+.mascotas-lista-resumen {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.mascotas-lista-resumen--alerta {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.mascotas-vacio {
+  text-align: center;
+  padding: 2.25rem 1.5rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.mascotas-vacio-icono {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mascotas-vacio h2 {
+  font-family: var(--font-fredoka), "Fredoka", cursive;
+  font-size: 1.25rem;
+  color: var(--navy);
+  margin: 0 0 0.5rem;
+}
+
+.mascotas-vacio p {
+  margin: 0 0 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .mascotas-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -69,6 +126,16 @@
 .mascota-tarjeta:hover {
   box-shadow: var(--shadow);
   transform: translateY(-2px);
+}
+
+.mascota-tarjeta-enlace {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.mascota-tarjeta-enlace:hover h3 {
+  color: var(--blue);
 }
 
 .mascota-tarjeta-foto {
@@ -91,8 +158,14 @@
   font-size: 3rem;
 }
 
+.mascota-tarjeta-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
 .mascota-tarjeta-cuerpo {
-  padding: 1rem 1.1rem 1.1rem;
+  padding: 1rem 1.1rem 0.85rem;
 }
 
 .mascota-tarjeta-cuerpo h3 {
@@ -106,7 +179,19 @@
   font-size: 0.8rem;
   color: var(--muted);
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
+}
+
+.mascota-tarjeta-meta--ubicacion {
+  margin-top: 0.35rem;
+  color: var(--navy2);
+}
+
+.mascota-tarjeta-pie {
+  padding: 0 1.1rem 1rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.15rem;
+  padding-top: 0.75rem;
 }
 
 .mascota-tarjeta-acciones {
@@ -145,6 +230,12 @@
   background: var(--bg);
   color: var(--navy);
   border: 1.5px solid var(--border);
+}
+
+.btn-mascota--compacto {
+  width: 100%;
+  font-size: 0.74rem;
+  padding: 0.4rem 0.75rem;
 }
 
 .btn-mascota--secundario:hover {

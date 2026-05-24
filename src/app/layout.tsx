@@ -11,6 +11,7 @@ import "@/estilos/paleta.css";
 import "@/estilos/landing-pawpatrol.css";
 import "@/estilos/auth.css";
 import "@/estilos/mascotas.css";
+import "@/estilos/perfil.css";
 import "@/estilos/responsive.css";
 
 const nunito = Nunito({

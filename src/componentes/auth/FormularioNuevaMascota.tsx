@@ -4,6 +4,8 @@ import { crearMascota } from "@/actions/mascotas";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
+
 export function FormularioNuevaMascota() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +48,11 @@ export function FormularioNuevaMascota() {
           <label>Tipo *</label>
           <select name="tipo" required defaultValue="">
             <option value="">Seleccionar...</option>
-            <option>Perro</option>
-            <option>Gato</option>
-            <option>Otro</option>
+            {TIPOS_MASCOTA.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </select>
         </div>
       </div>

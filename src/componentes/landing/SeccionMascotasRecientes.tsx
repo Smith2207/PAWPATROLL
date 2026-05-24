@@ -2,6 +2,7 @@
 
 import { useModales } from "@/contexto/ContextoModales";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
+import { emojiPorTipo, esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
 import type { EstadoMascota } from "@/lib/db/schema";
 import Link from "next/link";
 
@@ -19,12 +20,6 @@ export type MascotaPublicaTarjeta = {
   fechaPerdida: Date | null;
   updatedAt: Date;
   fotoPrincipal: string | null;
-};
-
-const EMOJI: Record<string, string> = {
-  Perro: "🐕",
-  Gato: "🐱",
-  Ave: "🐦",
 };
 
 type Props = {
@@ -83,8 +78,10 @@ export function SeccionMascotasRecientes({ mascotas }: Props) {
         </p>
       ) : (
         <div className="pets-grid">
-          {mascotas.map((m) => {
-            const emoji = EMOJI[m.tipo] ?? "🐾";
+          {mascotas
+            .filter((m) => esTipoMascotaPermitido(m.tipo))
+            .map((m) => {
+            const emoji = emojiPorTipo(m.tipo);
             return (
               <Link
                 key={m.id}

@@ -11,10 +11,10 @@ import {
   componerEdad,
   componerMicrochip,
   componerPeso,
-  parsearContactoPublico,
   parsearEdad,
   parsearMicrochip,
   parsearPeso,
+  resolverContactoInicial,
   type UnidadEdad,
 } from "@/lib/mascotas/formatoFicha";
 import {
@@ -31,9 +31,10 @@ type Props = {
   modo: "crear" | "editar";
   mascota?: Mascota;
   fotosIniciales?: string[];
+  contactoPerfil?: { email: string; telefono?: string | null };
 };
 
-const TIPOS = ["Perro", "Gato", "Ave", "Otro"];
+import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 const SEXOS = ["Macho", "Hembra"];
 const TAMANOS = [
   "Pequeño (menos de 10 kg)",
@@ -45,6 +46,7 @@ export function FormularioFichaMascota({
   modo,
   mascota,
   fotosIniciales = [],
+  contactoPerfil,
 }: Props) {
   const router = useRouter();
   const tipoInicial = mascota?.tipo ?? "";
@@ -52,7 +54,10 @@ export function FormularioFichaMascota({
   const edadInicial = parsearEdad(mascota?.edad);
   const pesoInicial = parsearPeso(mascota?.peso);
   const microchipInicial = parsearMicrochip(mascota?.microchip);
-  const contactoInicial = parsearContactoPublico(mascota?.contactoPublico);
+  const contactoInicial = resolverContactoInicial(
+    mascota?.contactoPublico,
+    contactoPerfil
+  );
 
   const [fotos, setFotos] = useState<string[]>(fotosIniciales);
   const [tipo, setTipo] = useState(tipoInicial);
@@ -172,7 +177,7 @@ export function FormularioFichaMascota({
                   onChange={(e) => onTipoChange(e.target.value)}
                 >
                   <option value="">Elegir...</option>
-                  {TIPOS.map((t) => (
+                  {TIPOS_MASCOTA.map((t) => (
                     <option key={t} value={t}>
                       {t}
                     </option>
@@ -328,8 +333,8 @@ export function FormularioFichaMascota({
               <div className="form-group form-ficha-grid--ancho">
                 <label>Contacto si se pierde</label>
                 <p className="form-ficha-ayuda">
-                  Indica teléfono y/o correo para que quien encuentre a tu mascota
-                  pueda contactarte. Entre más datos, mejor.
+                  Por defecto usamos tu correo y teléfono del perfil. Puedes
+                  cambiarlos aquí si quieres otro contacto solo para esta ficha.
                 </p>
                 <input
                   type="tel"

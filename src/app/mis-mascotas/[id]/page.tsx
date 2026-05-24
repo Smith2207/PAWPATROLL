@@ -1,3 +1,4 @@
+import { obtenerContactoPerfil } from "@/actions/autenticacion";
 import { auth } from "@/auth";
 import { obtenerMascotaPropia } from "@/actions/mascotas";
 import { BotonEliminarMascota } from "@/componentes/mascotas/BotonEliminarMascota";
@@ -18,7 +19,10 @@ export default async function PaginaEditarMascota({ params }: Props) {
   if (!sesion?.user) redirect("/");
 
   const { id } = await params;
-  const datos = await obtenerMascotaPropia(id);
+  const [datos, contactoPerfil] = await Promise.all([
+    obtenerMascotaPropia(id),
+    obtenerContactoPerfil(),
+  ]);
 
   if (!datos) notFound();
 
@@ -55,6 +59,7 @@ export default async function PaginaEditarMascota({ params }: Props) {
             modo="editar"
             mascota={mascota}
             fotosIniciales={fotos.map((f) => f.url)}
+            contactoPerfil={contactoPerfil ?? undefined}
           />
         </div>
       </div>

@@ -1,9 +1,9 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { sessions, users } from "@/lib/db/schema";
+import { accounts, sessions, users } from "@/lib/db/schema";
 import { esCorreoValido } from "@/lib/auth/validacion-correo";
 import {
   esCorreoAdmin,
@@ -22,6 +22,7 @@ import {
   enviarVerificacionCuenta,
   usuarioPendienteVerificacion,
 } from "@/lib/email/verificacion";
+import { validarImagenDataUrl } from "@/lib/auth/validacion-imagen";
 
 export type ResultadoAuth =
   | { ok: true; mensaje: string }
@@ -253,8 +254,71 @@ export async function restablecerContrasenaConToken(datos: {
   };
 }
 
+export async function cambiarContrasenaSesion(datos: {
+  contrasenaActual: string;
+  password: string;
+}): Promise<ResultadoAuth> {
+  const { auth } = await import("@/auth");
+  const sesion = await auth();
+
+  if (!sesion?.user?.id) {
+    return { ok: false, error: "Debes iniciar sesión." };
+  }
+
+  const contrasenaActual = datos.contrasenaActual ?? "";
+  const password = datos.password ?? "";
+
+  if (!contrasenaActual) {
+    return { ok: false, error: "Indica tu contraseña actual." };
+  }
+
+  if (password.length < 8) {
+    return {
+      ok: false,
+      error: "La nueva contraseña debe tener al menos 8 caracteres.",
+    };
+  }
+
+  const [usuario] = await db
+    .select({ passwordHash: users.passwordHash })
+    .from(users)
+    .where(eq(users.id, sesion.user.id))
+    .limit(1);
+
+  if (!usuario?.passwordHash) {
+    return {
+      ok: false,
+      error: "Tu cuenta entra con Google; no puedes cambiar contraseña aquí.",
+    };
+  }
+
+  const coincide = await bcrypt.compare(contrasenaActual, usuario.passwordHash);
+  if (!coincide) {
+    return { ok: false, error: "La contraseña actual no es correcta." };
+  }
+
+  const misma = await bcrypt.compare(password, usuario.passwordHash);
+  if (misma) {
+    return {
+      ok: false,
+      error: "La nueva contraseña debe ser distinta a la actual.",
+    };
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  await db
+    .update(users)
+    .set({ passwordHash })
+    .where(eq(users.id, sesion.user.id));
+
+  return { ok: true, mensaje: "Tu contraseña se actualizó correctamente." };
+}
+
 export async function actualizarPerfil(datos: {
   nombre: string;
+  telefono?: string;
+  ciudad?: string;
 }): Promise<ResultadoAuth> {
   const { auth } = await import("@/auth");
   const sesion = await auth();
@@ -270,10 +334,141 @@ export async function actualizarPerfil(datos: {
 
   await db
     .update(users)
-    .set({ name: nombre })
+    .set({
+      name: nombre,
+      telefono: datos.telefono?.trim() || null,
+      ciudad: datos.ciudad?.trim() || null,
+      bienvenidaCompletada: true,
+    })
     .where(eq(users.id, sesion.user.id));
 
-  return { ok: true, mensaje: "Perfil actualizado." };
+  return { ok: true, mensaje: "Tu perfil se actualizó correctamente." };
+}
+
+export async function actualizarImagenPerfil(
+  imagen: string | null
+): Promise<ResultadoAuth> {
+  const { auth } = await import("@/auth");
+  const sesion = await auth();
+
+  if (!sesion?.user?.id) {
+    return { ok: false, error: "Debes iniciar sesión." };
+  }
+
+  const validacion = validarImagenDataUrl(imagen);
+  if (!validacion.ok) {
+    return { ok: false, error: validacion.error };
+  }
+
+  await db
+    .update(users)
+    .set({ image: imagen })
+    .where(eq(users.id, sesion.user.id));
+
+  return {
+    ok: true,
+    mensaje: imagen
+      ? "Tu foto de perfil se actualizó correctamente."
+      : "Se quitó tu foto de perfil.",
+  };
+}
+
+export type ContactoPerfilUsuario = {
+  email: string;
+  telefono: string | null;
+};
+
+export async function obtenerContactoPerfil(): Promise<ContactoPerfilUsuario | null> {
+  const { auth } = await import("@/auth");
+  const sesion = await auth();
+
+  if (!sesion?.user?.id) return null;
+
+  const [usuario] = await db
+    .select({
+      email: users.email,
+      telefono: users.telefono,
+    })
+    .from(users)
+    .where(eq(users.id, sesion.user.id))
+    .limit(1);
+
+  if (!usuario) return null;
+
+  return {
+    email: usuario.email,
+    telefono: usuario.telefono,
+  };
+}
+
+export type DatosPerfilUsuario = {
+  id: string;
+  nombre: string | null;
+  email: string;
+  telefono: string | null;
+  ciudad: string | null;
+  rol: (typeof users.$inferSelect)["rol"];
+  imagen: string | null;
+  emailVerificado: boolean;
+  tieneContrasena: boolean;
+  cuentaGoogle: boolean;
+  totalMascotas: number;
+  mascotasPerdidas: number;
+  mascotasEnCasa: number;
+};
+
+export async function obtenerDatosPerfil(): Promise<DatosPerfilUsuario | null> {
+  const { auth } = await import("@/auth");
+  const sesion = await auth();
+
+  if (!sesion?.user?.id) return null;
+
+  const [usuario] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      telefono: users.telefono,
+      ciudad: users.ciudad,
+      rol: users.rol,
+      image: users.image,
+      passwordHash: users.passwordHash,
+      emailVerified: users.emailVerified,
+    })
+    .from(users)
+    .where(eq(users.id, sesion.user.id))
+    .limit(1);
+
+  if (!usuario) return null;
+
+  const [cuentaGoogle] = await db
+    .select({ provider: accounts.provider })
+    .from(accounts)
+    .where(
+      and(eq(accounts.userId, sesion.user.id), eq(accounts.provider, "google"))
+    )
+    .limit(1);
+
+  const { listarMisMascotas } = await import("@/actions/mascotas");
+  const mascotas = await listarMisMascotas();
+  const mascotasPerdidas = mascotas.filter((m) => m.estado === "PERDIDA").length;
+  const mascotasEnCasa = mascotas.filter((m) => m.estado === "EN_CASA").length;
+
+  return {
+    id: usuario.id,
+    nombre: usuario.name,
+    email: usuario.email,
+    telefono: usuario.telefono,
+    ciudad: usuario.ciudad,
+    rol: usuario.rol,
+    imagen: usuario.image,
+    emailVerificado: !!usuario.emailVerified,
+    tieneContrasena: !!usuario.passwordHash,
+    cuentaGoogle: !!cuentaGoogle,
+    totalMascotas: mascotas.length,
+    mascotasPerdidas,
+    mascotasEnCasa,
+  };
 }
 
 export async function obtenerEstadoBienvenida(): Promise<
@@ -341,4 +536,19 @@ export async function completarBienvenida(datos: {
     .where(eq(users.id, sesion.user.id));
 
   return { ok: true, mensaje: "¡Perfil actualizado! Bienvenido a PawPatrol." };
+}
+
+export async function obtenerImagenPerfilSesion(): Promise<string | null> {
+  const { auth } = await import("@/auth");
+  const sesion = await auth();
+
+  if (!sesion?.user?.id) return null;
+
+  const [usuario] = await db
+    .select({ image: users.image })
+    .from(users)
+    .where(eq(users.id, sesion.user.id))
+    .limit(1);
+
+  return usuario?.image ?? null;
 }
