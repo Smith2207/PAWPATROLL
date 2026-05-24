@@ -23,7 +23,7 @@ export default async function PaginaNuevaFichaMascota() {
         </div>
 
         <p className="auth-enlace form-ficha-volver">
-          <Link href="/mis-mascotas">← Mis fichas</Link>
+          <Link href="/mis-mascotas">← Mis mascotas</Link>
         </p>
       </div>
     </EnvolturaPaginasApp>

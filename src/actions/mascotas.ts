@@ -40,6 +40,7 @@ function normalizarFicha(datos: DatosFichaMascota) {
     collar: datos.collar?.trim() || null,
     microchip: datos.microchip?.trim() || null,
     contactoPublico: datos.contactoPublico?.trim() || null,
+    enfermedades: datos.enfermedades?.trim() || null,
   };
 }
 

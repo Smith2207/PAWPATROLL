@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 const ENLACES_SESION = [
   { href: "/", etiqueta: "Inicio", exacto: true },
-  { href: "/mis-mascotas", etiqueta: "Mis fichas", exacto: false },
+  { href: "/mis-mascotas", etiqueta: "Mis mascotas", exacto: false },
   { href: "/perfil", etiqueta: "Mi perfil", exacto: true },
 ] as const;
 

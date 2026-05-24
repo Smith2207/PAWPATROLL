@@ -63,7 +63,7 @@ export function BarraNavegacion() {
           ))}
           {sesionActiva && (
             <Link href="/mis-mascotas" className="nav-link-externo">
-              Mis fichas
+              Mis mascotas
             </Link>
           )}
         </div>
@@ -108,7 +108,7 @@ export function BarraNavegacion() {
           ))}
           {sesionActiva && (
             <Link href="/mis-mascotas" onClick={() => setMenuAbierto(false)}>
-              Mis fichas
+              Mis mascotas
             </Link>
           )}
         </div>

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { sessions, users } from "@/lib/db/schema";
+import { esCorreoValido } from "@/lib/auth/validacion-correo";
 import {
   esCorreoAdmin,
   normalizarCorreo,
@@ -49,6 +50,10 @@ export async function registrarUsuario(datos: {
     return { ok: false, error: "Completa todos los campos obligatorios." };
   }
 
+  if (!esCorreoValido(email)) {
+    return { ok: false, error: "Escribe un correo válido, por ejemplo: nombre@ejemplo.com" };
+  }
+
   if (password.length < 8) {
     return {
       ok: false,
@@ -85,6 +90,7 @@ export async function registrarUsuario(datos: {
     passwordHash,
     rol,
     emailVerified: esAdmin ? new Date() : null,
+    bienvenidaCompletada: esAdmin,
   });
 
   if (esAdmin) {
@@ -268,4 +274,71 @@ export async function actualizarPerfil(datos: {
     .where(eq(users.id, sesion.user.id));
 
   return { ok: true, mensaje: "Perfil actualizado." };
+}
+
+export async function obtenerEstadoBienvenida(): Promise<
+  | { ok: false }
+  | {
+      ok: true;
+      completada: boolean;
+      nombre: string | null;
+      telefono: string | null;
+      ciudad: string | null;
+    }
+> {
+  const { auth } = await import("@/auth");
+  const sesion = await auth();
+
+  if (!sesion?.user?.id) return { ok: false };
+
+  const [usuario] = await db
+    .select({
+      bienvenidaCompletada: users.bienvenidaCompletada,
+      name: users.name,
+      telefono: users.telefono,
+      ciudad: users.ciudad,
+    })
+    .from(users)
+    .where(eq(users.id, sesion.user.id))
+    .limit(1);
+
+  if (!usuario) return { ok: false };
+
+  return {
+    ok: true,
+    completada: usuario.bienvenidaCompletada,
+    nombre: usuario.name,
+    telefono: usuario.telefono,
+    ciudad: usuario.ciudad,
+  };
+}
+
+export async function completarBienvenida(datos: {
+  nombre: string;
+  telefono?: string;
+  ciudad?: string;
+}): Promise<ResultadoAuth> {
+  const { auth } = await import("@/auth");
+  const sesion = await auth();
+
+  if (!sesion?.user?.id) {
+    return { ok: false, error: "Debes iniciar sesión." };
+  }
+
+  const nombre = datos.nombre.trim();
+  if (!nombre) {
+    return { ok: false, error: "El nombre no puede estar vacío." };
+  }
+
+  await db
+    .update(users)
+    .set({
+      name: nombre,
+      telefono: datos.telefono?.trim() || null,
+      ciudad: datos.ciudad?.trim() || null,
+      bienvenidaCompletada: true,
+    })
+    .where(eq(users.id, sesion.user.id));
+
+  return { ok: true, mensaje: "¡Perfil actualizado! Bienvenido a PawPatrol." };
 }

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { verificarCorreoConToken } from "@/actions/autenticacion";
+import { urlBaseApp } from "@/lib/url-app";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
   const email = searchParams.get("email");
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl = urlBaseApp();
 
   if (!token || !email) {
     return NextResponse.redirect(

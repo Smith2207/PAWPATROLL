@@ -1,3 +1,5 @@
+import { urlBaseApp } from "@/lib/url-app";
+
 function layout(titulo: string, cuerpo: string) {
   return `
 <!DOCTYPE html>
@@ -57,7 +59,7 @@ export function plantillaBienvenida(nombre: string, rolEtiqueta: string) {
     <p style="line-height:1.6;">Tu cuenta en PawPatrol está activa${rolEtiqueta === "Administrador" ? ` (<strong>${rolEtiqueta}</strong>)` : ""}.</p>
     <p style="line-height:1.6;">Puedes reportar mascotas perdidas, registrar avistamientos, guardar el perfil de tus mascotas y ayudar a reunir familias.</p>
     <p style="text-align:center;margin:24px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/perfil" style="background:#2E6DB4;color:#fff;text-decoration:none;padding:12px 24px;border-radius:50px;font-weight:800;display:inline-block;">
+      <a href="${urlBaseApp()}/perfil" style="background:#2E6DB4;color:#fff;text-decoration:none;padding:12px 24px;border-radius:50px;font-weight:800;display:inline-block;">
         Ir a mi perfil
       </a>
     </p>

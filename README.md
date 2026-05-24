@@ -29,7 +29,7 @@ Abre [http://localhost:3000](http://localhost:3000).
 |----------|-----|
 | `DATABASE_URL` | Connection string de Neon (pooled recomendado) |
 | `AUTH_SECRET` | Secreto Auth.js (`openssl rand -base64 32`) |
-| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` (o URL de Vercel) |
+| `NEXT_PUBLIC_APP_URL` | **Local:** `http://localhost:3000`. **Producción (Vercel):** `https://pawpatroll.vercel.app` — obligatorio para que los correos lleven enlaces correctos (verificación y recuperar contraseña). Sin esta variable en Vercel, los enlaces salen como `localhost`. |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Google |
 | `SMTP_*` / `EMAIL_FROM` | Opcional: correos de verificación y bienvenida |
 
@@ -165,8 +165,9 @@ drizzle/                        → Migraciones SQL
 ## Despliegue (Vercel)
 
 1. Conectar el repositorio de GitHub.
-2. Añadir las mismas variables de entorno que en `.env.local`.
-3. Tras el deploy, ejecutar migraciones en Neon si la BD de producción está vacía.
+2. Añadir las mismas variables de entorno que en `.env.local`, sobre todo `NEXT_PUBLIC_APP_URL=https://pawpatroll.vercel.app` (no dejar el valor de localhost).
+3. Redesplegar tras cambiar variables.
+4. Tras el deploy, ejecutar migraciones en Neon si la BD de producción está vacía.
 
 ---
 

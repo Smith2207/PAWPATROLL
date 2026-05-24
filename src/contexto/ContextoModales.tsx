@@ -9,8 +9,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 
-export type TipoModal = "report" | "sighting" | "login" | "quickcam";
+export type TipoModal = "report" | "sighting" | "login" | "registro" | "quickcam";
 
 type ContextoModalesValor = {
   modalAbierto: TipoModal | null;
@@ -23,6 +24,7 @@ const ContextoModales = createContext<ContextoModalesValor | null>(null);
 
 export function ProveedorModales({ children }: { children: ReactNode }) {
   const [modalAbierto, setModalAbierto] = useState<TipoModal | null>(null);
+  const pathname = usePathname();
 
   const abrirModal = useCallback((tipo: TipoModal) => {
     setModalAbierto(tipo);
@@ -46,6 +48,11 @@ export function ProveedorModales({ children }: { children: ReactNode }) {
     document.addEventListener("keydown", onEscape);
     return () => document.removeEventListener("keydown", onEscape);
   }, [cerrarTodos]);
+
+  useEffect(() => {
+    setModalAbierto(null);
+    document.body.style.overflow = "";
+  }, [pathname]);
 
   const valor = useMemo(
     () => ({ modalAbierto, abrirModal, cerrarModal, cerrarTodos }),

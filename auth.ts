@@ -149,6 +149,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         .set({
           rol,
           emailVerified: new Date(),
+          bienvenidaCompletada: false,
         })
         .where(eq(users.id, user.id));
 
