@@ -1,15 +1,17 @@
 /**
  * CLIP 512-d local (@xenova/transformers).
- * Import dinámico: evita cargar sharp/transformers durante `next build` en Vercel.
+ * En Vercel: WASM (onnxruntime-web), sin libonnxruntime.so nativo.
  */
 
 import { mkdir, unlink, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
+import { MODELO_XENOVA_LOCAL } from "@/lib/visual/config";
 import {
-  CARPETA_CACHE_MODELO,
-  MODELO_XENOVA_LOCAL,
-} from "@/lib/visual/config";
+  configurarEnvTransformers,
+  esEntornoServerless,
+  parcheReleaseParaWasmEnServerless,
+} from "@/lib/visual/entorno-clip";
 import { dataUrlABuffer } from "@/lib/visual/data-url";
 import { preprocesarDataUrlParaClip } from "@/lib/visual/preprocesar-imagen";
 
@@ -27,14 +29,16 @@ let extractorPromise: Promise<any> | null = null;
 
 async function cargarTransformers(): Promise<ModuloTransformers> {
   if (!transformersPromise) {
-    transformersPromise = import("@xenova/transformers").then((mod) => {
-      mod.env.allowLocalModels = true;
-      mod.env.allowRemoteModels = true;
-      mod.env.useBrowserCache = false;
-      mod.env.useFSCache = true;
-      mod.env.cacheDir = CARPETA_CACHE_MODELO;
-      return mod;
-    });
+    transformersPromise = (async () => {
+      const restaurar = parcheReleaseParaWasmEnServerless();
+      try {
+        const mod = await import("@xenova/transformers");
+        configurarEnvTransformers(mod);
+        return mod;
+      } finally {
+        restaurar();
+      }
+    })();
   }
   return transformersPromise;
 }
@@ -77,8 +81,8 @@ export function clipApiConfigurada(): boolean {
   return true;
 }
 
-export function rutaCacheModelo(): string {
-  return CARPETA_CACHE_MODELO;
+export function clipUsaWasmEnServidor(): boolean {
+  return esEntornoServerless();
 }
 
 export async function embeddingDesdeDataUrl(

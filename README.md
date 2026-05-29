@@ -88,7 +88,7 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 1. Variables obligatorias: `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL` (dominio de producción).
 2. Vercel detecta `package-lock.json` y usa **npm install** (sin configuración extra de pnpm).
-3. **Búsqueda por foto (CLIP):** la primera petición en producción puede tardar (descarga del modelo).
+3. **Búsqueda por foto (CLIP):** en Vercel usa WASM (no binarios nativos). La primera petición puede tardar ~1–2 min (descarga del modelo). Requiere `maxDuration` alto en las rutas `/api/ia/*` (ya configurado).
 4. Ejecuta migraciones en Neon (`npm run db:migrate-*` desde tu PC).
 
 ### API verificar cuenta
