@@ -50,11 +50,18 @@ if (!url) {
 }
 
 if (prov === "gemini") {
-  const { geminiEmbeddingConfigurada } = await import("./lib/gemini-embedding.mjs");
+  const { geminiEmbeddingConfigurada, verificarCredencialesGemini } =
+    await import("./lib/gemini-embedding.mjs");
   if (!geminiEmbeddingConfigurada()) {
     console.error(
-      "Gemini no configurado. Añade GOOGLE_CLOUD_PROJECT y ADC (gcloud auth application-default login)."
+      "Gemini no configurado. Añade GOOGLE_CLOUD_PROJECT en .env.local."
     );
+    process.exit(1);
+  }
+  try {
+    await verificarCredencialesGemini();
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : e);
     process.exit(1);
   }
 }

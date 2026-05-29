@@ -1,15 +1,17 @@
 /**
- * Gemini en Vertex: Flash (visión) + Embedding 2 (768d).
- * Vercel: GOOGLE_APPLICATION_CREDENTIALS_JSON. Local: ADC (gcloud auth application-default login).
+ * Gemini Enterprise Agent Platform: Flash (visión) + Embedding 2 (768d).
+ * Auth: JSON cuenta de servicio o ADC. API key Express solo sin project+JSON.
  */
 
+import { existsSync, readFileSync } from "fs";
 import type { GoogleGenAI } from "@google/genai";
 
 export const MODELO_GEMINI_VISION =
-  process.env.GEMINI_VISION_MODEL?.trim() || "gemini-1.5-flash";
+  process.env.GEMINI_VISION_MODEL?.trim() || "gemini-2.5-flash";
 
 export const MODELO_GEMINI_EMBEDDING =
-  process.env.GEMINI_EMBEDDING_MODEL?.trim() || "gemini-embedding-2";
+  process.env.GEMINI_EMBEDDING_MODEL?.trim() ||
+  "gemini-embedding-2-preview";
 
 export const DIMENSION_EMBEDDING = 768;
 
@@ -26,18 +28,81 @@ export function proyectoGoogleCloud(): string | undefined {
   );
 }
 
+function apiKeyGemini(): string | undefined {
+  return (
+    process.env.GEMINI_API_KEY?.trim() ||
+    process.env.GOOGLE_API_KEY?.trim() ||
+    undefined
+  );
+}
+
 function ubicacion(): string {
   return process.env.GOOGLE_CLOUD_LOCATION?.trim() || "us-central1";
 }
 
+function usaAgentPlatform(): boolean {
+  const v = process.env.GOOGLE_GENAI_USE_ENTERPRISE?.trim().toLowerCase();
+  if (v === "false" || v === "0") return false;
+  return true;
+}
+
+function modoPlataforma() {
+  return usaAgentPlatform()
+    ? ({ enterprise: true as const } as const)
+    : ({ vertexai: true as const } as const);
+}
+
 function parseCredentials(): object | undefined {
   const raw = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim();
-  if (!raw) return undefined;
-  try {
-    return JSON.parse(raw) as object;
-  } catch {
-    throw new Error("GOOGLE_APPLICATION_CREDENTIALS_JSON no es JSON válido.");
+  if (raw) {
+    try {
+      return JSON.parse(raw) as object;
+    } catch {
+      throw new Error("GOOGLE_APPLICATION_CREDENTIALS_JSON no es JSON válido.");
+    }
   }
+
+  const ruta = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
+  if (ruta && existsSync(ruta)) {
+    try {
+      return JSON.parse(readFileSync(ruta, "utf8")) as object;
+    } catch {
+      throw new Error(
+        `No se pudo leer JSON en GOOGLE_APPLICATION_CREDENTIALS: ${ruta}`
+      );
+    }
+  }
+
+  return undefined;
+}
+
+function opcionesClienteGoogleGenAI() {
+  const project = proyectoGoogleCloud();
+  const location = ubicacion();
+  const credentials = parseCredentials();
+  const plataforma = modoPlataforma();
+
+  if (credentials && project) {
+    return {
+      ...plataforma,
+      project,
+      location,
+      googleAuthOptions: { credentials },
+    };
+  }
+
+  if (project) {
+    return { ...plataforma, project, location };
+  }
+
+  const apiKey = apiKeyGemini();
+  if (apiKey) {
+    return { ...plataforma, apiKey };
+  }
+
+  throw new Error(
+    "Falta GOOGLE_CLOUD_PROJECT + cuenta de servicio. Vercel: GOOGLE_APPLICATION_CREDENTIALS_JSON."
+  );
 }
 
 let clientePromise: Promise<GoogleGenAI> | null = null;
@@ -45,31 +110,23 @@ let clientePromise: Promise<GoogleGenAI> | null = null;
 export async function getAIClient(): Promise<GoogleGenAI> {
   if (!clientePromise) {
     clientePromise = (async () => {
-      const project = proyectoGoogleCloud();
-      if (!project) {
-        throw new Error(
-          "Falta GOOGLE_CLOUD_PROJECT. Vercel: cuenta de servicio en GOOGLE_APPLICATION_CREDENTIALS_JSON."
-        );
-      }
       const { GoogleGenAI } = await import("@google/genai");
-      const credentials = parseCredentials();
-      return new GoogleGenAI({
-        vertexai: true,
-        project,
-        location: ubicacion(),
-        googleAuthOptions: credentials ? { credentials } : undefined,
-      });
+      return new GoogleGenAI(opcionesClienteGoogleGenAI());
     })();
   }
   return clientePromise;
 }
 
 export function geminiConfigurada(): boolean {
-  return Boolean(proyectoGoogleCloud());
+  return Boolean(
+    proyectoGoogleCloud() || parseCredentials() || apiKeyGemini()
+  );
 }
 
 function dimensionSalida(): number {
-  const n = Number(process.env.GEMINI_EMBEDDING_DIMENSION ?? String(DIMENSION_EMBEDDING));
+  const n = Number(
+    process.env.GEMINI_EMBEDDING_DIMENSION ?? String(DIMENSION_EMBEDDING)
+  );
   return Number.isFinite(n) && n > 0 ? Math.round(n) : DIMENSION_EMBEDDING;
 }
 
@@ -102,7 +159,7 @@ export async function describirImagenDesdeBuffer(
   return texto;
 }
 
-/** Paso 2: texto → vector 768d (gemini-embedding-2). */
+/** Paso 2: texto → vector 768d. */
 export async function embeddingDesdeTexto(texto: string): Promise<number[]> {
   const ai = await getAIClient();
   const response = await ai.models.embedContent({
@@ -113,7 +170,7 @@ export async function embeddingDesdeTexto(texto: string): Promise<number[]> {
 
   const values = response.embeddings?.[0]?.values;
   if (!values?.length) {
-    throw new Error("gemini-embedding-2 no devolvió vector.");
+    throw new Error(`${MODELO_GEMINI_EMBEDDING} no devolvió vector.`);
   }
   return [...values];
 }
