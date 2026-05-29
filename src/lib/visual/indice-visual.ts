@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 import { db } from "@/lib/db";
 import {
@@ -6,16 +6,18 @@ import {
   mascotaFotos,
   mascotas,
 } from "@/lib/db/schema";
-import { umbralesClip } from "@/lib/visual/config";
+import { umbralesVisual } from "@/lib/visual/config";
 import {
   puntuacionConRerank,
   type FiltrosBusquedaVisual,
 } from "@/lib/visual/rerank";
-
-/** Import perezoso: evita cargar @xenova/transformers durante `next build` */
-async function clip() {
-  return import("@/lib/visual/clip-embedding");
-}
+import {
+  coseno,
+  embeddingApiConfigurada,
+  embeddingDesdeDataUrl,
+  modeloEmbeddingActivo,
+  proveedorVisualActivo,
+} from "@/lib/visual/embedding";
 import type { CoincidenciaVisual, ResultadoBusquedaVisual } from "@/lib/visual/tipos";
 
 function sqlNeon() {
@@ -32,22 +34,35 @@ export async function guardarEmbeddingFoto(
   mascotaId: string,
   fotoId: string,
   vector: number[],
-  modelo: string
+  modelo: string,
+  descripcionAi?: string
 ): Promise<void> {
   const json = JSON.stringify(vector);
   await db
     .insert(mascotaEmbeddings)
-    .values({ mascotaId, fotoId, embedding: json, modelo })
+    .values({
+      mascotaId,
+      fotoId,
+      embedding: json,
+      modelo,
+      descripcionAi: descripcionAi ?? null,
+    })
     .onConflictDoUpdate({
       target: [mascotaEmbeddings.mascotaId, mascotaEmbeddings.fotoId],
-      set: { embedding: json, modelo, updatedAt: new Date() },
+      set: {
+        embedding: json,
+        modelo,
+        descripcionAi: descripcionAi ?? null,
+        updatedAt: new Date(),
+      },
     });
 
   try {
     const sql = sqlNeon();
     await sql`
       UPDATE mascota_embedding
-      SET embedding_vec = ${vectorAPg(vector)}::vector
+      SET embedding_vec = ${vectorAPg(vector)}::vector,
+          descripcion_ai = ${descripcionAi ?? null}
       WHERE mascota_id = ${mascotaId} AND foto_id = ${fotoId}
     `;
   } catch {
@@ -62,7 +77,7 @@ export async function eliminarEmbeddingsMascota(mascotaId: string): Promise<void
 }
 
 async function fotosIndexables(mascotaId: string) {
-  const max = umbralesClip().maxFotosPorMascota;
+  const max = umbralesVisual().maxFotosPorMascota;
   const filas = await db
     .select({
       id: mascotaFotos.id,
@@ -83,9 +98,12 @@ async function fotosIndexables(mascotaId: string) {
 export async function sincronizarEmbeddingMascota(
   mascotaId: string
 ): Promise<{ ok: boolean; error?: string; fotosIndexadas?: number }> {
-  const { clipApiConfigurada, embeddingDesdeDataUrl } = await clip();
-  if (!clipApiConfigurada()) {
-    return { ok: false, error: "CLIP local no disponible en este entorno." };
+  if (!embeddingApiConfigurada()) {
+    return {
+      ok: false,
+      error:
+        "Búsqueda por foto no configurada. Define GOOGLE_CLOUD_PROJECT y ADC (gcloud auth application-default login).",
+    };
   }
 
   const [m] = await db
@@ -111,11 +129,17 @@ export async function sincronizarEmbeddingMascota(
   let indexadas = 0;
   for (const foto of fotos) {
     try {
-      const { vector, modelo } = await embeddingDesdeDataUrl(foto.url);
-      await guardarEmbeddingFoto(mascotaId, foto.id, vector, modelo);
+      const { vector, modelo, descripcion } = await embeddingDesdeDataUrl(foto.url);
+      await guardarEmbeddingFoto(
+        mascotaId,
+        foto.id,
+        vector,
+        modelo,
+        descripcion
+      );
       indexadas++;
     } catch (e) {
-      console.warn(`[clip] foto ${foto.id}:`, e);
+      console.warn(`[visual/${proveedorVisualActivo()}] foto ${foto.id}:`, e);
     }
   }
 
@@ -131,20 +155,75 @@ function porcentajeRelativo(cosenoVal: number, mejor: number): number {
   return Math.min(100, Math.max(0, Math.round((cosenoVal / mejor) * 100)));
 }
 
+type FilaBusqueda = {
+  mascotaId: string;
+  fotoId: string;
+  embedding: string;
+  modelo: string;
+  nombre: string;
+  slug: string;
+  tipo: string | null;
+  color: string | null;
+  latPerdida: string | number | null;
+  lngPerdida: string | number | null;
+  coseno: number;
+};
+
+/** Búsqueda rápida con pgvector (<=> coseno) en Neon. */
+async function buscarConPgvector(
+  consulta: number[],
+  modelo: string,
+  limite: number,
+  minCoseno: number
+): Promise<FilaBusqueda[] | null> {
+  try {
+    const sql = sqlNeon();
+    const vec = vectorAPg(consulta);
+    const rows = await sql`
+      SELECT
+        me.mascota_id AS "mascotaId",
+        me.foto_id AS "fotoId",
+        me.embedding,
+        me.modelo,
+        m.nombre,
+        m.slug,
+        m.tipo,
+        m.color,
+        m.lat_perdida AS "latPerdida",
+        m.lng_perdida AS "lngPerdida",
+        1 - (me.embedding_vec <=> ${vec}::vector) AS coseno
+      FROM mascota_embedding me
+      INNER JOIN mascota m ON m.id = me.mascota_id
+      WHERE m.estado = 'PERDIDA'
+        AND me.modelo = ${modelo}
+        AND me.embedding_vec IS NOT NULL
+      ORDER BY me.embedding_vec <=> ${vec}::vector
+      LIMIT ${Math.max(limite * 4, 32)}
+    `;
+    const filtradas = (rows as FilaBusqueda[]).filter(
+      (r) => Number(r.coseno) >= minCoseno
+    );
+    return filtradas.length > 0 ? filtradas : [];
+  } catch {
+    return null;
+  }
+}
+
 export async function buscarSimilaresPorFoto(
   dataUrl: string,
   limite = 8,
   filtros?: FiltrosBusquedaVisual
 ): Promise<ResultadoBusquedaVisual> {
-  const { clipApiConfigurada, coseno, embeddingDesdeDataUrl } = await clip();
-  if (!clipApiConfigurada()) {
+  if (!embeddingApiConfigurada()) {
     return {
       ok: false,
-      error: "La búsqueda por foto solo está disponible en el servidor Node.",
+      error:
+        "La búsqueda por foto requiere GOOGLE_CLOUD_PROJECT y credenciales ADC (Vertex).",
     };
   }
 
-  const { minCoseno, gapMinimo } = umbralesClip();
+  const { minCoseno, gapMinimo } = umbralesVisual();
+  const modeloEsperado = await modeloEmbeddingActivo();
 
   const filas = await db
     .select({
@@ -167,6 +246,17 @@ export async function buscarSimilaresPorFoto(
     return { ok: true, coincidencias: [], indiceVacio: true };
   }
 
+  const filasCompatibles = filas.filter((f) => f.modelo === modeloEsperado);
+  if (filasCompatibles.length === 0) {
+    return {
+      ok: true,
+      coincidencias: [],
+      indiceVacio: true,
+      error:
+        "Hay mascotas indexadas con otro modelo (CLIP). Ejecuta: npm run db:reindexar-visual",
+    };
+  }
+
   let consulta: number[];
   let modeloUsado: string;
   try {
@@ -180,29 +270,49 @@ export async function buscarSimilaresPorFoto(
     };
   }
 
+  const pgFilas = await buscarConPgvector(
+    consulta,
+    modeloEsperado,
+    limite,
+    minCoseno
+  );
+
   const mejorPorMascota = new Map<
     string,
-    {
-      fila: (typeof filas)[0];
-      coseno: number;
-      puntuacion: number;
-    }
+    { fila: FilaBusqueda; coseno: number; puntuacion: number }
   >();
 
-  for (const fila of filas) {
-    let vec: number[];
-    try {
-      vec = JSON.parse(fila.embedding) as number[];
-    } catch {
-      continue;
+  if (pgFilas !== null) {
+    for (const fila of pgFilas) {
+      const sim = Number(fila.coseno);
+      const puntuacion = puntuacionConRerank(sim, fila, filtros);
+      const prev = mejorPorMascota.get(fila.mascotaId);
+      if (!prev || puntuacion > prev.puntuacion) {
+        mejorPorMascota.set(fila.mascotaId, { fila, coseno: sim, puntuacion });
+      }
     }
-    const sim = coseno(consulta, vec);
-    if (sim < minCoseno) continue;
+  } else {
+    for (const fila of filasCompatibles) {
+      let vec: number[];
+      try {
+        vec = JSON.parse(fila.embedding) as number[];
+      } catch {
+        continue;
+      }
+      if (vec.length !== consulta.length) continue;
 
-    const puntuacion = puntuacionConRerank(sim, fila, filtros);
-    const prev = mejorPorMascota.get(fila.mascotaId);
-    if (!prev || puntuacion > prev.puntuacion) {
-      mejorPorMascota.set(fila.mascotaId, { fila, coseno: sim, puntuacion });
+      const sim = await coseno(consulta, vec);
+      if (sim < minCoseno) continue;
+
+      const puntuacion = puntuacionConRerank(sim, fila, filtros);
+      const prev = mejorPorMascota.get(fila.mascotaId);
+      if (!prev || puntuacion > prev.puntuacion) {
+        mejorPorMascota.set(fila.mascotaId, {
+          fila: { ...fila, fotoId: fila.fotoId, coseno: sim },
+          coseno: sim,
+          puntuacion,
+        });
+      }
     }
   }
 

@@ -152,9 +152,10 @@ export const mascotaEmbeddings = pgTable(
       .notNull()
       .references(() => mascotaFotos.id, { onDelete: "cascade" }),
     embedding: text("embedding").notNull(),
+    descripcionAi: text("descripcion_ai"),
     modelo: text("modelo")
       .notNull()
-      .default("openai/clip-vit-base-patch32"),
+      .default("gemini-embedding-2"),
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => ({

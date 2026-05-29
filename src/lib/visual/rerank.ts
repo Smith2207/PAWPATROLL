@@ -8,10 +8,10 @@ export type FiltrosBusquedaVisual = {
 };
 
 export type MascotaParaRerank = {
-  tipo: string;
+  tipo: string | null;
   color: string | null;
-  latPerdida: string | null;
-  lngPerdida: string | null;
+  latPerdida: string | number | null;
+  lngPerdida: string | number | null;
 };
 
 function normalizarTexto(s: string): string {
@@ -60,6 +60,7 @@ export function puntuacionConRerank(
 
   if (
     filtros.tipoMascota?.trim() &&
+    mascota.tipo &&
     normalizarTexto(mascota.tipo) === normalizarTexto(filtros.tipoMascota)
   ) {
     bonus += u.bonusTipo;

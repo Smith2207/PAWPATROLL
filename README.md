@@ -10,9 +10,9 @@ Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** 
 - **Auth.js** — sesión, Google OAuth, credenciales
 - **Neon PostgreSQL** + **Drizzle ORM**
 - **Vercel** — despliegue
-- Estilos: paleta, landing, auth, mascotas, mapa, visual (CLIP), admin
+- Estilos: paleta, landing, auth, mascotas, mapa, visual, admin
 - **Mapa** (Leaflet): comunidad + ficha individual, calor, cercos, refugios (M5)
-- **Búsqueda por foto** (CLIP local, `@xenova/transformers`)
+- **Búsqueda por foto** (Gemini Flash + Embedding 2, 768d; respaldo CLIP)
 - **WebSocket** opcional en desarrollo (`WS_PORT` / `NEXT_PUBLIC_WS_PORT`)
 
 ## Inicio rápido
@@ -43,7 +43,8 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Google |
 | `SMTP_*` / `EMAIL_FROM` | Correos de verificación, bienvenida y aviso al dueño |
 | `WS_PORT` / `NEXT_PUBLIC_WS_PORT` | WebSocket local (por defecto `3001`) |
-| `CLIP_*` | Umbrales y caché del modelo (ver `.env.example`) |
+| `GOOGLE_CLOUD_PROJECT` + ADC (o JSON en Vercel) | Búsqueda por foto Vertex (ver `.env.example`) |
+| `VISUAL_*` / `CLIP_*` | Umbrales y proveedor (`gemini` \| `clip`) |
 
 Sin SMTP, los enlaces de verificación se imprimen en la consola (`npm run dev`).
 
@@ -88,7 +89,7 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 1. Variables obligatorias: `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL` (dominio de producción).
 2. Vercel detecta `package-lock.json` y usa **npm install** (sin configuración extra de pnpm).
-3. **Búsqueda por foto (CLIP):** en Vercel usa WASM (no binarios nativos). La primera petición puede tardar ~1–2 min (descarga del modelo). Requiere `maxDuration` alto en las rutas `/api/ia/*` (ya configurado).
+3. **Búsqueda por foto:** configura `GEMINI_API_KEY` o cuenta de servicio Vertex en Vercel (mismas variables que en local). Con Gemini no hace falta WASM/CLIP en serverless. Requiere `maxDuration` alto en `/api/ia/*` (ya configurado).
 4. Ejecuta migraciones en Neon (`npm run db:migrate-*` desde tu PC).
 
 ### API verificar cuenta
@@ -156,10 +157,26 @@ O en Neon SQL Editor: `drizzle/0002_modulo_mascotas.sql`.
 - Avistamientos: ubicación, foto opcional, estados `PENDIENTE` / `VERIFICADO` / `DESCARTADO`.
 - Email al dueño cuando el avistamiento está vinculado a su mascota (requiere SMTP).
 
-## Búsqueda visual (CLIP)
+## Búsqueda visual (Flash + Gemini Embedding 2, 768d)
 
-- API: `POST /api/ia/buscar`, indexado: `POST /api/ia/indexar` o automático al guardar ficha perdida.
-- Requiere tablas de embeddings (`npm run db:migrate-embeddings*`). Primera búsqueda descarga el modelo (~1 min).
+Flujo: **gemini-1.5-flash** describe la imagen → **gemini-embedding-2** vectoriza el texto (768 dimensiones) → Neon pgvector compara con `<=>`.
+
+1. Activa **Vertex AI API** y **Agent Platform API** en Google Cloud.
+2. Variables (`.env.local` / Vercel):
+
+```env
+GOOGLE_CLOUD_PROJECT=tu-proyecto-id
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_APPLICATION_CREDENTIALS_JSON={...}   # Vercel: JSON cuenta de servicio
+VISUAL_PROVIDER=gemini
+GEMINI_EMBEDDING_DIMENSION=768
+```
+
+3. **Local:** `gcloud auth application-default login` (ADC, sin API key).
+4. Migración Neon: `npm run db:migrate-gemini-768` (vector 768 + columna `descripcion_ai`).
+5. Reindexar: `npm run db:reindexar-visual`.
+
+Respaldo sin Google: `VISUAL_PROVIDER=clip`.
 
 ## Roles
 
@@ -185,7 +202,7 @@ src/
   lib/
     db/, geo/, visual/, comportamiento/, tiempo-real/
 drizzle/                        → Migraciones 0000–0008
-scripts/                        → aplicar migraciones, reindexar CLIP
+scripts/                        → migraciones, reindexar embeddings
 ```
 
 ## Limitaciones conocidas

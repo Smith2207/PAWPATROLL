@@ -94,7 +94,9 @@ export function IdentificacionPorFoto({
         setIndiceVacio(Boolean(data.indiceVacio));
         setCoincidencias(data.coincidencias ?? []);
         setBusquedaLista(true);
-        if (!data.coincidencias?.length && !data.indiceVacio) {
+        if (data.error && data.indiceVacio) {
+          setError(data.error);
+        } else if (!data.coincidencias?.length && !data.indiceVacio) {
           setError(
             "No encontramos coincidencias claras. Prueba otra foto o un ángulo más cercano."
           );
@@ -157,7 +159,7 @@ export function IdentificacionPorFoto({
                 Buscando similitudes…
               </span>
               <span className="foto-ia-overlay-hint">
-                La primera vez puede tardar ~1 min
+                Puede tardar unos segundos
               </span>
             </div>
           )}

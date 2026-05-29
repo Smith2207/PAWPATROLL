@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["sharp", "@xenova/transformers", "onnxruntime-web"],
+  serverExternalPackages: [
+    "sharp",
+    "@google/genai",
+    "@xenova/transformers",
+    "onnxruntime-web",
+  ],
   webpack: (config, { isServer }) => {
     if (isServer && process.env.VERCEL) {
       config.resolve.alias = {
