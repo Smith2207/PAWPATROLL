@@ -1,4 +1,4 @@
--- Ejecutar en Neon SQL Editor o con: pnpm db:push
+-- Ejecutar en Neon SQL Editor o con: npm run db:push
 
 CREATE TYPE "public"."rol" AS ENUM('CIUDADANO', 'DUENO', 'ADMINISTRADOR');
 

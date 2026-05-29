@@ -13,7 +13,7 @@ export function ContenedorPublico({ children, errorCarga }: Props) {
       {errorCarga && (
         <div className="pp-alerta-carga" role="alert">
           No pudimos cargar datos desde el servidor. Comprueba{" "}
-          <code>DATABASE_URL</code> y las migraciones (<code>pnpm db:push</code>
+          <code>DATABASE_URL</code> y las migraciones (<code>npm run db:push</code>
           ).
         </div>
       )}
