@@ -19,14 +19,14 @@ Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** 
 
 ```bash
 copy .env.example .env.local   # Windows
-pnpm install
-pnpm db:push                   # crea/actualiza tablas en Neon
-pnpm db:migrate-mapa           # si usas módulo mapa (0004+)
-pnpm db:migrate-embeddings
-pnpm db:migrate-embeddings-multifoto
-pnpm db:migrate-comportamiento
-pnpm db:migrate-acceso-exterior   # campo acceso_exterior para M5
-pnpm dev
+npm install
+npm run db:push                   # crea/actualiza tablas en Neon
+npm run db:migrate-mapa           # si usas módulo mapa (0004+)
+npm run db:migrate-embeddings
+npm run db:migrate-embeddings-multifoto
+npm run db:migrate-comportamiento
+npm run db:migrate-acceso-exterior   # campo acceso_exterior para M5
+npm run dev
 ```
 
 El servidor de desarrollo levanta Next en `:3000` y, vía `instrumentation.ts`, un WebSocket en `:3001` para actualizar mapa y avistamientos.
@@ -45,9 +45,9 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `WS_PORT` / `NEXT_PUBLIC_WS_PORT` | WebSocket local (por defecto `3001`) |
 | `CLIP_*` | Umbrales y caché del modelo (ver `.env.example`) |
 
-Sin SMTP, los enlaces de verificación se imprimen en la consola (`pnpm dev`).
+Sin SMTP, los enlaces de verificación se imprimen en la consola (`npm run dev`).
 
-Tras marcar mascotas como **PERDIDA** con fotos, indexa embeddings: `pnpm db:reindexar-visual`.
+Tras marcar mascotas como **PERDIDA** con fotos, indexa embeddings: `npm run db:reindexar-visual`.
 
 ## Administrador único
 
@@ -81,16 +81,15 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 ### Tiempo real (mapa)
 
-- **Local (`pnpm dev`):** WebSocket en el puerto `3001` (ver `instrumentation.ts`).
+- **Local (`npm run dev`):** WebSocket en el puerto `3001` (ver `instrumentation.ts`).
 - **Vercel/producción:** define `NEXT_PUBLIC_WS_URL` con un proxy `wss://…` o el mapa se actualiza solo cada ~90 s (respaldo automático).
 
 ### Despliegue en Vercel
 
 1. Variables obligatorias: `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL` (dominio de producción).
-2. **pnpm 10+** bloquea scripts de instalación por seguridad. Este repo incluye `vercel.json` con `pnpm install --allow-build=sharp …` y `pnpm-workspace.yaml` con `onlyBuiltDependencies` / `allowBuilds`. No los quites.
-3. Si ves *Ignored build scripts: sharp*, en local ejecuta `pnpm approve-builds sharp protobufjs` y sube `pnpm-workspace.yaml` + `pnpm-lock.yaml`.
-4. **Búsqueda por foto (CLIP):** la primera petición en producción puede tardar (descarga del modelo).
-5. Ejecuta migraciones en Neon (`pnpm db:migrate-*` desde tu PC).
+2. Vercel detecta `package-lock.json` y usa **npm install** (sin configuración extra de pnpm).
+3. **Búsqueda por foto (CLIP):** la primera petición en producción puede tardar (descarga del modelo).
+4. Ejecuta migraciones en Neon (`npm run db:migrate-*` desde tu PC).
 
 ### API verificar cuenta
 
@@ -146,7 +145,7 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 Tras cambios de schema:
 
 ```bash
-pnpm db:push
+npm run db:push
 ```
 
 O en Neon SQL Editor: `drizzle/0002_modulo_mascotas.sql`.
@@ -160,7 +159,7 @@ O en Neon SQL Editor: `drizzle/0002_modulo_mascotas.sql`.
 ## Búsqueda visual (CLIP)
 
 - API: `POST /api/ia/buscar`, indexado: `POST /api/ia/indexar` o automático al guardar ficha perdida.
-- Requiere tablas de embeddings (`pnpm db:migrate-embeddings*`). Primera búsqueda descarga el modelo (~1 min).
+- Requiere tablas de embeddings (`npm run db:migrate-embeddings*`). Primera búsqueda descarga el modelo (~1 min).
 
 ## Roles
 
@@ -185,7 +184,7 @@ src/
     landing/, mapa/, avistamientos/, visual/, comportamiento/
   lib/
     db/, geo/, visual/, comportamiento/, tiempo-real/
-drizzle/                        → Migraciones 0000–0007
+drizzle/                        → Migraciones 0000–0008
 scripts/                        → aplicar migraciones, reindexar CLIP
 ```
 
@@ -205,14 +204,15 @@ scripts/                        → aplicar migraciones, reindexar CLIP
 
 1. Proyecto en [neon.tech](https://neon.tech).
 2. `DATABASE_URL` en `.env.local` y en Vercel.
-3. `pnpm db:push` o SQL en `drizzle/0000_esquema_inicial.sql`.
+3. `npm run db:push` o SQL en `drizzle/0000_esquema_inicial.sql`.
 
 ## Despliegue (Vercel)
 
 1. Conectar el repositorio de GitHub.
 2. Añadir las mismas variables de entorno que en `.env.local`, sobre todo `NEXT_PUBLIC_APP_URL=https://pawpatroll.vercel.app` (no dejar el valor de localhost).
-3. Redesplegar tras cambiar variables.
-4. Tras el deploy, ejecutar migraciones en Neon si la BD de producción está vacía.
+3. Vercel usa **npm** automáticamente si existe `package-lock.json`.
+4. Redesplegar tras cambiar variables.
+5. Tras el deploy, ejecutar migraciones en Neon si la BD de producción está vacía.
 
 ---
 

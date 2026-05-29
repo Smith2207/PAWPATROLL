@@ -34,5 +34,5 @@ for (const sentencia of sentencias) {
 }
 
 console.log(
-  "Migración 0006 aplicada. Ejecuta: pnpm db:reindexar-visual (reindexa todas las fotos)."
+  "Migración 0006 aplicada. Ejecuta: npm run db:reindexar-visual (reindexa todas las fotos)."
 );

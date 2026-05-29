@@ -1,3 +1,0 @@
-{
-  "installCommand": "pnpm install --allow-build=sharp --allow-build=protobufjs --allow-build=esbuild"
-}
