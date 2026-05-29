@@ -228,7 +228,7 @@ export function FormularioFichaMascota({
                 </select>
               </div>
               <div className="form-group form-ficha-grid--ancho">
-                <CampoAccesoExterior defaultValue={mascota?.accesoExterior} />
+                <CampoAccesoExterior tipo={tipo} defaultValue={mascota?.accesoExterior} />
               </div>
               <div className="form-group">
                 <label>Edad</label>

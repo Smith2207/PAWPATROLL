@@ -22,30 +22,46 @@ export function useCamaraReporte(opciones: Opciones = {}) {
 
   const streamRef = useRef<MediaStream | null>(null);
   const [fotosPreview, setFotosPreview] = useState<string[]>([]);
+  const fotosPreviewRef = useRef<string[]>([]);
+  fotosPreviewRef.current = fotosPreview;
   const [camaraVisible, setCamaraVisible] = useState(false);
 
-  const previewFotos = useCallback((input: HTMLInputElement) => {
-    const files = Array.from(input.files ?? []).slice(0, maxFotos);
-    const lecturas = files.map(
-      (file) =>
-        new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.readAsDataURL(file);
-        })
-    );
-    void Promise.all(lecturas)
-      .then((urls) => preprocesarImagenesCliente(urls))
-      .then((procesadas) => {
+  const previewFotos = useCallback(
+    (input: HTMLInputElement) => {
+      const files = Array.from(input.files ?? []);
+      input.value = "";
+      if (!files.length) return;
+
+      const prev = fotosPreviewRef.current;
+      const cupo =
+        maxFotos <= 1 ? 1 : Math.max(0, maxFotos - prev.length);
+      if (cupo <= 0) return;
+
+      const archivos = files.slice(0, cupo);
+
+      void (async () => {
+        const urls = await Promise.all(
+          archivos.map(
+            (file) =>
+              new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target?.result as string);
+                reader.readAsDataURL(file);
+              })
+          )
+        );
+        const procesadas = await preprocesarImagenesCliente(urls);
         if (maxFotos <= 1) {
           setFotosPreview(procesadas.slice(0, 1));
           return;
         }
-        setFotosPreview((prev) =>
-          [...prev, ...procesadas].slice(0, maxFotos)
+        setFotosPreview((actual) =>
+          [...actual, ...procesadas].slice(0, maxFotos)
         );
-      });
-  }, [maxFotos]);
+      })();
+    },
+    [maxFotos]
+  );
 
   const cerrarStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -94,6 +110,19 @@ export function useCamaraReporte(opciones: Opciones = {}) {
 
   const limpiarFotos = useCallback(() => setFotosPreview([]), []);
 
+  const quitarFoto = useCallback((indice: number) => {
+    setFotosPreview((prev) => prev.filter((_, i) => i !== indice));
+  }, []);
+
+  const marcarPrincipal = useCallback((indice: number) => {
+    setFotosPreview((prev) => {
+      const copia = [...prev];
+      const [foto] = copia.splice(indice, 1);
+      if (!foto) return prev;
+      return [foto, ...copia];
+    });
+  }, []);
+
   const establecerFotos = useCallback(
     (fotos: string[]) => {
       void preprocesarImagenesCliente(fotos).then((procesadas) =>
@@ -111,6 +140,8 @@ export function useCamaraReporte(opciones: Opciones = {}) {
     capturarFoto,
     cerrarCamara,
     limpiarFotos,
+    quitarFoto,
+    marcarPrincipal,
     establecerFotos,
     ids,
     maxFotos,

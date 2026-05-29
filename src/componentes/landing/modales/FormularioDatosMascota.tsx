@@ -115,6 +115,7 @@ export function FormularioDatosMascota({
       </div>
 
       <CampoAccesoExterior
+        tipo={tipo}
         defaultValue={valoresIniciales?.accesoExterior}
         requerido
       />
