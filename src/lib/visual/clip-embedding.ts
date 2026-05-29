@@ -1,13 +1,11 @@
 /**
  * CLIP 512-d local (@xenova/transformers).
- * Pesos: openai/clip-vit-base-patch32 → ONNX Xenova/clip-vit-base-patch32
- * Cache en disco: .cache/transformers/ (ver config.ts)
+ * Import dinámico: evita cargar sharp/transformers durante `next build` en Vercel.
  */
 
 import { mkdir, unlink, writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { env, pipeline, RawImage } from "@xenova/transformers";
 import {
   CARPETA_CACHE_MODELO,
   MODELO_XENOVA_LOCAL,
@@ -20,26 +18,38 @@ export const MODELO_CLIP = "openai/clip-vit-base-patch32";
 
 const DIM_ESPERADA = 512;
 
-env.allowLocalModels = true;
-env.allowRemoteModels = true;
-env.useBrowserCache = false;
-env.useFSCache = true;
-env.cacheDir = CARPETA_CACHE_MODELO;
+type ModuloTransformers = typeof import("@xenova/transformers");
+type ImagenClip = Awaited<ReturnType<ModuloTransformers["RawImage"]["read"]>>;
 
+let transformersPromise: Promise<ModuloTransformers> | null = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let extractorPromise: Promise<any> | null = null;
 
+async function cargarTransformers(): Promise<ModuloTransformers> {
+  if (!transformersPromise) {
+    transformersPromise = import("@xenova/transformers").then((mod) => {
+      mod.env.allowLocalModels = true;
+      mod.env.allowRemoteModels = true;
+      mod.env.useBrowserCache = false;
+      mod.env.useFSCache = true;
+      mod.env.cacheDir = CARPETA_CACHE_MODELO;
+      return mod;
+    });
+  }
+  return transformersPromise;
+}
+
 async function obtenerExtractor() {
   if (!extractorPromise) {
-    extractorPromise = pipeline(
-      "image-feature-extraction",
-      MODELO_XENOVA_LOCAL
+    extractorPromise = cargarTransformers().then(({ pipeline }) =>
+      pipeline("image-feature-extraction", MODELO_XENOVA_LOCAL)
     );
   }
   return extractorPromise;
 }
 
-async function dataUrlARawImage(dataUrl: string): Promise<RawImage> {
+async function dataUrlARawImage(dataUrl: string): Promise<ImagenClip> {
+  const { RawImage } = await cargarTransformers();
   const { buffer, extension } = dataUrlABuffer(dataUrl);
   const dir = join(tmpdir(), "pawpatroll-clip");
   await mkdir(dir, { recursive: true });

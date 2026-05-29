@@ -3889,7 +3889,7 @@ snapshots:
     dependencies:
       '@huggingface/jinja': 0.2.2
       onnxruntime-web: 1.14.0
-      sharp: 0.32.6
+      sharp: 0.34.5
     optionalDependencies:
       onnxruntime-node: 1.14.0
     transitivePeerDependencies:

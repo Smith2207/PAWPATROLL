@@ -2,6 +2,7 @@ import { buscarSimilaresPorFoto } from "@/lib/visual/indice-visual";
 import type { FiltrosBusquedaVisual } from "@/lib/visual/rerank";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 /** Primera búsqueda: descarga modelo CLIP local (~1–2 min) */
 export const maxDuration = 120;
 

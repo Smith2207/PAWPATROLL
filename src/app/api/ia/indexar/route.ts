@@ -1,6 +1,7 @@
 import { sincronizarEmbeddingMascota } from "@/lib/visual/indice-visual";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 export async function POST(req: Request) {
