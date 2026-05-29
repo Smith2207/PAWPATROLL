@@ -1,53 +1,50 @@
-import type { AccesoExterior } from "@/lib/comportamiento/contexto-busqueda";
-
-const OPCIONES: { value: AccesoExterior; label: string; hint: string }[] = [
-  {
-    value: "solo_interior",
-    label: "Solo interior",
-    hint: "No sale al exterior (gatos: ~137 m mediana en estudios)",
-  },
-  {
-    value: "patio_supervisado",
-    label: "Patio o balcón",
-    hint: "Sale solo a espacio cerrado o supervisado",
-  },
-  {
-    value: "exterior_habitual",
-    label: "Sale al exterior con libertad",
-    hint: "Gatos: ~75% hallados dentro de 500 m",
-  },
-];
+import {
+  ayudaCampoAccesoExterior,
+  etiquetaCampoAccesoExterior,
+  opcionesAccesoExterior,
+} from "@/lib/mascotas/opciones-acceso-exterior";
 
 type Props = {
+  tipo?: string;
   defaultValue?: string | null;
   requerido?: boolean;
 };
 
-export function CampoAccesoExterior({ defaultValue, requerido }: Props) {
+export function CampoAccesoExterior({
+  tipo,
+  defaultValue,
+  requerido,
+}: Props) {
+  const opciones = opcionesAccesoExterior(tipo);
+  const sinTipo = !tipo?.trim();
+
   return (
     <div className="form-group">
       <label htmlFor="accesoExterior">
-        ¿Sale al exterior? {requerido ? "*" : ""}
+        {etiquetaCampoAccesoExterior(tipo)} {requerido ? "*" : ""}
       </label>
       <select
         id="accesoExterior"
         name="accesoExterior"
+        key={tipo ?? "sin-tipo"}
         defaultValue={defaultValue ?? ""}
-        required={requerido}
+        required={requerido && !sinTipo}
+        disabled={sinTipo && requerido}
       >
         <option value="" disabled={requerido}>
-          {requerido ? "Selecciona una opción" : "No indicado (se estimará)"}
+          {sinTipo
+            ? "Primero elige perro o gato arriba"
+            : requerido
+              ? "Selecciona la más parecida"
+              : "No indicado"}
         </option>
-        {OPCIONES.map((o) => (
+        {opciones.map((o) => (
           <option key={o.value} value={o.value}>
-            {o.label} — {o.hint}
+            {o.label}
           </option>
         ))}
       </select>
-      <p className="form-ficha-ayuda">
-        Ajusta el cerco de búsqueda según estudios de mascotas perdidas (Huang et
-        al., MAR).
-      </p>
+      <p className="form-ficha-ayuda">{ayudaCampoAccesoExterior()}</p>
     </div>
   );
 }

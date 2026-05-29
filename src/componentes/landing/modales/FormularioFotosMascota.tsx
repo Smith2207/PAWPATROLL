@@ -1,202 +1,133 @@
-"use client";
-
-import { useCamaraReporte } from "@/hooks/useCamaraReporte";
-import { useRef } from "react";
-
-export type CamaraReporteApi = ReturnType<typeof useCamaraReporte>;
-
-type Props = {
-  /** Si se pasa, las fotos las controla el formulario padre (envío) */
-  camara?: CamaraReporteApi;
-  idPrefijo?: string;
-};
-
-export function FormularioFotosMascota({
-  camara: camaraExterna,
-  idPrefijo = "reporte",
-}: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const camaraInterna = useCamaraReporte({ idPrefijo });
-  const {
-    fotosPreview,
-    camaraVisible,
-    previewFotos,
-    abrirCamara,
-    capturarFoto,
-    cerrarCamara,
-    ids,
-  } = camaraExterna ?? camaraInterna;
-
-  return (
-    <>
-      <div className="section-divider">Fotos de la mascota *</div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "0.75rem",
-          marginBottom: "1rem",
-        }}
-      >
-        <div
-          className="photo-upload"
-          style={{ marginBottom: 0 }}
-          onClick={() => inputRef.current?.click()}
-          onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            style={{ display: "none" }}
-            onChange={(e) => previewFotos(e.target)}
-          />
-          <div className="photo-upload-icon">🖼️</div>
-          <div className="photo-upload-text">
-            <span
-              style={{
-                fontSize: "0.82rem",
-                fontWeight: 800,
-                color: "var(--navy)",
-                display: "block",
-                marginBottom: 3,
-              }}
-            >
-              Subir fotos
-            </span>
-            Hasta 5 fotos de tu mascota
-          </div>
-          {fotosPreview.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                gap: 4,
-                flexWrap: "wrap",
-                justifyContent: "center",
-                marginTop: 6,
-              }}
-            >
-              {fotosPreview.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt={`Vista previa ${i + 1}`}
-                  style={{
-                    width: 44,
-                    height: 44,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                    border: "2px solid #BFDBFE",
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div
-          className="photo-upload"
-          style={{
-            marginBottom: 0,
-            borderColor: "#A7F3D0",
-            background: "linear-gradient(135deg,#F0FDF8,#ECFDF5)",
-            cursor: "pointer",
-          }}
-          onClick={abrirCamara}
-          onKeyDown={(e) => e.key === "Enter" && abrirCamara()}
-          role="button"
-          tabIndex={0}
-        >
-          <div className="photo-upload-icon">📸</div>
-          <div className="photo-upload-text">
-            <span
-              style={{
-                fontSize: "0.82rem",
-                fontWeight: 800,
-                color: "#065F46",
-                display: "block",
-                marginBottom: 3,
-              }}
-            >
-              Tomar foto
-            </span>
-            Usa la cámara del dispositivo
-          </div>
-        </div>
-      </div>
-
-      {camaraVisible && (
-        <div
-          style={{
-            marginBottom: "1rem",
-            border: "2px solid #6EE7B7",
-            borderRadius: "var(--radius-sm)",
-            overflow: "hidden",
-            background: "#000",
-            position: "relative",
-          }}
-        >
-          <video
-            id={ids.video}
-            autoPlay
-            playsInline
-            style={{
-              width: "100%",
-              maxHeight: 220,
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-          <canvas id={ids.canvas} style={{ display: "none" }} />
-          <div
-            style={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              display: "flex",
-              gap: 6,
-            }}
-          >
-            <button
-              type="button"
-              onClick={capturarFoto}
-              style={{
-                background: "var(--mint)",
-                color: "white",
-                border: "none",
-                borderRadius: 50,
-                padding: "6px 14px",
-                fontFamily: "'Nunito', sans-serif",
-                fontWeight: 800,
-                fontSize: "0.8rem",
-                cursor: "pointer",
-              }}
-            >
-              📸 Capturar
-            </button>
-            <button
-              type="button"
-              onClick={cerrarCamara}
-              style={{
-                background: "rgba(0,0,0,0.5)",
-                color: "white",
-                border: "none",
-                borderRadius: "50%",
-                width: 30,
-                height: 30,
-                cursor: "pointer",
-                fontSize: "0.85rem",
-              }}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
+"use client";
+
+import { useCamaraReporte } from "@/hooks/useCamaraReporte";
+import { useRef } from "react";
+
+export type CamaraReporteApi = ReturnType<typeof useCamaraReporte>;
+
+type Props = {
+  camara: CamaraReporteApi;
+};
+
+export function FormularioFotosMascota({ camara }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const {
+    fotosPreview,
+    previewFotos,
+    quitarFoto,
+    marcarPrincipal,
+    maxFotos,
+  } = camara;
+
+  function alElegirArchivos(e: React.ChangeEvent<HTMLInputElement>) {
+    previewFotos(e.target);
+  }
+
+  return (
+    <>
+      <div className="section-divider">Fotos de la mascota *</div>
+
+      <p className="form-ficha-ayuda" style={{ marginBottom: "0.75rem" }}>
+        Sube fotos claras de tu mascota (cara y cuerpo). En el móvil puedes
+        elegir galería o cámara. Si te equivocas, quita la foto con ✕ y añade
+        otra.
+      </p>
+
+      {fotosPreview.length > 0 && (
+        <div className="galeria-fotos" style={{ marginBottom: "1rem" }}>
+          {fotosPreview.map((src, i) => (
+            <div
+              key={`${i}-${src.slice(0, 32)}`}
+              className={`galeria-foto-item ${i === 0 ? "galeria-foto-item--principal" : ""}`}
+            >
+              <img src={src} alt={`Foto ${i + 1}`} />
+              {i === 0 && <span className="galeria-foto-badge">Principal</span>}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  display: "flex",
+                  gap: 4,
+                }}
+              >
+                {i !== 0 && (
+                  <button
+                    type="button"
+                    title="Marcar como principal"
+                    onClick={() => marcarPrincipal(i)}
+                    style={{
+                      background: "rgba(255,255,255,0.9)",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                      fontSize: "0.65rem",
+                      padding: "2px 5px",
+                    }}
+                  >
+                    ★
+                  </button>
+                )}
+                <button
+                  type="button"
+                  title="Quitar foto"
+                  onClick={() => quitarFoto(i)}
+                  style={{
+                    background: "rgba(0,0,0,0.55)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    width: 22,
+                    height: 22,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {fotosPreview.length < maxFotos && (
+        <div
+          className="subir-fotos-zona"
+          onClick={() => inputRef.current?.click()}
+          onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            multiple
+            hidden
+            onChange={alElegirArchivos}
+          />
+          <div style={{ fontSize: "1.5rem", marginBottom: 6 }}>📷</div>
+          <div
+            style={{
+              fontWeight: 800,
+              color: "var(--navy)",
+              fontSize: "0.85rem",
+            }}
+          >
+            Añadir fotos ({fotosPreview.length}/{maxFotos})
+          </div>
+          <div
+            style={{
+              fontSize: "0.75rem",
+              color: "var(--muted)",
+              marginTop: 4,
+            }}
+          >
+            La primera foto será la principal
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

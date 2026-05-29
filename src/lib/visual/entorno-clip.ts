@@ -13,20 +13,32 @@ export function esEntornoServerless(): boolean {
 
 /**
  * Transformers.js elige onnxruntime-node si process.release.name === 'node'.
- * En serverless forzamos la rama WASM (onnxruntime-web).
+ * PawPatrol sustituye onnxruntime-node por onnxruntime-web (WASM): forzamos esa rama
+ * sin mutar process.release.name (solo lectura en Node 20+).
  */
-export function parcheReleaseParaWasmEnServerless(): () => void {
-  if (!esEntornoServerless()) return () => {};
+export function parcheReleaseParaOnnxWeb(): () => void {
+  const original = process.release;
+  if (!original?.name || original.name !== "node") return () => {};
 
-  const rel = process.release;
-  if (!rel || rel.name !== "node") return () => {};
-
-  const anterior = rel.name;
-  (rel as { name: string }).name = "serverless";
+  const descriptor = Object.getOwnPropertyDescriptor(process, "release");
+  Object.defineProperty(process, "release", {
+    configurable: true,
+    enumerable: descriptor?.enumerable ?? true,
+    get() {
+      return { ...original, name: "serverless" };
+    },
+  });
 
   return () => {
-    (rel as { name: string }).name = anterior;
+    if (descriptor) {
+      Object.defineProperty(process, "release", descriptor);
+    }
   };
+}
+
+/** @deprecated Usar parcheReleaseParaOnnxWeb */
+export function parcheReleaseParaWasmEnServerless(): () => void {
+  return esEntornoServerless() ? parcheReleaseParaOnnxWeb() : () => {};
 }
 
 export function carpetaCacheClip(): string {
@@ -34,6 +46,13 @@ export function carpetaCacheClip(): string {
     return join(tmpdir(), "pawpatroll-clip-cache");
   }
   return join(process.cwd(), ".cache", "transformers");
+}
+
+function rutaWasmLocal(): string {
+  return (
+    join(process.cwd(), "node_modules", "@xenova", "transformers", "dist")
+      .replace(/\\/g, "/") + "/"
+  );
 }
 
 export function configurarEnvTransformers(
@@ -50,6 +69,8 @@ export function configurarEnvTransformers(
   const wasm = mod.env.backends.onnx?.wasm;
   if (wasm) {
     wasm.numThreads = 1;
-    wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/@xenova/transformers@${mod.env.version}/dist/`;
+    wasm.wasmPaths = serverless
+      ? `https://cdn.jsdelivr.net/npm/@xenova/transformers@${mod.env.version}/dist/`
+      : rutaWasmLocal();
   }
 }

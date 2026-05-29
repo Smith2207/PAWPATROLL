@@ -3,14 +3,11 @@
  * En Vercel: WASM (onnxruntime-web), sin libonnxruntime.so nativo.
  */
 
-import { mkdir, unlink, writeFile } from "fs/promises";
-import { join } from "path";
-import { tmpdir } from "os";
 import { MODELO_XENOVA_LOCAL } from "@/lib/visual/config";
 import {
   configurarEnvTransformers,
   esEntornoServerless,
-  parcheReleaseParaWasmEnServerless,
+  parcheReleaseParaOnnxWeb,
 } from "@/lib/visual/entorno-clip";
 import { dataUrlABuffer } from "@/lib/visual/data-url";
 import { preprocesarDataUrlParaClip } from "@/lib/visual/preprocesar-imagen";
@@ -30,7 +27,9 @@ let extractorPromise: Promise<any> | null = null;
 async function cargarTransformers(): Promise<ModuloTransformers> {
   if (!transformersPromise) {
     transformersPromise = (async () => {
-      const restaurar = parcheReleaseParaWasmEnServerless();
+      const restaurar = esEntornoServerless()
+        ? parcheReleaseParaOnnxWeb()
+        : () => {};
       try {
         const mod = await import("@xenova/transformers");
         configurarEnvTransformers(mod);
@@ -54,16 +53,18 @@ async function obtenerExtractor() {
 
 async function dataUrlARawImage(dataUrl: string): Promise<ImagenClip> {
   const { RawImage } = await cargarTransformers();
-  const { buffer, extension } = dataUrlABuffer(dataUrl);
-  const dir = join(tmpdir(), "pawpatroll-clip");
-  await mkdir(dir, { recursive: true });
-  const path = join(dir, `${crypto.randomUUID()}.${extension}`);
-  await writeFile(path, buffer);
-  try {
-    return await RawImage.read(path);
-  } finally {
-    await unlink(path).catch(() => {});
-  }
+  const { buffer } = dataUrlABuffer(dataUrl);
+  const sharp = (await import("sharp")).default;
+  const { data, info } = await sharp(buffer)
+    .rotate()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return new RawImage(
+    new Uint8ClampedArray(data),
+    info.width,
+    info.height,
+    info.channels
+  );
 }
 
 function tensorAVector(output: {
