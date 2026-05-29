@@ -8,14 +8,14 @@ import {
 } from "@/lib/db/schema";
 import { umbralesClip } from "@/lib/visual/config";
 import {
-  clipApiConfigurada,
-  coseno,
-  embeddingDesdeDataUrl,
-} from "@/lib/visual/clip-embedding";
-import {
   puntuacionConRerank,
   type FiltrosBusquedaVisual,
 } from "@/lib/visual/rerank";
+
+/** Import perezoso: evita cargar @xenova/transformers durante `next build` */
+async function clip() {
+  return import("@/lib/visual/clip-embedding");
+}
 import type { CoincidenciaVisual, ResultadoBusquedaVisual } from "@/lib/visual/tipos";
 
 function sqlNeon() {
@@ -83,6 +83,7 @@ async function fotosIndexables(mascotaId: string) {
 export async function sincronizarEmbeddingMascota(
   mascotaId: string
 ): Promise<{ ok: boolean; error?: string; fotosIndexadas?: number }> {
+  const { clipApiConfigurada, embeddingDesdeDataUrl } = await clip();
   if (!clipApiConfigurada()) {
     return { ok: false, error: "CLIP local no disponible en este entorno." };
   }
@@ -135,6 +136,7 @@ export async function buscarSimilaresPorFoto(
   limite = 8,
   filtros?: FiltrosBusquedaVisual
 ): Promise<ResultadoBusquedaVisual> {
+  const { clipApiConfigurada, coseno, embeddingDesdeDataUrl } = await clip();
   if (!clipApiConfigurada()) {
     return {
       ok: false,

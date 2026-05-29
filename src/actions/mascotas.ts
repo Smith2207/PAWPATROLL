@@ -25,7 +25,11 @@ import {
   type TipoMascota,
 } from "@/lib/mascotas/tipos";
 import { estimarRadioBusquedaMetros } from "@/lib/geo/cerco-perimetrico";
-import { sincronizarEmbeddingMascota } from "@/lib/visual/indice-visual";
+function indexarClipMascota(mascotaId: string) {
+  void import("@/lib/visual/indice-visual").then((m) =>
+    m.sincronizarEmbeddingMascota(mascotaId)
+  );
+}
 
 function soloPerrosYGatos() {
   return inArray(mascotas.tipo, [...TIPOS_MASCOTA]);
@@ -379,7 +383,7 @@ export async function crearMascota(
   });
   await guardarFotos(insertada.id, fotosNuevas);
 
-  void sincronizarEmbeddingMascota(insertada.id);
+  indexarClipMascota(insertada.id);
 
   revalidarRutasMascota(insertada.id, insertada.slug);
 
@@ -437,7 +441,7 @@ export async function actualizarMascota(
     await reemplazarFotos(id, fotosNuevas);
   }
 
-  void sincronizarEmbeddingMascota(id);
+  indexarClipMascota(id);
 
   revalidarRutasMascota(id, actual.slug);
 
@@ -557,7 +561,7 @@ export async function cambiarEstadoMascota(
     opciones?.notas
   );
 
-  void sincronizarEmbeddingMascota(id);
+  indexarClipMascota(id);
 
   revalidarRutasMascota(id, actual.slug);
 

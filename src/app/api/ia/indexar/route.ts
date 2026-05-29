@@ -1,5 +1,3 @@
-import { sincronizarEmbeddingMascota } from "@/lib/visual/indice-visual";
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -13,6 +11,10 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    const { sincronizarEmbeddingMascota } = await import(
+      "@/lib/visual/indice-visual"
+    );
     const resultado = await sincronizarEmbeddingMascota(body.mascotaId.trim());
     return Response.json(resultado, { status: resultado.ok ? 200 : 422 });
   } catch (e) {
