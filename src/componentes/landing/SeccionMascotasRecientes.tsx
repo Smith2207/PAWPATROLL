@@ -4,7 +4,6 @@ import { useModales } from "@/contexto/ContextoModales";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import { emojiPorTipo, esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
 import type { EstadoMascota } from "@/lib/db/schema";
-import Link from "next/link";
 
 export type MascotaPublicaTarjeta = {
   id: string;
@@ -24,6 +23,13 @@ export type MascotaPublicaTarjeta = {
 
 type Props = {
   mascotas: MascotaPublicaTarjeta[];
+  /** @deprecated Usar mensajeVacio */
+  mensajeBusqueda?: string | null;
+  sinEncabezadoSeccion?: boolean;
+  modoPaginaCasos?: boolean;
+  busquedaActiva?: boolean;
+  mensajeVacio?: string;
+  onQuitarFiltros?: () => void;
 };
 
 function tiempoRelativo(fecha: Date) {
@@ -35,59 +41,77 @@ function tiempoRelativo(fecha: Date) {
   return `hace ${dias}d`;
 }
 
-export function SeccionMascotasRecientes({ mascotas }: Props) {
+export function SeccionMascotasRecientes({
+  mascotas,
+  mensajeBusqueda,
+  sinEncabezadoSeccion = false,
+  modoPaginaCasos = false,
+  busquedaActiva = false,
+  mensajeVacio,
+  onQuitarFiltros,
+}: Props) {
   const { abrirModal } = useModales();
+  const lista = mascotas.filter((m) => esTipoMascotaPermitido(m.tipo));
+  const textoVacio =
+    mensajeVacio ?? mensajeBusqueda ?? "No hay casos para mostrar.";
 
   return (
-    <div className="section-wrap" id="avistamientos" style={{ paddingTop: 0 }}>
-      <div
-        className="section-header section-header--izq"
-        style={{ marginBottom: "1.8rem" }}
-      >
-        <div className="section-eyebrow">En tiempo real</div>
-        <div className="section-title">Avistamientos y mascotas perdidas 🐶🐱</div>
-        <p className="section-sub">
-          Fichas públicas de la comunidad: perdidas, encontradas y en seguimiento
-        </p>
-      </div>
+    <div className="section-wrap" id="casos-activos" style={{ paddingTop: 0 }}>
+      {!sinEncabezadoSeccion && !modoPaginaCasos && (
+        <div
+          className="section-header section-header--izq"
+          style={{ marginBottom: "1.8rem" }}
+        >
+          <div className="section-eyebrow">Comunidad</div>
+          <div className="section-title">Mascotas perdidas y en seguimiento</div>
+          <p className="section-sub">
+            Fichas públicas activas. Para reportar dónde viste una, usa «Vi una
+            mascota».
+          </p>
+        </div>
+      )}
+
       <div className="pets-header">
-        <h2>Casos activos</h2>
+        {!modoPaginaCasos && <h2>Casos activos</h2>}
+        {modoPaginaCasos && lista.length > 0 && (
+          <p className="pp-casos-contador" role="status">
+            {lista.length === 1
+              ? "1 caso activo"
+              : `${lista.length} casos activos`}
+          </p>
+        )}
         <button
           type="button"
           className="see-all"
           style={{ background: "none", border: "none", font: "inherit" }}
           onClick={() => abrirModal("sighting")}
         >
-          👁️ Reportar avistamiento →
+          Vi una mascota →
         </button>
       </div>
 
-      {mascotas.length === 0 ? (
-        <p
-          style={{
-            fontWeight: 700,
-            color: "var(--muted)",
-            padding: "1rem 0",
-          }}
-        >
-          Aún no hay mascotas perdidas publicadas.{" "}
-          <Link href="/mis-mascotas/ficha" style={{ color: "var(--blue)" }}>
-            Crea la ficha de tu mascota
-          </Link>{" "}
-          y márcala como perdida si lo necesitas.
-        </p>
+      {lista.length === 0 ? (
+        <div className="pp-casos-vacio" role="status">
+          <p>{textoVacio}</p>
+          {busquedaActiva && onQuitarFiltros && (
+            <button
+              type="button"
+              className="btn-mascota btn-mascota--secundario pp-casos-vacio-btn"
+              onClick={onQuitarFiltros}
+            >
+              Ver todos los casos
+            </button>
+          )}
+        </div>
       ) : (
         <div className="pets-grid">
-          {mascotas
-            .filter((m) => esTipoMascotaPermitido(m.tipo))
-            .map((m) => {
+          {lista.map((m) => {
             const emoji = emojiPorTipo(m.tipo);
             return (
-              <Link
+              <a
                 key={m.id}
                 href={`/mascota/${m.slug}`}
                 className="pet-card"
-                style={{ textDecoration: "none", color: "inherit" }}
               >
                 <div
                   className="pet-photo"
@@ -135,7 +159,7 @@ export function SeccionMascotasRecientes({ mascotas }: Props) {
                     <div className="pet-location">📍 {m.lugarPerdida}</div>
                   )}
                 </div>
-              </Link>
+              </a>
             );
           })}
         </div>

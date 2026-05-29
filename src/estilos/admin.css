@@ -1,0 +1,115 @@
+.admin-panel {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.admin-panel-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-panel h1 {
+  font-family: var(--font-fredoka), "Fredoka", cursive;
+  color: var(--navy);
+  margin: 0 0 0.25rem;
+}
+
+.admin-panel-cabecera p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.admin-panel-volver {
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+.admin-stat {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.admin-stat-valor {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--navy);
+}
+
+.admin-stat-etiq {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.admin-stat--alerta .admin-stat-valor {
+  color: #dc2626;
+}
+
+.admin-stat--ok .admin-stat-valor {
+  color: #059669;
+}
+
+.admin-seccion {
+  margin-bottom: 2rem;
+}
+
+.admin-seccion h2 {
+  font-size: 1.1rem;
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+}
+
+.admin-btn-export {
+  display: inline-flex;
+  padding: 0.6rem 1.2rem;
+  background: var(--blue);
+  color: white;
+  border-radius: 50px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.admin-tabla-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+}
+
+.admin-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-tabla th,
+.admin-tabla td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-tabla th {
+  background: #f8fafc;
+  font-weight: 800;
+  color: var(--navy);
+}

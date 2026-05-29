@@ -162,6 +162,44 @@
   position: absolute;
   top: 10px;
   left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.mascota-tarjeta-avist-pendiente {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #059669;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.mascotas-alerta-pendientes {
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #065f46;
+  line-height: 1.45;
+}
+
+.aviso-smtp-dueno {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  font-size: 0.88rem;
+  color: #78350f;
+  line-height: 1.45;
 }
 
 .mascota-tarjeta-cuerpo {
@@ -415,8 +453,8 @@
 
 .ficha-publica-hero {
   display: grid;
-  grid-template-columns: minmax(200px, 280px) 1fr;
-  align-items: start;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  align-items: stretch;
   background: var(--card);
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
@@ -472,11 +510,58 @@
 
 .ficha-publica-media {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
+  padding: 0.85rem;
   background: var(--card);
   border-right: 1.5px solid var(--border);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.ficha-publica-media .carrusel-ficha {
+  flex: 1.1 1 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ficha-publica-media .carrusel-ficha-marco {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 0;
+}
+
+.ficha-publica-media .carrusel-ficha-vista {
+  flex: 1;
+  width: 100%;
+  aspect-ratio: unset;
+  max-height: none;
+  min-height: 220px;
+  height: auto;
+  border-width: 2px;
+}
+
+.ficha-publica-media .carrusel-ficha-imagen {
+  object-fit: cover;
+}
+
+.ficha-publica-media .carrusel-ficha-miniaturas {
+  gap: 4px;
+}
+
+.ficha-publica-media .carrusel-ficha-mini {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
 }
 
 .carrusel-ficha {
@@ -917,6 +1002,117 @@ footer.ficha-publica-pie {
   box-shadow: 0 10px 28px rgba(var(--orange-rgb), 0.35);
 }
 
+/* Mapa bajo el carrusel: ocupa el resto de la columna sin hueco blanco */
+.ficha-publica-mapa {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.ficha-publica-mapa-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex: 0 0 auto;
+}
+
+.ficha-publica-mapa-titulo {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--navy2, #334155);
+  letter-spacing: 0.02em;
+}
+
+.ficha-publica-mapa-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #047857;
+  background: #ecfdf5;
+  padding: 0.15rem 0.45rem;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.ficha-publica-mapa-cabecera > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.ficha-publica-mapa-alerta {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: #fff7ed;
+  border-radius: 10px;
+  border: 1px solid #fed7aa;
+}
+
+.ficha-publica-mapa-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted, #64748b);
+  line-height: 1.35;
+  text-align: center;
+}
+
+.ficha-publica-mapa-leyenda {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex: 0 0 auto;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--muted, #64748b);
+}
+
+.ficha-publica-mapa .pp-mapa-wrap {
+  flex: 1 1 auto;
+  min-height: 150px;
+  height: auto !important;
+}
+
+.ficha-publica-mapa-leyenda i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+
+.ficha-publica-mapa-btn {
+  width: 100%;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.78rem !important;
+  justify-content: center;
+}
+
+.ficha-publica-mapa .pp-mapa-btn-geo {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.68rem;
+  right: 6px;
+  bottom: 6px;
+}
+
+.ficha-publica-mapa .pp-mapa-btn-geo span {
+  display: none;
+}
+
 .ficha-publica-historial {
   margin: 0;
   width: 100%;
@@ -1040,6 +1236,24 @@ footer.ficha-publica-pie {
   text-align: left;
 }
 
+@media (min-width: 1100px) {
+  .ficha-publica-hero {
+    grid-template-columns: minmax(320px, 420px) 1fr;
+  }
+
+  .ficha-publica-media .carrusel-ficha {
+    min-height: 300px;
+  }
+
+  .ficha-publica-media .carrusel-ficha-vista {
+    min-height: 280px;
+  }
+
+  .ficha-publica-mapa .pp-mapa-wrap {
+    min-height: 220px;
+  }
+}
+
 @media (max-width: 900px) {
   .ficha-publica-contenedor--con-historial {
     grid-template-columns: 1fr;
@@ -1074,6 +1288,37 @@ footer.ficha-publica-pie {
 
   .carrusel-ficha {
     max-width: 100%;
+  }
+
+  .ficha-publica-media {
+    height: auto;
+  }
+
+  .ficha-publica-media .carrusel-ficha {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  .ficha-publica-media .carrusel-ficha-marco {
+    flex: none;
+  }
+
+  .ficha-publica-media .carrusel-ficha-vista {
+    flex: none;
+    aspect-ratio: 1;
+    max-height: min(340px, 62vw);
+    min-height: 260px;
+  }
+
+  .ficha-publica-mapa {
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+
+  .ficha-publica-mapa .pp-mapa-wrap {
+    flex: 0 0 auto;
+    height: 220px !important;
+    min-height: 220px;
   }
 
   .ficha-publica-cuerpo {
@@ -1319,4 +1564,297 @@ footer.ficha-publica-pie {
 
 .form-ficha-campo-secundario {
   margin-top: 0.5rem;
+}
+
+/* M5 — Comportamiento / búsqueda predictiva */
+.panel-comportamiento {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border-radius: var(--radius-sm, 12px);
+  background: linear-gradient(135deg, #eef2ff 0%, #fff7ed 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.panel-comportamiento-evidencia {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--pp-texto-secundario, #5c5c5c);
+  line-height: 1.45;
+}
+
+.panel-comportamiento-fuentes {
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+}
+
+.panel-comportamiento-fuentes summary {
+  cursor: pointer;
+  color: var(--pp-azul, #2563eb);
+  font-weight: 600;
+}
+
+.panel-comportamiento-fuentes ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.panel-comportamiento-fuentes li + li {
+  margin-top: 0.65rem;
+}
+
+.panel-comportamiento-fuentes a {
+  color: var(--pp-azul, #2563eb);
+}
+
+.panel-comportamiento-fuentes p {
+  margin: 0.25rem 0 0;
+  color: var(--pp-texto-secundario, #5c5c5c);
+  line-height: 1.4;
+}
+
+.panel-comportamiento-fuentes-autor {
+  color: var(--pp-texto-secundario, #5c5c5c);
+}
+
+.panel-comportamiento-perfil {
+  margin: 0 0 1rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.panel-comportamiento-metricas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.panel-comportamiento-metrica {
+  text-align: center;
+  padding: 0.65rem;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.panel-comportamiento-metrica-valor {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--orange);
+}
+
+.panel-comportamiento-metrica-etiq {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.panel-comportamiento-consejos {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--navy);
+}
+
+.panel-comportamiento-consejos li + li {
+  margin-top: 0.45rem;
+}
+
+.panel-comportamiento-avistamientos {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #047857;
+  line-height: 1.45;
+}
+
+.panel-comportamiento-nota {
+  margin: 1rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* M6 — Avistamientos y chat */
+.seccion-avistamientos {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px dashed var(--border);
+}
+
+.seccion-avistamientos-vacio {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.seccion-avistamientos-intro {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.timeline-avistamientos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.timeline-avistamiento {
+  padding: 1rem 1.1rem;
+  background: white;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  border-left: 4px solid var(--mint);
+}
+
+.timeline-avistamiento--pendiente {
+  border-left-color: #eab308;
+}
+
+.timeline-avistamiento--verificado {
+  border-left-color: #059669;
+}
+
+.timeline-avistamiento--descartado {
+  opacity: 0.65;
+  border-left-color: #94a3b8;
+}
+
+.timeline-avistamiento-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-avistamiento-num {
+  font-weight: 900;
+  color: var(--navy);
+}
+
+.timeline-avistamiento-estado {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.timeline-avistamiento-foto {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.timeline-avistamiento-acciones {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.timeline-avistamiento-acciones button {
+  padding: 0.4rem 0.85rem;
+  border-radius: 50px;
+  border: none;
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.timeline-btn-descartar {
+  background: var(--danger-bg) !important;
+  color: var(--danger-text) !important;
+}
+
+.chat-avistamiento {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.chat-avistamiento-titulo {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.chat-avistamiento-mensajes {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.chat-avistamiento-msg {
+  padding: 0.5rem 0.65rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.chat-avistamiento-msg p {
+  margin: 0.2rem 0;
+}
+
+.chat-avistamiento-msg time {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.chat-avistamiento-vacio {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.chat-avistamiento-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.chat-avistamiento-form textarea {
+  flex: 1;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  padding: 0.5rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.chat-avistamiento-form button {
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 50px;
+  background: var(--blue);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chat-avistamiento-nombre {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.chat-avistamiento-nombre input {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
 }

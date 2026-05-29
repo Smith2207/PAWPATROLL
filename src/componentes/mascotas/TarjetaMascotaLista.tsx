@@ -5,7 +5,10 @@ import { esFichaPublica } from "@/lib/mascotas/estados";
 import Link from "next/link";
 
 type Props = {
-  mascota: Mascota & { fotoPrincipal: string | null };
+  mascota: Mascota & {
+    fotoPrincipal: string | null;
+    avistamientosPendientes?: number;
+  };
 };
 
 export function TarjetaMascotaLista({ mascota }: Props) {
@@ -26,6 +29,14 @@ export function TarjetaMascotaLista({ mascota }: Props) {
           )}
           <div className="mascota-tarjeta-badge">
             <BadgeEstadoMascota estado={mascota.estado as EstadoMascota} />
+            {(mascota.avistamientosPendientes ?? 0) > 0 && (
+              <span
+                className="mascota-tarjeta-avist-pendiente"
+                title="Avistamientos por revisar"
+              >
+                👁️ {mascota.avistamientosPendientes}
+              </span>
+            )}
           </div>
         </div>
         <div className="mascota-tarjeta-cuerpo">

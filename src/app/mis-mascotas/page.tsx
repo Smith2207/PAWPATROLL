@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { listarMisMascotas } from "@/actions/mascotas";
+import { AvisoSmtpDueño } from "@/componentes/mascotas/AvisoSmtpDueño";
 import { TarjetaMascotaLista } from "@/componentes/mascotas/TarjetaMascotaLista";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -12,6 +13,10 @@ export default async function PaginaMisMascotas() {
   const mascotas = await listarMisMascotas();
   const perdidas = mascotas.filter((m) => m.estado === "PERDIDA").length;
   const enCasa = mascotas.filter((m) => m.estado === "EN_CASA").length;
+  const avistamientosPendientes = mascotas.reduce(
+    (s, m) => s + (m.avistamientosPendientes ?? 0),
+    0
+  );
 
   return (
     <EnvolturaPaginasApp>
@@ -47,6 +52,16 @@ export default async function PaginaMisMascotas() {
             </Link>
           )}
         </header>
+
+        <AvisoSmtpDueño hayMascotaPerdida={perdidas > 0} />
+
+        {avistamientosPendientes > 0 && (
+          <p className="mascotas-alerta-pendientes" role="status">
+            Tienes <strong>{avistamientosPendientes}</strong> avistamiento
+            {avistamientosPendientes === 1 ? "" : "s"} por revisar en tus fichas
+            (marca verificar o descartar en cada reporte).
+          </p>
+        )}
 
         {mascotas.length === 0 ? (
           <div className="mascotas-vacio tarjeta-panel">

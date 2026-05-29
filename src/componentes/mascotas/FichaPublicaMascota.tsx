@@ -1,7 +1,12 @@
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import { CarruselFotosPublica } from "@/componentes/mascotas/CarruselFotosPublica";
+import { MapaMascotaFicha } from "@/componentes/mascotas/MapaMascotaFicha";
 import type { obtenerMascotaPublica } from "@/actions/mascotas";
+import type { DatosMapaMascota } from "@/actions/mapa";
 import Link from "next/link";
+import { BotonReportarAvistamiento } from "@/componentes/mascotas/BotonReportarAvistamiento";
+import { SeccionAvistamientosMascota } from "@/componentes/avistamientos/SeccionAvistamientosMascota";
+import type { AvistamientoConMensajes } from "@/actions/avistamientos";
 
 type DatosPublicos = NonNullable<Awaited<ReturnType<typeof obtenerMascotaPublica>>>;
 
@@ -9,7 +14,17 @@ function ChipMeta({ children }: { children: string }) {
   return <span className="ficha-publica-chip">{children}</span>;
 }
 
-export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
+export function FichaPublicaMascota({
+  datos,
+  datosMapa = null,
+  avistamientos = [],
+  esDueno = false,
+}: {
+  datos: DatosPublicos;
+  datosMapa?: DatosMapaMascota | null;
+  avistamientos?: AvistamientoConMensajes[];
+  esDueno?: boolean;
+}) {
   const { mascota, duenoNombre, fotos, historial } = datos;
 
   const metas = [
@@ -82,6 +97,16 @@ export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
         >
           <div className="ficha-publica-media">
             <CarruselFotosPublica fotos={fotos} nombre={mascota.nombre} />
+            {mascota.estado === "PERDIDA" && datosMapa && (
+              <MapaMascotaFicha
+                nombre={mascota.nombre}
+                mascotaId={mascota.id}
+                tipo={mascota.tipo}
+                color={mascota.color}
+                raza={mascota.raza}
+                datos={datosMapa}
+              />
+            )}
           </div>
 
           <div className="ficha-publica-cuerpo">
@@ -103,8 +128,9 @@ export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
                 🚨
               </span>
               <p>
-                Esta mascota está <strong>perdida</strong>. Si la ves, reporta un
-                avistamiento desde la página de inicio.
+                Esta mascota está <strong>perdida</strong>. Si la ves, usa el botón
+                de abajo para reportar un avistamiento vinculado a{" "}
+                <strong>{mascota.nombre}</strong>.
               </p>
             </div>
           )}
@@ -159,9 +185,19 @@ export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
                 <strong>{duenoNombre}</strong>
               </p>
             )}
-            <Link href="/#avistamientos" className="ficha-publica-cta">
-              👁️ Reportar avistamiento
-            </Link>
+            {mascota.estado === "PERDIDA" ? (
+              <BotonReportarAvistamiento
+                mascotaId={mascota.id}
+                nombre={mascota.nombre}
+                tipo={mascota.tipo}
+                color={mascota.color}
+                raza={mascota.raza}
+              />
+            ) : (
+              <Link href="/comunidad" className="ficha-publica-cta">
+                🗺️ Ver mapa de avistamientos
+              </Link>
+            )}
           </div>
           </div>
         </article>
@@ -188,6 +224,16 @@ export function FichaPublicaMascota({ datos }: { datos: DatosPublicos }) {
           </aside>
         )}
       </div>
+
+      {mascota.estado === "PERDIDA" && (
+        <SeccionAvistamientosMascota
+          mascotaId={mascota.id}
+          nombreMascota={mascota.nombre}
+          avistamientosIniciales={avistamientos}
+          esDueno={esDueno}
+          prediccion={datosMapa?.prediccion ?? null}
+        />
+      )}
     </div>
   );
 }

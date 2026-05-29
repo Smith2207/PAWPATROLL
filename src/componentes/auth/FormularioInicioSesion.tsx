@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useModales } from "@/contexto/ContextoModales";
+import { hayPublicacionPendienteAuth } from "@/lib/publicacion-pendiente-auth";
 
 type Props = {
   enModal?: boolean;
@@ -15,15 +16,25 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const { data: sesion, status } = useSession();
-  const { cerrarModal, abrirModal } = useModales();
+  const {
+    cerrarModal,
+    abrirModal,
+    avistamientoPendienteAuth,
+    perdidaPendienteAuth,
+  } = useModales();
+
+  const publicacionPendiente =
+    avistamientoPendienteAuth ||
+    perdidaPendienteAuth ||
+    hayPublicacionPendienteAuth();
 
   useEffect(() => {
-    if (status === "authenticated") {
-      if (enModal) cerrarModal("login");
-      router.replace("/");
-      router.refresh();
-    }
-  }, [status, enModal, cerrarModal, router]);
+    if (status !== "authenticated") return;
+    if (publicacionPendiente) return;
+    if (enModal) cerrarModal("login");
+    router.replace("/");
+    router.refresh();
+  }, [status, enModal, publicacionPendiente, cerrarModal, router]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -75,9 +86,11 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
       return;
     }
 
-    if (enModal) cerrarModal("login");
-    router.replace("/");
-    router.refresh();
+    if (!publicacionPendiente) {
+      if (enModal) cerrarModal("login");
+      router.replace("/");
+      router.refresh();
+    }
   }
 
   return (

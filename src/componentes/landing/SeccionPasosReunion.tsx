@@ -2,53 +2,57 @@ const PASOS = [
   {
     num: "01",
     icono: "📋",
-    titulo: "Crea tu reporte",
-    desc: "Registra los datos de tu mascota: nombre, raza, fotos, descripción física, fecha y ubicación exacta de la pérdida.",
+    titulo: "Crea la ficha",
+    desc: "Registra nombre, fotos, raza y datos de contacto. Marca la mascota como perdida con fecha y punto en el mapa.",
   },
   {
     num: "02",
-    icono: "🤖",
-    titulo: "La IA entra en acción",
-    desc: "Nuestros modelos CNN analizan las fotos, identifican rasgos únicos y buscan coincidencias en la base de datos automáticamente.",
+    icono: "🗺️",
+    titulo: "Comparte y mapa",
+    desc: "Publica el enlace de la ficha. Aparece en el mapa comunitario con su zona de búsqueda.",
   },
   {
     num: "03",
-    icono: "🔔",
-    titulo: "Alertas a la comunidad",
-    desc: "Usuarios cercanos reciben notificaciones automáticas. Cualquier ciudadano puede reportar avistamientos con foto y ubicación GPS.",
+    icono: "👁️",
+    titulo: "Avistamientos",
+    desc: "Cualquier persona reporta dónde la vio, con ubicación y foto opcional. El dueño recibe aviso y puede verificar el reporte.",
   },
   {
     num: "04",
     icono: "🎉",
-    titulo: "¡Reunión exitosa!",
-    desc: "El dueño y quien avistó la mascota se conectan por chat seguro. El estado del reporte cambia a Reunido y el caso se cierra.",
+    titulo: "Reunión",
+    desc: "Coordina por mensajes en la ficha y marca el caso como reunido cuando vuelva a casa.",
   },
 ] as const;
 
-export function SeccionPasosReunion() {
+type Props = { sinEncabezado?: boolean };
+
+export function SeccionPasosReunion({ sinEncabezado = false }: Props) {
   return (
-    <div className="steps-section" id="comunidad">
+    <div className="steps-section">
       <div className="steps-inner">
-        <div className="section-header section-header--izq">
-          <div
-            className="section-eyebrow"
-            style={{
-              background: "rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.8)",
-            }}
-          >
-            Comunidad colaborativa
+        {!sinEncabezado && (
+          <div className="section-header section-header--izq">
+            <div
+              className="section-eyebrow"
+              style={{
+                background: "rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.8)",
+              }}
+            >
+              Cómo colaborar
+            </div>
+            <div className="section-title" style={{ color: "white" }}>
+              Del reporte a la reunión
+            </div>
+            <p
+              className="section-sub"
+              style={{ color: "rgba(255,255,255,0.72)", textAlign: "left" }}
+            >
+              Flujo pensado para dueños y vecinos en la misma ciudad
+            </p>
           </div>
-          <div className="section-title" style={{ color: "white" }}>
-            La red ciudadana que ayuda a reunir familias 🐾
-          </div>
-          <p
-            className="section-sub"
-            style={{ color: "rgba(255,255,255,0.72)", textAlign: "left" }}
-          >
-            Vecinos, voluntarios y dueños conectados con alertas, avistamientos y chat seguro
-          </p>
-        </div>
+        )}
         <div className="steps-grid">
           {PASOS.map((p) => (
             <div key={p.num} className="step-card">

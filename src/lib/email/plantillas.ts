@@ -51,6 +51,54 @@ export function plantillaRecuperarContrasena(nombre: string, enlace: string) {
   );
 }
 
+export function plantillaAvistamientoNuevo(opciones: {
+  nombreDueno: string | null;
+  nombreMascota: string;
+  numeroReporte: number;
+  direccion: string | null;
+  enlace: string;
+}) {
+  const lugar = opciones.direccion?.trim() || "Ubicación en el mapa";
+  return layout(
+    "Nuevo avistamiento",
+    `
+    <h2 style="margin:0 0 12px;font-size:1.2rem;">Hola${opciones.nombreDueno ? `, ${opciones.nombreDueno}` : ""}</h2>
+    <p style="line-height:1.6;">Alguien reportó el <strong>avistamiento #${opciones.numeroReporte}</strong> de <strong>${opciones.nombreMascota}</strong>.</p>
+    <p style="line-height:1.6;"><strong>Lugar:</strong> ${lugar}</p>
+    <p style="text-align:center;margin:24px 0;">
+      <a href="${opciones.enlace}" style="background:#E87C2A;color:#fff;text-decoration:none;padding:12px 24px;border-radius:50px;font-weight:800;display:inline-block;">
+        Ver en la ficha
+      </a>
+    </p>
+    <p style="font-size:0.85rem;color:#4A5568;">Puedes verificar el reporte y chatear con quien lo envió desde la línea de tiempo de avistamientos.</p>
+  `
+  );
+}
+
+export function plantillaMensajeChatAvistamiento(opciones: {
+  nombreDestino: string | null;
+  nombreMascota: string;
+  autorMensaje: string;
+  extracto: string;
+  enlace: string;
+}) {
+  return layout(
+    "Nuevo mensaje",
+    `
+    <h2 style="margin:0 0 12px;font-size:1.2rem;">Hola${opciones.nombreDestino ? `, ${opciones.nombreDestino}` : ""}</h2>
+    <p style="line-height:1.6;"><strong>${opciones.autorMensaje}</strong> escribió sobre <strong>${opciones.nombreMascota}</strong>:</p>
+    <blockquote style="margin:16px 0;padding:12px 16px;background:#F5F7FA;border-left:4px solid #2E6DB4;border-radius:8px;font-size:0.95rem;">
+      ${opciones.extracto}
+    </blockquote>
+    <p style="text-align:center;margin:24px 0;">
+      <a href="${opciones.enlace}" style="background:#2E6DB4;color:#fff;text-decoration:none;padding:12px 24px;border-radius:50px;font-weight:800;display:inline-block;">
+        Responder en PawPatrol
+      </a>
+    </p>
+  `
+  );
+}
+
 export function plantillaBienvenida(nombre: string, rolEtiqueta: string) {
   return layout(
     "Bienvenido a PawPatrol",

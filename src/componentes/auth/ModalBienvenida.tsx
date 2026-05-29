@@ -2,6 +2,8 @@
 
 import { completarBienvenida } from "@/actions/autenticacion";
 import { CampoCiudad } from "@/componentes/formulario/CampoCiudad";
+import { PASOS_PRIMERA_VEZ } from "@/lib/landing/pasos-primera-vez";
+import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -63,10 +65,21 @@ export function ModalBienvenida({
         <div className="modal-bienvenida-emoji" aria-hidden>
           🐾
         </div>
-        <h2 id="modal-bienvenida-titulo">¡Bienvenido a PawPatrol!</h2>
+        <h2 id="modal-bienvenida-titulo">¿Primera vez en PawPatrol?</h2>
+        <ol className="modal-bienvenida-pasos" aria-label="Cómo usar PawPatrol">
+          {PASOS_PRIMERA_VEZ.map((p) => (
+            <li key={p.titulo}>
+              <span aria-hidden>{p.emoji}</span>
+              <div>
+                <strong>{p.titulo}</strong>
+                <p>{p.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
         <p className="modal-bienvenida-sub">
-          Nos alegra tenerte aquí. Completa un poco más tu perfil para que, si alguna
-          mascota se pierde, la comunidad pueda contactarte más fácil.
+          Completa tu perfil para que la comunidad pueda contactarte si reportas o
+          ayudas con una mascota.
         </p>
 
         {error && <p className="auth-alerta auth-alerta--error">{error}</p>}
@@ -118,9 +131,16 @@ export function ModalBienvenida({
         </form>
 
         <p className="modal-bienvenida-tip">
-          ¿Listo para empezar?{" "}
+          <Link href={RUTAS_LANDING.casosActivos} onClick={omitir}>
+            Ver casos activos
+          </Link>
+          {" · "}
+          <Link href={RUTAS_LANDING.comunidad} onClick={omitir}>
+            Abrir mapa
+          </Link>
+          {" · "}
           <Link href="/mis-mascotas/ficha" onClick={omitir}>
-            Crea la ficha de tu primera mascota
+            Crear ficha de mascota
           </Link>
         </p>
       </div>

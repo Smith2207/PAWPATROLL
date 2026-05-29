@@ -1,46 +1,140 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useModales } from "@/contexto/ContextoModales";
+import type { FiltrosBusquedaMascotasPublicas } from "@/actions/mascotas";
+import type { TipoMascota } from "@/lib/mascotas/tipos";
 
-const FILTROS = [
-  { id: "perros", emoji: "🐕", texto: "Perros" },
-  { id: "gatos", emoji: "🐱", texto: "Gatos" },
-  { id: "cerca", emoji: "📍", texto: "Cerca de mí" },
-  { id: "24h", emoji: "🕐", texto: "Últimas 24h" },
-  { id: "ia", emoji: "🧠", texto: "Por foto IA" },
+const FILTROS_TIPO = [
+  { id: "perros", emoji: "🐕", texto: "Perros", tipo: "Perro" as const satisfies TipoMascota },
+  { id: "gatos", emoji: "🐱", texto: "Gatos", tipo: "Gato" as const satisfies TipoMascota },
+  { id: "24h", emoji: "🕐", texto: "Últimas 24h", dias: 1 },
 ] as const;
 
-export function BarraBusqueda() {
-  const [filtroActivo, setFiltroActivo] = useState<string>("perros");
+type Props = {
+  onBuscar: (filtros: FiltrosBusquedaMascotasPublicas) => void;
+  buscando?: boolean;
+  resetSignal?: number;
+  busquedaActiva?: boolean;
+  onRestablecer?: () => void;
+};
+
+export function BarraBusqueda({
+  onBuscar,
+  buscando,
+  resetSignal = 0,
+  busquedaActiva = false,
+  onRestablecer,
+}: Props) {
+  const { abrirBusquedaPorFoto } = useModales();
+  const [texto, setTexto] = useState("");
+  const [filtroActivo, setFiltroActivo] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTexto("");
+    setFiltroActivo(null);
+  }, [resetSignal]);
+
+  function chipActivo(): Partial<FiltrosBusquedaMascotasPublicas> {
+    if (!filtroActivo) return {};
+    const f = FILTROS_TIPO.find((x) => x.id === filtroActivo);
+    if (!f) return {};
+    if ("tipo" in f && f.tipo) return { tipo: f.tipo };
+    if ("dias" in f && f.dias) return { dias: f.dias };
+    return {};
+  }
+
+  function ejecutar(extra?: Partial<FiltrosBusquedaMascotasPublicas>) {
+    onBuscar({
+      q: texto.trim() || undefined,
+      ...chipActivo(),
+      ...extra,
+    });
+  }
+
+  function aplicarFiltro(id: string) {
+    const f = FILTROS_TIPO.find((x) => x.id === id);
+    if (!f) return;
+
+    const activo = filtroActivo === id;
+    const q = texto.trim() || undefined;
+    setFiltroActivo(activo ? null : id);
+
+    if (activo) {
+      onBuscar({ q });
+      return;
+    }
+
+    if ("tipo" in f && f.tipo) {
+      onBuscar({ q, tipo: f.tipo });
+      return;
+    }
+
+    if ("dias" in f && f.dias) {
+      onBuscar({ q, dias: f.dias });
+    }
+  }
 
   return (
     <div className="search-section" id="buscar">
       <div className="search-inner">
         <div className="search-box">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon" aria-hidden>
+            🔍
+          </span>
           <input
-            type="text"
-            placeholder="Buscar por nombre, raza, color, zona..."
+            type="search"
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                ejecutar();
+              }
+            }}
+            placeholder="Nombre, raza, color o zona…"
+            aria-label="Buscar mascotas perdidas"
           />
         </div>
-        <button type="button" className="search-btn">
-          🔍 Buscar
-        </button>
-        <div
-          className="search-filtros"
-          role="group"
-          aria-label="Filtros de búsqueda"
-        >
-          {FILTROS.map((f) => (
+        <div className="search-acciones">
+          <button
+            type="button"
+            className="search-btn"
+            disabled={buscando}
+            onClick={() => ejecutar()}
+          >
+            {buscando ? "Buscando…" : "Buscar"}
+          </button>
+          <button
+            type="button"
+            className="search-btn search-btn-foto"
+            onClick={abrirBusquedaPorFoto}
+          >
+            📷 Por foto
+          </button>
+        </div>
+        <div className="search-filtros" role="group" aria-label="Filtros rápidos">
+          {FILTROS_TIPO.map((f) => (
             <button
               key={f.id}
               type="button"
               className={`filter-btn${filtroActivo === f.id ? " active" : ""}`}
-              onClick={() => setFiltroActivo(f.id)}
+              onClick={() => aplicarFiltro(f.id)}
+              disabled={buscando}
             >
               {f.emoji} {f.texto}
             </button>
           ))}
+          {busquedaActiva && onRestablecer && (
+            <button
+              type="button"
+              className="filter-btn filter-btn--limpiar"
+              onClick={onRestablecer}
+              disabled={buscando}
+            >
+              ✕ Ver todos
+            </button>
+          )}
         </div>
       </div>
     </div>

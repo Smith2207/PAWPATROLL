@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /** CIUDADANO = miembro de la comunidad. DUENO queda en el enum solo por compatibilidad. */
@@ -21,6 +22,12 @@ export const estadoMascotaEnum = pgEnum("estado_mascota", [
   "PERDIDA",
   "ENCONTRADA",
   "REUNIDA",
+]);
+
+export const estadoAvistamientoEnum = pgEnum("avistamiento_estado", [
+  "PENDIENTE",
+  "VERIFICADO",
+  "DESCARTADO",
 ]);
 
 export const users = pgTable("user", {
@@ -107,6 +114,11 @@ export const mascotas = pgTable("mascota", {
   estado: estadoMascotaEnum("estado").default("EN_CASA").notNull(),
   fechaPerdida: timestamp("fecha_perdida", { mode: "date" }),
   lugarPerdida: text("lugar_perdida"),
+  latPerdida: text("lat_perdida"),
+  lngPerdida: text("lng_perdida"),
+  radioBusquedaMetros: integer("radio_busqueda_metros"),
+  /** solo_interior | patio_supervisado | exterior_habitual */
+  accesoExterior: text("acceso_exterior"),
   contactoPublico: text("contacto_publico"),
   enfermedades: text("enfermedades"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
@@ -123,6 +135,79 @@ export const mascotaFotos = pgTable("mascota_foto", {
   url: text("url").notNull(),
   esPrincipal: boolean("es_principal").default(false).notNull(),
   orden: integer("orden").default(0).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+/** Un embedding CLIP por foto de mascota perdida */
+export const mascotaEmbeddings = pgTable(
+  "mascota_embedding",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    mascotaId: text("mascota_id")
+      .notNull()
+      .references(() => mascotas.id, { onDelete: "cascade" }),
+    fotoId: text("foto_id")
+      .notNull()
+      .references(() => mascotaFotos.id, { onDelete: "cascade" }),
+    embedding: text("embedding").notNull(),
+    modelo: text("modelo")
+      .notNull()
+      .default("openai/clip-vit-base-patch32"),
+    updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => ({
+    mascotaFotoUnico: uniqueIndex("mascota_embedding_mascota_foto_uidx").on(
+      table.mascotaId,
+      table.fotoId
+    ),
+  })
+);
+
+export const avistamientos = pgTable("avistamiento", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  mascotaId: text("mascota_id").references(() => mascotas.id, {
+    onDelete: "set null",
+  }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  /** Número secuencial de avistamiento para la mascota (1, 2, 3…) */
+  numeroReporte: integer("numero_reporte").notNull(),
+  lat: text("lat").notNull(),
+  lng: text("lng").notNull(),
+  direccion: text("direccion"),
+  tipoMascota: text("tipo_mascota"),
+  tamano: text("tamano"),
+  color: text("color"),
+  raza: text("raza"),
+  referencias: text("referencias"),
+  direccionMovimiento: text("direccion_movimiento"),
+  descripcion: text("descripcion"),
+  fotoUrl: text("foto_url"),
+  nombreReportante: text("nombre_reportante"),
+  telefonoReportante: text("telefono_reportante"),
+  enTiempoReal: boolean("en_tiempo_real").default(false).notNull(),
+  estado: estadoAvistamientoEnum("estado").default("PENDIENTE").notNull(),
+  verificadoPor: text("verificado_por").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  verificadoAt: timestamp("verificado_at", { mode: "date" }),
+  motivoDescarte: text("motivo_descarte"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const mensajesAvistamiento = pgTable("mensaje_avistamiento", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  avistamientoId: text("avistamiento_id")
+    .notNull()
+    .references(() => avistamientos.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  autorNombre: text("autor_nombre"),
+  contenido: text("contenido").notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -146,7 +231,10 @@ export type Usuario = typeof users.$inferSelect;
 export type Mascota = typeof mascotas.$inferSelect;
 export type MascotaFoto = typeof mascotaFotos.$inferSelect;
 export type HistorialEstadoMascota = typeof historialEstadoMascota.$inferSelect;
-
+export type Avistamiento = typeof avistamientos.$inferSelect;
+export type EstadoAvistamiento =
+  (typeof estadoAvistamientoEnum.enumValues)[number];
+export type MensajeAvistamiento = typeof mensajesAvistamiento.$inferSelect;
 export type DatosFichaMascota = {
   nombre: string;
   tipo: string;
@@ -162,4 +250,5 @@ export type DatosFichaMascota = {
   microchip?: string;
   contactoPublico?: string;
   enfermedades?: string;
+  accesoExterior?: string;
 };

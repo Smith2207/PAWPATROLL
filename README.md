@@ -10,7 +10,10 @@ Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** 
 - **Auth.js** — sesión, Google OAuth, credenciales
 - **Neon PostgreSQL** + **Drizzle ORM**
 - **Vercel** — despliegue
-- Estilos: paleta unificada (`paleta.css`), landing, auth, mascotas, responsive
+- Estilos: paleta, landing, auth, mascotas, mapa, visual (CLIP), admin
+- **Mapa** (Leaflet): comunidad + ficha individual, calor, cercos, refugios (M5)
+- **Búsqueda por foto** (CLIP local, `@xenova/transformers`)
+- **WebSocket** opcional en desarrollo (`WS_PORT` / `NEXT_PUBLIC_WS_PORT`)
 
 ## Inicio rápido
 
@@ -18,8 +21,15 @@ Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** 
 copy .env.example .env.local   # Windows
 pnpm install
 pnpm db:push                   # crea/actualiza tablas en Neon
+pnpm db:migrate-mapa           # si usas módulo mapa (0004+)
+pnpm db:migrate-embeddings
+pnpm db:migrate-embeddings-multifoto
+pnpm db:migrate-comportamiento
+pnpm db:migrate-acceso-exterior   # campo acceso_exterior para M5
 pnpm dev
 ```
+
+El servidor de desarrollo levanta Next en `:3000` y, vía `instrumentation.ts`, un WebSocket en `:3001` para actualizar mapa y avistamientos.
 
 Abre [http://localhost:3000](http://localhost:3000).
 
@@ -31,9 +41,13 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `AUTH_SECRET` | Secreto Auth.js (`openssl rand -base64 32`) |
 | `NEXT_PUBLIC_APP_URL` | **Local:** `http://localhost:3000`. **Producción (Vercel):** `https://pawpatroll.vercel.app` — obligatorio para que los correos lleven enlaces correctos (verificación y recuperar contraseña). Sin esta variable en Vercel, los enlaces salen como `localhost`. |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Google |
-| `SMTP_*` / `EMAIL_FROM` | Opcional: correos de verificación y bienvenida |
+| `SMTP_*` / `EMAIL_FROM` | Correos de verificación, bienvenida y aviso al dueño |
+| `WS_PORT` / `NEXT_PUBLIC_WS_PORT` | WebSocket local (por defecto `3001`) |
+| `CLIP_*` | Umbrales y caché del modelo (ver `.env.example`) |
 
 Sin SMTP, los enlaces de verificación se imprimen en la consola (`pnpm dev`).
+
+Tras marcar mascotas como **PERDIDA** con fotos, indexa embeddings: `pnpm db:reindexar-visual`.
 
 ## Administrador único
 
@@ -63,6 +77,13 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 **Recuperar contraseña:** en login, «¿Olvidaste tu contraseña?» → correo con enlace (1 h) → nueva contraseña con bcrypt. No aplica a cuentas solo con Google. Sin SMTP, el enlace se imprime en la consola del servidor.
 
+**Avistamientos:** el reporte siempre se guarda en la base de datos. Si `SMTP_PASS` falla (p. ej. error 535 de Gmail), revisa que sea contraseña de aplicación sin espacios extra. Sin SMTP, el dueño verá un aviso en **Mis mascotas** y debe revisar la ficha en la web.
+
+### Tiempo real (mapa)
+
+- **Local (`pnpm dev`):** WebSocket en el puerto `3001` (ver `instrumentation.ts`).
+- **Vercel/producción:** define `NEXT_PUBLIC_WS_URL` con un proxy `wss://…` o el mapa se actualiza solo cada ~90 s (respaldo automático).
+
 ### API verificar cuenta
 
 | Método | Ruta | Uso |
@@ -78,9 +99,14 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 | Ruta | Descripción |
 |------|-------------|
-| `/` | Landing: búsqueda, avistamientos, mascotas perdidas recientes |
-| `/mascota/[slug]` | Ficha pública (solo `PERDIDA` o `ENCONTRADA`): fotos, datos, historial, CTA reportar avistamiento |
-| `/iniciar-sesion` | Login (modal también desde la landing) |
+| `/` | Inicio (hero y accesos rápidos) |
+| `/casos-activos` | Listado y búsqueda de fichas perdidas activas |
+| `/buscar` | Redirige a `/casos-activos` |
+| `/comunidad` | Mapa comunitario (cercos y avistamientos) |
+| `/como-funciona` | Funciones y pasos del flujo |
+| `/mascota/[slug]` | Ficha pública (`PERDIDA` / `ENCONTRADA`): mapa propio, M5, timeline, chat por avistamiento |
+| `/admin` | Panel estadísticas + export CSV (rol `ADMINISTRADOR`) |
+| `/iniciar-sesion` | Redirige a `/` (login en modal) |
 
 ### Con sesión
 
@@ -117,13 +143,24 @@ pnpm db:push
 
 O en Neon SQL Editor: `drizzle/0002_modulo_mascotas.sql`.
 
+## Mapa y avistamientos
+
+- Mapa público en la landing con filtros; cada ficha tiene mapa solo de esa mascota.
+- Avistamientos: ubicación, foto opcional, estados `PENDIENTE` / `VERIFICADO` / `DESCARTADO`.
+- Email al dueño cuando el avistamiento está vinculado a su mascota (requiere SMTP).
+
+## Búsqueda visual (CLIP)
+
+- API: `POST /api/ia/buscar`, indexado: `POST /api/ia/indexar` o automático al guardar ficha perdida.
+- Requiere tablas de embeddings (`pnpm db:migrate-embeddings*`). Primera búsqueda descarga el modelo (~1 min).
+
 ## Roles
 
 | Rol | Permisos |
 |-----|----------|
 | `CIUDADANO` | Reportar pérdidas, avistamientos y gestionar sus fichas |
 | `DUENO` | Legado en BD; mismos permisos que `CIUDADANO` |
-| `ADMINISTRADOR` | Gestión total (correo de soporte o asignación manual) |
+| `ADMINISTRADOR` | `/admin`, export CSV, estadísticas |
 
 ## Estructura del proyecto
 
@@ -131,24 +168,24 @@ O en Neon SQL Editor: `drizzle/0002_modulo_mascotas.sql`.
 auth.ts
 src/
   app/
-    page.tsx                    → Landing
-    mis-mascotas/               → Listado, ficha nueva, edición
-    mascota/[slug]/             → Ficha pública
-    (app)/perfil, registro, verificar-correo
-    api/auth/                   → Auth.js + verificación
+    page.tsx, admin/
+    mis-mascotas/, mascota/[slug]/
+    api/auth/, api/ia/, api/geo/, api/admin/
   actions/
-    autenticacion.ts
-    mascotas.ts
+    mascotas.ts, mapa.ts, avistamientos.ts, comportamiento.ts, estadisticas.ts
   componentes/
-    auth/                       → MenuUsuario, formularios
-    landing/                    → BarraNavegacion, modales, secciones
-    layout/                     → BarraNavegacionApp, EnvolturaPaginasApp
-    mascotas/                   → FormularioFicha, FichaPublica, fotos…
-  estilos/
-    paleta.css, landing-pawpatrol.css, auth.css, mascotas.css, responsive.css
-  lib/db/schema.ts              → Drizzle (user, mascota, fotos, historial…)
-drizzle/                        → Migraciones SQL
+    landing/, mapa/, avistamientos/, visual/, comportamiento/
+  lib/
+    db/, geo/, visual/, comportamiento/, tiempo-real/
+drizzle/                        → Migraciones 0000–0007
+scripts/                        → aplicar migraciones, reindexar CLIP
 ```
+
+## Limitaciones conocidas
+
+- Fotos guardadas como data URL en PostgreSQL (no CDN).
+- WebSocket en proceso Node: en Vercel serverless no hay tiempo real sin servicio externo (`NEXT_PUBLIC_WS_URL`).
+- Notificaciones por correo al **dueño** del avistamiento vinculado; no hay alertas masivas por radio GPS.
 
 ## Google OAuth
 

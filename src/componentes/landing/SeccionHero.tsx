@@ -1,9 +1,33 @@
 "use client";
 
+import type { EstadisticasLanding } from "@/actions/estadisticas";
+import type { DatosMapaPublico } from "@/actions/mapa";
 import { useModales } from "@/contexto/ContextoModales";
+import { RUTAS_LANDING } from "@/lib/landing/rutas";
+import Link from "next/link";
+import { MapaVistaHero } from "@/componentes/landing/MapaVistaHero";
 
-export function SeccionHero() {
-  const { abrirModal } = useModales();
+type Props = {
+  estadisticas?: EstadisticasLanding;
+  datosMapa?: DatosMapaPublico;
+};
+
+function formatear(n: number) {
+  return n.toLocaleString("es-PE");
+}
+
+export function SeccionHero({ estadisticas, datosMapa }: Props) {
+  const { abrirModal, abrirBusquedaPorFoto } = useModales();
+
+  const perdidasEnMapa = datosMapa?.perdidas.length ?? 0;
+
+  const hayDatos =
+    estadisticas &&
+    estadisticas.perdidasActivas +
+      estadisticas.reunidas +
+      estadisticas.avistamientos +
+      estadisticas.usuarios >
+      0;
 
   return (
     <div className="hero-wrap" id="inicio">
@@ -12,16 +36,16 @@ export function SeccionHero() {
         <div>
           <div className="hero-badge">
             <span className="dot" />
-            IA · Reconocimiento Visual · Geolocalización en tiempo real
+            Mapa comunitario · Avistamientos · Búsqueda por foto
           </div>
           <h1>
-            Encuentra a tu <span className="highlight">mejor amigo</span> con
-            tecnología 🐾
+            Reúne a tu <span className="highlight">mascota perdida</span> con
+            ayuda de la comunidad
           </h1>
           <p className="hero-desc">
-            PawPatrol usa inteligencia artificial y mapas interactivos para
-            reunir mascotas perdidas con sus familias. Sube una foto, activa la
-            alerta y deja que la comunidad te ayude.
+            PawPatrol conecta dueños y vecinos con mapas y avistamientos. Si
+            perdiste a tu mascota, activa la alerta; si la viste en la calle,
+            repórtalo con ubicación.
           </p>
           <div className="hero-actions">
             <button
@@ -29,114 +53,77 @@ export function SeccionHero() {
               className="btn-primary"
               onClick={() => abrirModal("report")}
             >
-              🚨 Reportar mascota perdida
+              Perdí a mi mascota
             </button>
             <button
               type="button"
               className="btn-secondary"
               onClick={() => abrirModal("sighting")}
             >
-              👁️ Vi una mascota perdida
+              Vi una mascota
             </button>
+          </div>
+          <p className="hero-ayuda-foto">
+            ¿Solo tienes una foto y quieres buscar coincidencias?{" "}
             <button
               type="button"
-              className="btn-secondary"
-              onClick={() => abrirModal("quickcam")}
-              style={{ borderColor: "rgba(16,185,129,0.5)", gap: 7 }}
+              className="hero-enlace-buscar"
+              onClick={abrirBusquedaPorFoto}
             >
-              📸 Tomar foto
+              Buscar por foto ↓
             </button>
-          </div>
-          <div className="hero-stats">
-            <div className="stat">
-              <div className="stat-num">
-                <span>2,847</span>
+          </p>
+
+          {hayDatos && estadisticas && (
+            <div className="hero-stats">
+              <div className="stat">
+                <div className="stat-num">
+                  <span>{formatear(estadisticas.perdidasActivas)}</span>
+                </div>
+                <div className="stat-label">Casos activos</div>
               </div>
-              <div className="stat-label">Mascotas encontradas</div>
-            </div>
-            <div className="stat">
-              <div className="stat-num">
-                <span>94</span>%
+              <div className="stat">
+                <div className="stat-num">
+                  <span>{formatear(estadisticas.reunidas)}</span>
+                </div>
+                <div className="stat-label">Reunidas</div>
               </div>
-              <div className="stat-label">Tasa de reencuentro</div>
-            </div>
-            <div className="stat">
-              <div className="stat-num">
-                <span>12.5K</span>
+              <div className="stat">
+                <div className="stat-num">
+                  <span>{formatear(estadisticas.avistamientos)}</span>
+                </div>
+                <div className="stat-label">Avistamientos</div>
               </div>
-              <div className="stat-label">Usuarios activos</div>
-            </div>
-            <div className="stat">
-              <div className="stat-num">
-                <span>7</span>
+              <div className="stat">
+                <div className="stat-num">
+                  <span>{formatear(estadisticas.usuarios)}</span>
+                </div>
+                <div className="stat-label">Personas registradas</div>
               </div>
-              <div className="stat-label">Módulos de IA</div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="hero-visual">
-          <div className="floating-card fc-top">
-            <div className="fc-icon fc-blue">🤖</div>
-            <div>
-              <div className="fc-text-main">IA detectó coincidencia</div>
-              <div className="fc-text-sub">92% similitud — Max, Golden Retriever</div>
-            </div>
-          </div>
           <div className="map-card">
             <div className="map-topbar">
-              <span>🗺️</span>
-              <span className="map-topbar-title">Mapa en vivo — Puno</span>
-              <div className="live-badge">
-                <span className="live-dot" /> EN VIVO
-              </div>
+              <span className="map-topbar-title">Vista del mapa</span>
+              {perdidasEnMapa > 0 && (
+                <div className="live-badge">
+                  <span className="live-dot" />
+                  {formatear(perdidasEnMapa)} perdida
+                  {perdidasEnMapa === 1 ? "" : "s"}
+                </div>
+              )}
             </div>
-            <div className="map-bg">
-              <div className="map-grid" />
-              <div
-                className="map-road-h"
-                style={{ top: "34%", left: "5%", width: "90%" }}
-              />
-              <div
-                className="map-road-h"
-                style={{ top: "64%", left: "8%", width: "78%" }}
-              />
-              <div
-                className="map-road-v"
-                style={{ left: "28%", top: "8%", height: "84%" }}
-              />
-              <div
-                className="map-road-v"
-                style={{ left: "64%", top: "5%", height: "72%" }}
-              />
-              <div
-                className="radius-circle"
-                style={{
-                  width: 110,
-                  height: 110,
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              />
-              <div className="pin pin-lost" style={{ top: "36%", left: "44%" }}>
-                <div className="pin-dot">
-                  <span>🐕</span>
+            <div className="map-bg map-bg--real">
+              {datosMapa ? (
+                <MapaVistaHero datos={datosMapa} />
+              ) : (
+                <div className="map-bg map-bg--cargando" aria-hidden="true">
+                  <div className="map-grid" />
                 </div>
-                <div className="pin-label">Max — Perdido</div>
-              </div>
-              <div className="pin pin-found" style={{ top: "54%", left: "60%" }}>
-                <div className="pin-dot">
-                  <span>👁️</span>
-                </div>
-                <div className="pin-label">Avistado hace 12min</div>
-              </div>
-              <div className="pin pin-alert" style={{ top: "26%", left: "26%" }}>
-                <div className="pin-dot">
-                  <span>🔔</span>
-                </div>
-                <div className="pin-label">Alerta activa</div>
-              </div>
+              )}
             </div>
             <div className="map-legend-row">
               <div className="map-legend">
@@ -145,46 +132,14 @@ export function SeccionHero() {
                     className="legend-dot"
                     style={{ background: "var(--orange)" }}
                   />
-                  Perdido
-                </div>
-                <div className="legend-item">
-                  <div
-                    className="legend-dot"
-                    style={{ background: "var(--mint)" }}
-                  />
-                  Avistado
-                </div>
-                <div className="legend-item">
-                  <div
-                    className="legend-dot"
-                    style={{ background: "var(--yellow)" }}
-                  />
-                  Alerta
+                  Donde se perdió
                 </div>
               </div>
-              <span
-                style={{
-                  fontSize: "0.73rem",
-                  color: "var(--muted2)",
-                  fontWeight: 700,
-                }}
-              >
-                3 activos
-              </span>
-            </div>
-            <div className="alert-banner">
-              <span style={{ fontSize: "1.1rem" }}>🔔</span>
-              <span className="alert-text">
-                ¡Luna avistada hace 12 min cerca al Parque Pino!
-              </span>
-              <span className="alert-new">¡Nuevo!</span>
-            </div>
-          </div>
-          <div className="floating-card fc-bottom">
-            <div className="fc-icon fc-green">🎉</div>
-            <div>
-              <div className="fc-text-main">¡Reunión exitosa!</div>
-              <div className="fc-text-sub">Rocky encontrado en 4 horas</div>
+              {perdidasEnMapa > 0 && (
+                <Link href={RUTAS_LANDING.comunidad} className="map-ir-completo">
+                  Ver mapa completo →
+                </Link>
+              )}
             </div>
           </div>
         </div>
