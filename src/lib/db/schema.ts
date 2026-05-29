@@ -155,7 +155,7 @@ export const mascotaEmbeddings = pgTable(
     descripcionAi: text("descripcion_ai"),
     modelo: text("modelo")
       .notNull()
-      .default("gemini-embedding-2"),
+      .default("gemini-embedding-2-preview"),
     updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => ({
