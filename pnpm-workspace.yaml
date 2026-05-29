@@ -1,3 +1,6 @@
+packages:
+  - .
+
 onlyBuiltDependencies:
   - esbuild
   - sharp
@@ -11,3 +14,7 @@ allowBuilds:
 
 ignoredBuiltDependencies:
   - unrs-resolver
+
+overrides:
+  sharp: 0.34.5
+  "@xenova/transformers>sharp": 0.34.5

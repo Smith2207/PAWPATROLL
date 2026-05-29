@@ -87,9 +87,10 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 ### Despliegue en Vercel
 
 1. Variables obligatorias: `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL` (dominio de producción).
-2. El build usa **pnpm** con scripts nativos de `sharp` habilitados (`pnpm-workspace.yaml`). No borres esa configuración.
-3. **Búsqueda por foto (CLIP)** en serverless: la primera petición puede tardar (descarga del modelo). Si falla en runtime, revisa que `sharp` se instaló en el log de build (sin «Ignored build scripts»).
-4. Ejecuta migraciones en Neon antes o después del deploy (`pnpm db:migrate-*` desde tu PC).
+2. **pnpm 10+** bloquea scripts de instalación por seguridad. Este repo incluye `vercel.json` con `pnpm install --allow-build=sharp …` y `pnpm-workspace.yaml` con `onlyBuiltDependencies` / `allowBuilds`. No los quites.
+3. Si ves *Ignored build scripts: sharp*, en local ejecuta `pnpm approve-builds sharp protobufjs` y sube `pnpm-workspace.yaml` + `pnpm-lock.yaml`.
+4. **Búsqueda por foto (CLIP):** la primera petición en producción puede tardar (descarga del modelo).
+5. Ejecuta migraciones en Neon (`pnpm db:migrate-*` desde tu PC).
 
 ### API verificar cuenta
 
