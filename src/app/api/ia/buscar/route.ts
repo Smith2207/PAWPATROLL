@@ -1,4 +1,3 @@
-import { buscarSimilaresPorFoto } from "@/lib/visual/indice-visual";
 import type { FiltrosBusquedaVisual } from "@/lib/visual/rerank";
 
 export const runtime = "nodejs";
@@ -66,6 +65,7 @@ export async function POST(req: Request) {
       );
     }
 
+    const { buscarSimilaresPorFoto } = await import("@/lib/visual/indice-visual");
     const resultado = await buscarSimilaresPorFoto(dataUrl, 8, filtros);
     const status = resultado.ok ? 200 : 503;
     return Response.json(resultado, { status });

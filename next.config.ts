@@ -1,11 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: [
-    "@xenova/transformers",
-    "onnxruntime-node",
-    "sharp",
-  ],
+  /** sharp: binarios nativos. CLIP se importa solo en runtime (import dinámico). */
+  serverExternalPackages: ["sharp"],
 };
 
 export default nextConfig;
