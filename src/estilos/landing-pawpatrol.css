@@ -48,6 +48,34 @@
     }
     .nav-links a:hover { color: var(--navy); }
     .nav-links a:hover::after { width: 100%; }
+    .nav-links a.nav-link--activo,
+    .nav-drawer-links a.nav-link--activo {
+      color: var(--blue);
+      font-weight: 900;
+    }
+    .nav-links a.nav-link--activo::after { width: 100%; }
+
+    .pp-pagina-publica { min-height: 60vh; }
+
+    .pp-encabezado-pagina {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 0.5rem;
+      text-align: center;
+    }
+    .pp-encabezado-pagina h1 {
+      font-size: clamp(1.35rem, 4vw, 1.85rem);
+      font-weight: 900;
+      color: var(--navy);
+      margin: 0 0 0.5rem;
+    }
+    .pp-encabezado-pagina p {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
     .nav-actions { display: flex; gap: 0.7rem; align-items: center; }
     .btn-ghost {
       background: transparent; color: var(--navy2);
@@ -124,6 +152,26 @@
       max-width: 500px;
     }
     .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .hero-ayuda-foto {
+      margin-top: 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.72);
+      max-width: 28rem;
+      line-height: 1.5;
+    }
+    .hero-enlace-buscar {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-weight: 800;
+      color: #fdba74;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .hero-enlace-buscar:hover { color: #fff; }
     .btn-primary {
       background: linear-gradient(135deg, var(--orange) 0%, var(--orange2) 100%);
       color: white; border: none;
@@ -178,6 +226,43 @@
     .map-bg {
       background: linear-gradient(145deg, #E8F4FF 0%, #D6ECFF 100%);
       border-radius: 16px; height: 210px; position: relative; overflow: hidden;
+    }
+    .map-bg--real {
+      padding: 0;
+      background: #e8f4f8;
+    }
+    .map-bg--real .pp-mapa-wrap {
+      height: 210px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .map-bg--vacio {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .map-bg-vacio-texto {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      padding: 0 1rem;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .map-ir-completo {
+      border: none;
+      background: none;
+      padding: 0;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--blue);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .map-ir-completo:hover {
+      color: var(--navy);
     }
     .map-grid {
       position: absolute; inset: 0;
@@ -252,10 +337,18 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       grid-template-areas:
-        "campo boton"
+        "campo acciones"
         "filtros filtros";
       gap: 0.85rem 0.75rem;
       align-items: stretch;
+    }
+    .search-acciones {
+      grid-area: acciones;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: stretch;
+      justify-content: flex-end;
     }
     .search-box {
       grid-area: campo;
@@ -295,7 +388,6 @@
     .filter-btn:hover { border-color: var(--blue2); color: var(--blue); background: var(--blue-light); }
     .filter-btn.active { background: var(--blue-light); border-color: var(--blue2); color: var(--blue); }
     .search-btn {
-      grid-area: boton;
       align-self: stretch;
       background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
       color: white; border: none; min-height: 48px; padding: 0 1.4rem; border-radius: 50px;
@@ -504,6 +596,28 @@
     .btn-white:hover { transform: scale(1.05); box-shadow: 0 12px 36px rgba(0,0,0,0.2); }
     .btn-outline-w { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.55); padding: 0.9rem 2rem; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
     .btn-outline-w:hover { background: rgba(255,255,255,0.12); border-color: white; }
+
+    .cta-section--secundaria {
+      background: var(--navy2) !important;
+    }
+    .cta-section--secundaria h2 { font-size: 1.65rem !important; }
+    .cta-section--secundaria p { font-size: 0.95rem !important; }
+    .cta-nota-sesion {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.65rem 1rem;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .btn-white.btn-white--link {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
 
     /* â”€â”€â”€ FOOTER â”€â”€â”€ */
     footer {
@@ -767,21 +881,58 @@ footer {
   max-width: 42rem;
 }
 
-.contenedor-cta {
-  padding-bottom: 3rem;
+.pp-casos-contador {
+  margin: 0;
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 1rem;
 }
 
-.cta-section {
-  max-width: 100% !important;
-  margin: 0 0 3rem !important;
-  text-align: left !important;
+.pp-casos-vacio {
+  padding: 1.5rem 0 2rem;
+  text-align: center;
+  max-width: 28rem;
+  margin: 0 auto;
 }
 
-.cta-buttons {
-  justify-content: flex-start !important;
+.pp-casos-vacio p {
+  margin: 0 0 1rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
-.cta-section h2,
-.cta-section p {
-  text-align: left;
+.pp-casos-vacio-btn {
+  margin: 0 auto;
+}
+
+.pp-casos-enlace-mapa {
+  text-align: center;
+  margin: -1.5rem auto 2.5rem;
+  padding: 0 var(--padding-pagina);
+  max-width: var(--ancho-contenido);
+}
+
+.pp-casos-enlace-mapa a {
+  font-weight: 800;
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.pp-casos-enlace-mapa a:hover {
+  text-decoration: underline;
+}
+
+.filter-btn--limpiar {
+  border-color: var(--orange) !important;
+  color: var(--orange) !important;
+  background: rgba(var(--orange-rgb), 0.08) !important;
+}
+
+.search-ayuda {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted2);
 }

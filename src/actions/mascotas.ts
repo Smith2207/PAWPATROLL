@@ -1,9 +1,10 @@
 "use server";
 
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, inArray, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
+  avistamientos,
   historialEstadoMascota,
   mascotaFotos,
   mascotas,
@@ -18,7 +19,13 @@ import {
   validarDatosMascota,
   validarFotosDataUrl,
 } from "@/lib/mascotas/validacion";
-import { TIPOS_MASCOTA, esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
+import {
+  TIPOS_MASCOTA,
+  esTipoMascotaPermitido,
+  type TipoMascota,
+} from "@/lib/mascotas/tipos";
+import { estimarRadioBusquedaMetros } from "@/lib/geo/cerco-perimetrico";
+import { sincronizarEmbeddingMascota } from "@/lib/visual/indice-visual";
 
 function soloPerrosYGatos() {
   return inArray(mascotas.tipo, [...TIPOS_MASCOTA]);
@@ -46,6 +53,7 @@ function normalizarFicha(datos: DatosFichaMascota) {
     microchip: datos.microchip?.trim() || null,
     contactoPublico: datos.contactoPublico?.trim() || null,
     enfermedades: datos.enfermedades?.trim() || null,
+    accesoExterior: datos.accesoExterior?.trim() || null,
   };
 }
 
@@ -123,38 +131,61 @@ export async function listarMisMascotas() {
     }
   }
 
+  const pendientesRows = await db
+    .select({
+      mascotaId: avistamientos.mascotaId,
+      total: count(),
+    })
+    .from(avistamientos)
+    .where(
+      and(
+        inArray(avistamientos.mascotaId, ids),
+        eq(avistamientos.estado, "PENDIENTE")
+      )
+    )
+    .groupBy(avistamientos.mascotaId);
+
+  const pendientesPorMascota = new Map(
+    pendientesRows
+      .filter((r): r is { mascotaId: string; total: number } => Boolean(r.mascotaId))
+      .map((r) => [r.mascotaId, Number(r.total)])
+  );
+
   return lista.map((m) => ({
     ...m,
     fotoPrincipal: fotoPrincipal.get(m.id) ?? null,
+    avistamientosPendientes: pendientesPorMascota.get(m.id) ?? 0,
   }));
 }
 
-export async function listarMascotasPerdidasPublicas(limite = 8) {
-  const lista = await db
-    .select({
-      id: mascotas.id,
-      slug: mascotas.slug,
-      nombre: mascotas.nombre,
-      tipo: mascotas.tipo,
-      raza: mascotas.raza,
-      sexo: mascotas.sexo,
-      edad: mascotas.edad,
-      color: mascotas.color,
-      estado: mascotas.estado,
-      lugarPerdida: mascotas.lugarPerdida,
-      fechaPerdida: mascotas.fechaPerdida,
-      updatedAt: mascotas.updatedAt,
-    })
-    .from(mascotas)
-    .where(
-      and(
-        inArray(mascotas.estado, ["PERDIDA", "ENCONTRADA"]),
-        soloPerrosYGatos()
-      )
-    )
-    .orderBy(desc(mascotas.updatedAt))
-    .limit(limite);
+export type FiltrosBusquedaMascotasPublicas = {
+  q?: string;
+  /** Filtros rápidos (valores en BD: Perro, Gato) */
+  tipo?: TipoMascota;
+  /** Días hacia atrás desde hoy (ej. 1 = últimas 24 h) */
+  dias?: number;
+  limite?: number;
+};
 
+type MascotaPublicaLista = {
+  id: string;
+  slug: string;
+  nombre: string;
+  tipo: string;
+  raza: string | null;
+  sexo: string | null;
+  edad: string | null;
+  color: string | null;
+  estado: EstadoMascota;
+  lugarPerdida: string | null;
+  fechaPerdida: Date | null;
+  updatedAt: Date;
+  fotoPrincipal: string | null;
+};
+
+async function adjuntarFotoPrincipal<
+  T extends { id: string },
+>(lista: T[]): Promise<(T & { fotoPrincipal: string | null })[]> {
   if (lista.length === 0) return [];
 
   const ids = lista.map((m) => m.id);
@@ -173,6 +204,69 @@ export async function listarMascotasPerdidasPublicas(limite = 8) {
     ...m,
     fotoPrincipal: fotoMap.get(m.id) ?? null,
   }));
+}
+
+export async function buscarMascotasPublicas(
+  filtros: FiltrosBusquedaMascotasPublicas = {}
+): Promise<MascotaPublicaLista[]> {
+  const limite = Math.min(Math.max(filtros.limite ?? 24, 1), 48);
+  const condiciones = [
+    inArray(mascotas.estado, ["PERDIDA", "ENCONTRADA"]),
+    soloPerrosYGatos(),
+  ];
+
+  if (filtros.tipo && esTipoMascotaPermitido(filtros.tipo)) {
+    condiciones.push(eq(mascotas.tipo, filtros.tipo));
+  }
+
+  if (filtros.dias && filtros.dias > 0) {
+    const desde = new Date();
+    desde.setDate(desde.getDate() - filtros.dias);
+    condiciones.push(
+      gte(sql`COALESCE(${mascotas.fechaPerdida}, ${mascotas.updatedAt})`, desde)
+    );
+  }
+
+  const q = filtros.q?.trim();
+  if (q) {
+    const patron = `%${q.replace(/[%_]/g, "")}%`;
+    condiciones.push(
+      or(
+        ilike(mascotas.nombre, patron),
+        ilike(mascotas.tipo, patron),
+        ilike(mascotas.raza, patron),
+        ilike(mascotas.color, patron),
+        ilike(mascotas.lugarPerdida, patron),
+        ilike(mascotas.descripcion, patron)
+      )!
+    );
+  }
+
+  const lista = await db
+    .select({
+      id: mascotas.id,
+      slug: mascotas.slug,
+      nombre: mascotas.nombre,
+      tipo: mascotas.tipo,
+      raza: mascotas.raza,
+      sexo: mascotas.sexo,
+      edad: mascotas.edad,
+      color: mascotas.color,
+      estado: mascotas.estado,
+      lugarPerdida: mascotas.lugarPerdida,
+      fechaPerdida: mascotas.fechaPerdida,
+      updatedAt: mascotas.updatedAt,
+    })
+    .from(mascotas)
+    .where(and(...condiciones))
+    .orderBy(desc(mascotas.updatedAt))
+    .limit(limite);
+
+  return adjuntarFotoPrincipal(lista);
+}
+
+export async function listarMascotasPerdidasPublicas(limite = 8) {
+  return buscarMascotasPublicas({ limite });
 }
 
 export async function obtenerMascotaPropia(id: string) {
@@ -285,6 +379,8 @@ export async function crearMascota(
   });
   await guardarFotos(insertada.id, fotosNuevas);
 
+  void sincronizarEmbeddingMascota(insertada.id);
+
   revalidarRutasMascota(insertada.id, insertada.slug);
 
   return {
@@ -341,6 +437,8 @@ export async function actualizarMascota(
     await reemplazarFotos(id, fotosNuevas);
   }
 
+  void sincronizarEmbeddingMascota(id);
+
   revalidarRutasMascota(id, actual.slug);
 
   return { ok: true, mensaje: "Ficha actualizada." };
@@ -353,6 +451,8 @@ export async function cambiarEstadoMascota(
     notas?: string;
     fechaPerdida?: string;
     lugarPerdida?: string;
+    latPerdida?: number;
+    lngPerdida?: number;
   }
 ): Promise<ResultadoAuth> {
   const userId = await sesionUsuario();
@@ -405,6 +505,34 @@ export async function cambiarEstadoMascota(
         ? null
         : actual.lugarPerdida;
 
+  const latPerdida =
+    estadoNuevo === "PERDIDA" && opciones?.latPerdida != null
+      ? String(opciones.latPerdida)
+      : estadoNuevo === "EN_CASA" || estadoNuevo === "REUNIDA"
+        ? null
+        : actual.latPerdida;
+
+  const lngPerdida =
+    estadoNuevo === "PERDIDA" && opciones?.lngPerdida != null
+      ? String(opciones.lngPerdida)
+      : estadoNuevo === "EN_CASA" || estadoNuevo === "REUNIDA"
+        ? null
+        : actual.lngPerdida;
+
+  const radioBusquedaMetros =
+    estadoNuevo === "PERDIDA"
+      ? estimarRadioBusquedaMetros({
+          tipo: actual.tipo,
+          tamano: actual.tamano,
+          edad: actual.edad,
+          accesoExterior: actual.accesoExterior,
+          descripcion: actual.descripcion,
+          senasParticulares: actual.senasParticulares,
+        })
+      : estadoNuevo === "EN_CASA" || estadoNuevo === "REUNIDA"
+        ? null
+        : actual.radioBusquedaMetros;
+
   await db
     .update(mascotas)
     .set({
@@ -414,6 +542,9 @@ export async function cambiarEstadoMascota(
           ? null
           : fechaPerdida,
       lugarPerdida,
+      latPerdida,
+      lngPerdida,
+      radioBusquedaMetros,
       updatedAt: new Date(),
     })
     .where(eq(mascotas.id, id));
@@ -425,6 +556,8 @@ export async function cambiarEstadoMascota(
     userId,
     opciones?.notas
   );
+
+  void sincronizarEmbeddingMascota(id);
 
   revalidarRutasMascota(id, actual.slug);
 

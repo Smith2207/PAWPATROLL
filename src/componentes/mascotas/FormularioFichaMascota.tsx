@@ -35,12 +35,9 @@ type Props = {
 };
 
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
-const SEXOS = ["Macho", "Hembra"];
-const TAMANOS = [
-  "Pequeño (menos de 10 kg)",
-  "Mediano (10–25 kg)",
-  "Grande (más de 25 kg)",
-];
+import { SEXOS, TAMANOS } from "@/lib/mascotas/catalogos";
+import { CampoRaza } from "@/componentes/formulario/CampoRaza";
+import { CampoAccesoExterior } from "@/componentes/formulario/CampoAccesoExterior";
 
 export function FormularioFichaMascota({
   modo,
@@ -79,8 +76,6 @@ export function FormularioFichaMascota({
     setFotos(nuevas);
   }, []);
 
-  const razasDisponibles = obtenerRazasPorTipo(tipo);
-
   function onTipoChange(nuevoTipo: string) {
     setTipo(nuevoTipo);
     if (
@@ -114,6 +109,7 @@ export function FormularioFichaMascota({
       microchip: componerMicrochip(microchipTiene, microchipNumero),
       contactoPublico: componerContactoPublico(contactoTelefono, contactoEmail),
       enfermedades: fd.get("enfermedades")?.toString(),
+      accesoExterior: fd.get("accesoExterior")?.toString(),
     };
 
     const resultado =
@@ -184,32 +180,14 @@ export function FormularioFichaMascota({
                   ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label htmlFor="raza-select">Raza</label>
-                <select
-                  id="raza-select"
-                  value={razaSeleccion}
-                  onChange={(e) => setRazaSeleccion(e.target.value)}
-                  disabled={!tipo}
-                >
-                  <option value="">{tipo ? "Elegir..." : "Primero elige el tipo"}</option>
-                  {razasDisponibles.map((r) => (
-                    <option key={r} value={r}>
-                      {r === OPCION_RAZA_OTRA ? "Otro (escribir raza)" : r}
-                    </option>
-                  ))}
-                </select>
-                {razaSeleccion === OPCION_RAZA_OTRA && (
-                  <input
-                    type="text"
-                    className="form-ficha-campo-secundario"
-                    value={razaOtra}
-                    onChange={(e) => setRazaOtra(e.target.value)}
-                    placeholder="Escribe la raza de tu mascota"
-                    aria-label="Raza personalizada"
-                  />
-                )}
-              </div>
+              <CampoRaza
+                tipo={tipo}
+                seleccion={razaSeleccion}
+                otra={razaOtra}
+                onSeleccionChange={setRazaSeleccion}
+                onOtraChange={setRazaOtra}
+                classNameSecundario="form-ficha-campo-secundario"
+              />
               <div className="form-group">
                 <label>Sexo</label>
                 <select name="sexo" defaultValue={mascota?.sexo ?? ""}>
@@ -248,6 +226,9 @@ export function FormularioFichaMascota({
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="form-group form-ficha-grid--ancho">
+                <CampoAccesoExterior defaultValue={mascota?.accesoExterior} />
               </div>
               <div className="form-group">
                 <label>Edad</label>

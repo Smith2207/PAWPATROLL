@@ -401,12 +401,17 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       "campo"
-      "boton"
+      "acciones"
       "filtros";
     gap: 0.65rem;
   }
 
-  .search-btn {
+  .search-acciones {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .search-acciones .search-btn {
     width: 100%;
   }
 

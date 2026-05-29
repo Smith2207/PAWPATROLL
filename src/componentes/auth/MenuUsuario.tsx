@@ -111,7 +111,7 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
           <span className="nav-cta-icono" aria-hidden>
             🚨
           </span>
-          <span className="nav-cta-texto">Reportar pérdida</span>
+          <span className="nav-cta-texto">Perdí mi mascota</span>
         </button>
       </div>
     );
@@ -167,7 +167,7 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
           <span className="nav-cta-icono" aria-hidden>
             🚨
           </span>
-          <span className="nav-cta-texto">Reportar pérdida</span>
+          <span className="nav-cta-texto">Perdí mi mascota</span>
         </button>
       </div>
     );
@@ -188,12 +188,12 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
         type="button"
         className="btn-orange-nav btn-orange-nav--nav"
         onClick={() => abrirModal("report")}
-        title="Reportar pérdida de mascota"
+        title="Reportar mascota perdida"
       >
         <span className="nav-cta-icono" aria-hidden>
           🚨
         </span>
-        <span className="nav-cta-texto">Reportar</span>
+        <span className="nav-cta-texto">Perdí</span>
       </button>
     </div>
   );

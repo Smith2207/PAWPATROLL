@@ -1,20 +1,31 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { preprocesarImagenesCliente } from "@/lib/imagen/preprocesar-cliente";
 
-export function useCamaraReporte() {
+type Opciones = {
+  /** Prefijo para ids de video/canvas (evita colisiones entre modales) */
+  idPrefijo?: string;
+  maxFotos?: number;
+};
+
+export function useCamaraReporte(opciones: Opciones = {}) {
+  const idPrefijo = opciones.idPrefijo ?? "reporte";
+  const maxFotos = opciones.maxFotos ?? 5;
+  const ids = useMemo(
+    () => ({
+      video: `camara-video-${idPrefijo}`,
+      canvas: `camara-canvas-${idPrefijo}`,
+    }),
+    [idPrefijo]
+  );
+
   const streamRef = useRef<MediaStream | null>(null);
   const [fotosPreview, setFotosPreview] = useState<string[]>([]);
   const [camaraVisible, setCamaraVisible] = useState(false);
-  const [iaResultadoVisible, setIaResultadoVisible] = useState(false);
-  const [iaPreview, setIaPreview] = useState("");
-  const [iaProgreso, setIaProgreso] = useState(0);
-  const [iaTexto, setIaTexto] = useState(
-    "Detectando raza, color y características únicas"
-  );
 
   const previewFotos = useCallback((input: HTMLInputElement) => {
-    const files = Array.from(input.files ?? []).slice(0, 5);
+    const files = Array.from(input.files ?? []).slice(0, maxFotos);
     const lecturas = files.map(
       (file) =>
         new Promise<string>((resolve) => {
@@ -23,8 +34,18 @@ export function useCamaraReporte() {
           reader.readAsDataURL(file);
         })
     );
-    void Promise.all(lecturas).then(setFotosPreview);
-  }, []);
+    void Promise.all(lecturas)
+      .then((urls) => preprocesarImagenesCliente(urls))
+      .then((procesadas) => {
+        if (maxFotos <= 1) {
+          setFotosPreview(procesadas.slice(0, 1));
+          return;
+        }
+        setFotosPreview((prev) =>
+          [...prev, ...procesadas].slice(0, maxFotos)
+        );
+      });
+  }, [maxFotos]);
 
   const cerrarStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -32,9 +53,7 @@ export function useCamaraReporte() {
   }, []);
 
   const abrirCamara = useCallback(async () => {
-    const video = document.getElementById(
-      "camara-video-reporte"
-    ) as HTMLVideoElement | null;
+    const video = document.getElementById(ids.video) as HTMLVideoElement | null;
     if (!video) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -49,15 +68,11 @@ export function useCamaraReporte() {
         "No se pudo acceder a la cámara. Verifica los permisos del navegador."
       );
     }
-  }, []);
+  }, [ids.video]);
 
   const capturarFoto = useCallback(() => {
-    const video = document.getElementById(
-      "camara-video-reporte"
-    ) as HTMLVideoElement | null;
-    const canvas = document.getElementById(
-      "camara-canvas-reporte"
-    ) as HTMLCanvasElement | null;
+    const video = document.getElementById(ids.video) as HTMLVideoElement | null;
+    const canvas = document.getElementById(ids.canvas) as HTMLCanvasElement | null;
     if (!video || !canvas) return;
 
     canvas.width = video.videoWidth || 640;
@@ -67,41 +82,37 @@ export function useCamaraReporte() {
 
     cerrarStream();
     setCamaraVisible(false);
-    setIaPreview(dataUrl);
-    setIaResultadoVisible(true);
-    setIaProgreso(0);
-    setIaTexto("Detectando raza, color y características únicas");
-
-    setTimeout(() => setIaProgreso(100), 100);
-    setTimeout(
-      () =>
-        setIaTexto(
-          "Raza probable: Golden Retriever · Color: dorado · 87% confianza"
-        ),
-      2100
-    );
-  }, [cerrarStream]);
+    void preprocesarImagenesCliente([dataUrl]).then(([procesada]) => {
+      setFotosPreview((prev) => [...prev, procesada].slice(0, maxFotos));
+    });
+  }, [cerrarStream, ids.video, ids.canvas, maxFotos]);
 
   const cerrarCamara = useCallback(() => {
     cerrarStream();
     setCamaraVisible(false);
   }, [cerrarStream]);
 
-  const ocultarResultadoIa = useCallback(() => {
-    setIaResultadoVisible(false);
-  }, []);
+  const limpiarFotos = useCallback(() => setFotosPreview([]), []);
+
+  const establecerFotos = useCallback(
+    (fotos: string[]) => {
+      void preprocesarImagenesCliente(fotos).then((procesadas) =>
+        setFotosPreview(procesadas.slice(0, maxFotos))
+      );
+    },
+    [maxFotos]
+  );
 
   return {
     fotosPreview,
     camaraVisible,
-    iaResultadoVisible,
-    iaPreview,
-    iaProgreso,
-    iaTexto,
     previewFotos,
     abrirCamara,
     capturarFoto,
     cerrarCamara,
-    ocultarResultadoIa,
+    limpiarFotos,
+    establecerFotos,
+    ids,
+    maxFotos,
   };
 }

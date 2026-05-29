@@ -3,9 +3,9 @@ onlyBuiltDependencies:
 
 allowBuilds:
   esbuild: true
-  sharp: false
+  protobufjs: set this to true or false
+  sharp: set this to true or false
   unrs-resolver: false
 
 ignoredBuiltDependencies:
-  - sharp
   - unrs-resolver

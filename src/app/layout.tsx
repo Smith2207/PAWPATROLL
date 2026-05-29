@@ -13,6 +13,9 @@ import "@/estilos/auth.css";
 import "@/estilos/mascotas.css";
 import "@/estilos/perfil.css";
 import "@/estilos/responsive.css";
+import "@/estilos/mapa.css";
+import "@/estilos/visual.css";
+import "@/estilos/admin.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -44,7 +47,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${nunito.variable} ${fredoka.variable}`}>
+    <html
+      lang="es"
+      className={`${nunito.variable} ${fredoka.variable}`}
+      data-scroll-behavior="smooth"
+    >
       <body
         style={{
           fontFamily: "var(--font-nunito), 'Nunito', sans-serif",
