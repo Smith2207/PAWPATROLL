@@ -84,6 +84,13 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 - **Local (`pnpm dev`):** WebSocket en el puerto `3001` (ver `instrumentation.ts`).
 - **Vercel/producción:** define `NEXT_PUBLIC_WS_URL` con un proxy `wss://…` o el mapa se actualiza solo cada ~90 s (respaldo automático).
 
+### Despliegue en Vercel
+
+1. Variables obligatorias: `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL` (dominio de producción).
+2. El build usa **pnpm** con scripts nativos de `sharp` habilitados (`pnpm-workspace.yaml`). No borres esa configuración.
+3. **Búsqueda por foto (CLIP)** en serverless: la primera petición puede tardar (descarga del modelo). Si falla en runtime, revisa que `sharp` se instaló en el log de build (sin «Ignored build scripts»).
+4. Ejecuta migraciones en Neon antes o después del deploy (`pnpm db:migrate-*` desde tu PC).
+
 ### API verificar cuenta
 
 | Método | Ruta | Uso |

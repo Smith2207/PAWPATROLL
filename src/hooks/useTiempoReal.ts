@@ -21,7 +21,9 @@ export function useTiempoReal(
 ) {
   const [conectado, setConectado] = useState(false);
   const onEventoRef = useRef(onEvento);
-  onEventoRef.current = onEvento;
+  useEffect(() => {
+    onEventoRef.current = onEvento;
+  });
   const canalesKey = canales.join("|");
 
   const reconectar = useCallback(() => {
