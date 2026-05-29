@@ -1,0 +1,10 @@
+{
+  "name": "onnxruntime-node",
+  "version": "1.14.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "dependencies": {
+    "onnxruntime-web": "1.14.0"
+  }
+}
