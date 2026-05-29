@@ -4,7 +4,7 @@ const CARACTERISTICAS = [
     iconoClase: "fi-or",
     icono: "📸",
     titulo: "Búsqueda por foto",
-    desc: "Compara una imagen con fichas de mascotas perdidas usando similitud visual (CLIP). Sirve para orientar un avistamiento; la confirmación la hace la comunidad.",
+    desc: "Compara una imagen con fichas de mascotas perdidas usando similitud visual (IA). Sirve para orientar un avistamiento; la confirmación la hace la comunidad.",
   },
   {
     clase: "fc-blue",

@@ -2,7 +2,7 @@ import type { FiltrosBusquedaVisual } from "@/lib/visual/rerank";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-/** Primera búsqueda: descarga modelo CLIP local (~1–2 min) */
+/** Gemini: ~2–5 s. CLIP local (respaldo): primera vez ~1–2 min */
 export const maxDuration = 120;
 
 const MAX_BYTES = 4 * 1024 * 1024;
