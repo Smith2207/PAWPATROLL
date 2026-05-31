@@ -111,6 +111,15 @@ export function PanelCambioEstado({ mascota }: Props) {
         </p>
       )}
 
+      {mascota.estado === "PERDIDA" && (
+        <p style={{ fontSize: "0.82rem", marginBottom: "1rem" }}>
+          <Link href={`/mis-mascotas/${mascota.id}/caso`}>
+            Caso de búsqueda →
+          </Link>
+          {" "}Timeline, chats privados y avistamientos.
+        </p>
+      )}
+
       {mensaje && <p className="auth-alerta auth-alerta--ok">{mensaje}</p>}
       {error && <p className="auth-alerta auth-alerta--error">{error}</p>}
 

@@ -9,6 +9,7 @@ import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
+import { LeyendaMapaColapsable } from "@/componentes/mapa/LeyendaMapaColapsable";
 
 const MapaPawPatrol = dynamic(
   () =>
@@ -27,9 +28,10 @@ const MapaPawPatrol = dynamic(
 
 type Props = {
   datos: DatosMapaPublico;
+  sinEncabezado?: boolean;
 };
 
-export function SeccionMapa({ datos: datosIniciales }: Props) {
+export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Props) {
   const [datos, setDatos] = useState(datosIniciales);
   const [filtros, setFiltros] = useState<FiltrosMapaPublico>({});
   const [miUbicacion, setMiUbicacion] = useState<UbicacionSeleccionada | null>(
@@ -78,29 +80,29 @@ export function SeccionMapa({ datos: datosIniciales }: Props) {
 
   return (
     <section className="seccion-mapa-wrap" id="mapa">
-      <div className="seccion-mapa-header">
-        <h2>🗺️ Mapa de la comunidad</h2>
-        <p>
-          Cada mascota perdida tiene su <strong>zona de búsqueda</strong> (círculo
-          de color) centrada donde se perdió, más los{" "}
-          <strong>avistamientos</strong> reportados por la comunidad. Los refugios
-          probables y el análisis detallado están en la{" "}
-          <strong>ficha de cada mascota</strong>.
-        </p>
-      </div>
+      {!sinEncabezado && (
+        <div className="seccion-mapa-header">
+          <h2>Mapa de la comunidad</h2>
+          <p>
+            Cada mascota perdida tiene su <strong>zona de búsqueda</strong> (círculo
+            de color) centrada donde se perdió, más los{" "}
+            <strong>avistamientos</strong> reportados por la comunidad. Los refugios
+            probables y el análisis detallado están en la{" "}
+            <strong>ficha de cada mascota</strong>.
+          </p>
+        </div>
+      )}
 
       <FiltrosMapa filtros={filtros} onChange={aplicarFiltros} />
 
       <div className="pp-mapa-controles">
-        <div className="pp-mapa-leyenda">
-          <span>
-            <i style={{ background: "var(--orange)" }} /> Cada perdida: cerco,
-            pin y avistamientos del mismo color
-          </span>
-          <span>
-            <i style={{ background: "#2563eb" }} /> Otro color = otra mascota
-          </span>
-        </div>
+        <LeyendaMapaColapsable
+          items={[
+            { color: "var(--orange)", texto: "🟠 Donde se perdió (zona de búsqueda)" },
+            { color: "#2563eb", texto: "🔵 Avistamiento de otra mascota" },
+            { color: "var(--mint)", texto: "🟢 Mismo color = misma mascota" },
+          ]}
+        />
         <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--muted)" }}>
           {totalActivos} punto{totalActivos === 1 ? "" : "s"} en el mapa
         </span>

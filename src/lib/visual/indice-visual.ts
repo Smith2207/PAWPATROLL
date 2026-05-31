@@ -1,4 +1,4 @@
-import { desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 import { db } from "@/lib/db";
 import {
@@ -101,8 +101,7 @@ export async function sincronizarEmbeddingMascota(
   if (!embeddingApiConfigurada()) {
     return {
       ok: false,
-      error:
-        "Búsqueda por foto no configurada. Define GOOGLE_CLOUD_PROJECT y ADC (gcloud auth application-default login).",
+      error: "La búsqueda por foto no está disponible en este momento.",
     };
   }
 
@@ -124,8 +123,7 @@ export async function sincronizarEmbeddingMascota(
     return { ok: false, error: "Sin fotos en data URL para indexar." };
   }
 
-  await eliminarEmbeddingsMascota(mascotaId);
-
+  const fotosOk: string[] = [];
   let indexadas = 0;
   for (const foto of fotos) {
     try {
@@ -137,6 +135,7 @@ export async function sincronizarEmbeddingMascota(
         modelo,
         descripcion
       );
+      fotosOk.push(foto.id);
       indexadas++;
     } catch (e) {
       console.warn(`[visual/${proveedorVisualActivo()}] foto ${foto.id}:`, e);
@@ -144,8 +143,21 @@ export async function sincronizarEmbeddingMascota(
   }
 
   if (indexadas === 0) {
-    return { ok: false, error: "No se pudo indexar ninguna foto." };
+    return {
+      ok: false,
+      error:
+        "No se pudo indexar ninguna foto (revisa credenciales Gemini en Vercel).",
+    };
   }
+
+  await db
+    .delete(mascotaEmbeddings)
+    .where(
+      and(
+        eq(mascotaEmbeddings.mascotaId, mascotaId),
+        notInArray(mascotaEmbeddings.fotoId, fotosOk)
+      )
+    );
 
   return { ok: true, fotosIndexadas: indexadas };
 }
@@ -217,8 +229,7 @@ export async function buscarSimilaresPorFoto(
   if (!embeddingApiConfigurada()) {
     return {
       ok: false,
-      error:
-        "La búsqueda por foto requiere GOOGLE_CLOUD_PROJECT y credenciales ADC (Vertex).",
+      error: "La búsqueda por foto no está disponible en este momento.",
     };
   }
 
@@ -251,9 +262,11 @@ export async function buscarSimilaresPorFoto(
     return {
       ok: true,
       coincidencias: [],
-      indiceVacio: true,
+      indiceVacio: filas.length === 0,
       error:
-        "Hay mascotas indexadas con otro modelo (CLIP). Ejecuta: npm run db:reindexar-visual",
+        filas.length > 0
+          ? "Estamos preparando las fotos para la búsqueda. Vuelve a intentarlo en unos minutos."
+          : undefined,
     };
   }
 
@@ -282,7 +295,7 @@ export async function buscarSimilaresPorFoto(
     { fila: FilaBusqueda; coseno: number; puntuacion: number }
   >();
 
-  if (pgFilas !== null) {
+  if (pgFilas !== null && pgFilas.length > 0) {
     for (const fila of pgFilas) {
       const sim = Number(fila.coseno);
       const puntuacion = puntuacionConRerank(sim, fila, filtros);
@@ -331,6 +344,8 @@ export async function buscarSimilaresPorFoto(
   }
 
   const ids = top.map((t) => t.fila.mascotaId);
+  const fotoIds = top.map((t) => t.fila.fotoId).filter(Boolean) as string[];
+
   const fotos = await db
     .select({
       mascotaId: mascotaFotos.mascotaId,
@@ -352,6 +367,20 @@ export async function buscarSimilaresPorFoto(
     if (delMascota[0]?.url) fotoPorId.set(id, delMascota[0].url);
   }
 
+  const descripciones = fotoIds.length
+    ? await db
+        .select({
+          fotoId: mascotaEmbeddings.fotoId,
+          descripcionAi: mascotaEmbeddings.descripcionAi,
+        })
+        .from(mascotaEmbeddings)
+        .where(inArray(mascotaEmbeddings.fotoId, fotoIds))
+    : [];
+
+  const descripcionPorFoto = new Map(
+    descripciones.map((d) => [d.fotoId, d.descripcionAi])
+  );
+
   const coincidencias: CoincidenciaVisual[] = top.map((t) => ({
     mascotaId: t.fila.mascotaId,
     nombre: t.fila.nombre,
@@ -359,6 +388,7 @@ export async function buscarSimilaresPorFoto(
     fotoUrl: fotoPorId.get(t.fila.mascotaId) ?? null,
     similitud: porcentajeRelativo(t.coseno, mejorCoseno),
     modelo: t.fila.modelo,
+    descripcionAi: descripcionPorFoto.get(t.fila.fotoId) ?? null,
   }));
 
   return { ok: true, coincidencias, modelo: modeloUsado };

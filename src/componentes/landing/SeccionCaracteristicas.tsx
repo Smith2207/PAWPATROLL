@@ -11,7 +11,7 @@ const CARACTERISTICAS = [
     iconoClase: "fi-bl",
     icono: "🗺️",
     titulo: "Mapa comunitario",
-    desc: "Mapa comunitario con cerco por mascota y avistamientos; en cada ficha, mapa propio con refugios y guía de búsqueda (M5).",
+    desc: "Mapa comunitario con zona de búsqueda por mascota y avistamientos; en cada ficha, mapa propio con refugios probables y guía de búsqueda.",
   },
   {
     clase: "fc-blue",
@@ -32,14 +32,14 @@ const CARACTERISTICAS = [
     iconoClase: "fi-pu",
     icono: "💬",
     titulo: "Mensajes por avistamiento",
-    desc: "Chat por cada reporte entre dueño y quien avistó. En local el mapa se actualiza al instante; en producción se refresca automáticamente cada minuto.",
+    desc: "Chat por cada reporte entre dueño y quien avistó. El mapa se actualiza al instante en local y se refresca automáticamente en producción.",
   },
   {
     clase: "fc-red",
     iconoClase: "fi-re",
     icono: "👥",
     titulo: "Ficha pública",
-    desc: "Enlace para compartir fotos, datos de contacto que tú indiques, historial de estados y línea de tiempo de avistamientos verificados.",
+    desc: "Enlace para compartir fotos, contacto que tú elijas y línea de tiempo de avistamientos en la búsqueda.",
   },
 ] as const;
 

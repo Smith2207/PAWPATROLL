@@ -30,6 +30,35 @@ export const estadoAvistamientoEnum = pgEnum("avistamiento_estado", [
   "DESCARTADO",
 ]);
 
+export const notificacionTipoEnum = pgEnum("notificacion_tipo", [
+  "AVISTAMIENTO_NUEVO",
+  "AVISTAMIENTO_VERIFICADO",
+  "AVISTAMIENTO_DESCARTADO",
+  "MENSAJE_NUEVO",
+  "COINCIDENCIA_IA",
+  "ESTADO_CASO",
+  "CASO_RECUPERADO",
+  "REPORTE_ABUSO_ADMIN",
+]);
+
+export const prioridadNotificacionEnum = pgEnum("prioridad_notificacion", [
+  "ALTA",
+  "NORMAL",
+  "BAJA",
+]);
+
+export const eventoCasoTipoEnum = pgEnum("evento_caso_tipo", [
+  "ALERTA_ACTIVADA",
+  "AVISTAMIENTO_NUEVO",
+  "FOTO_AGREGADA",
+  "MENSAJE_ENVIADO",
+  "AVISTAMIENTO_VERIFICADO",
+  "AVISTAMIENTO_DESCARTADO",
+  "COINCIDENCIA_IA",
+  "ESTADO_CAMBIADO",
+  "MASCOTA_RECUPERADA",
+]);
+
 export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
@@ -43,6 +72,8 @@ export const users = pgTable("user", {
   bienvenidaCompletada: boolean("bienvenida_completada").default(true).notNull(),
   telefono: text("telefono"),
   ciudad: text("ciudad"),
+  notificacionesEmail: boolean("notificaciones_email").default(true).notNull(),
+  notificacionesInApp: boolean("notificaciones_in_app").default(true).notNull(),
 });
 
 export const accounts = pgTable(
@@ -212,6 +243,88 @@ export const mensajesAvistamiento = pgTable("mensaje_avistamiento", {
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+export const notificaciones = pgTable("notificacion", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  mascotaId: text("mascota_id").references(() => mascotas.id, {
+    onDelete: "cascade",
+  }),
+  avistamientoId: text("avistamiento_id").references(() => avistamientos.id, {
+    onDelete: "cascade",
+  }),
+  tipo: notificacionTipoEnum("tipo").notNull(),
+  prioridad: prioridadNotificacionEnum("prioridad").default("NORMAL").notNull(),
+  titulo: text("titulo").notNull(),
+  cuerpo: text("cuerpo"),
+  enlace: text("enlace"),
+  grupoClave: text("grupo_clave"),
+  leidaAt: timestamp("leida_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const eventosCaso = pgTable("evento_caso", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  mascotaId: text("mascota_id")
+    .notNull()
+    .references(() => mascotas.id, { onDelete: "cascade" }),
+  avistamientoId: text("avistamiento_id").references(() => avistamientos.id, {
+    onDelete: "set null",
+  }),
+  tipo: eventoCasoTipoEnum("tipo").notNull(),
+  titulo: text("titulo").notNull(),
+  detalle: text("detalle"),
+  actorUserId: text("actor_user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const reportesAbuso = pgTable("reporte_abuso", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  avistamientoId: text("avistamiento_id")
+    .notNull()
+    .references(() => avistamientos.id, { onDelete: "cascade" }),
+  reportadoPor: text("reportado_por")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  motivo: text("motivo").notNull(),
+  estado: text("estado").default("PENDIENTE").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const lecturasChat = pgTable(
+  "lectura_chat",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    avistamientoId: text("avistamiento_id")
+      .notNull()
+      .references(() => avistamientos.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    ultimoLeidoAt: timestamp("ultimo_leido_at", { mode: "date" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    avistamientoUserUnico: uniqueIndex("lectura_chat_avistamiento_user_uidx").on(
+      table.avistamientoId,
+      table.userId
+    ),
+  })
+);
+
 export const historialEstadoMascota = pgTable("historial_estado_mascota", {
   id: text("id")
     .primaryKey()
@@ -236,6 +349,13 @@ export type Avistamiento = typeof avistamientos.$inferSelect;
 export type EstadoAvistamiento =
   (typeof estadoAvistamientoEnum.enumValues)[number];
 export type MensajeAvistamiento = typeof mensajesAvistamiento.$inferSelect;
+export type Notificacion = typeof notificaciones.$inferSelect;
+export type NotificacionTipo = (typeof notificacionTipoEnum.enumValues)[number];
+export type PrioridadNotificacion =
+  (typeof prioridadNotificacionEnum.enumValues)[number];
+export type EventoCaso = typeof eventosCaso.$inferSelect;
+export type EventoCasoTipo = (typeof eventoCasoTipoEnum.enumValues)[number];
+export type ReporteAbuso = typeof reportesAbuso.$inferSelect;
 export type DatosFichaMascota = {
   nombre: string;
   tipo: string;

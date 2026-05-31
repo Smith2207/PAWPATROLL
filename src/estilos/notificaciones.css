@@ -1,0 +1,576 @@
+/* Centro de notificaciones y casos privados */
+
+.pp-notif-campana {
+  position: relative;
+}
+
+.pp-notif-campana-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-size: 1.15rem;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.pp-notif-campana-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.pp-notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--orange, #f97316);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pp-notif-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+.pp-notif-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 100;
+  width: min(360px, calc(100vw - 2rem));
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.pp-notif-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-notif-marcar-todas {
+  border: none;
+  background: none;
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pp-notif-vacio {
+  padding: 1.25rem 1rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.pp-notif-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.pp-notif-item {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-notif-item--nueva {
+  background: #fffbeb;
+}
+
+.pp-notif-item--alta {
+  border-left: 3px solid var(--orange);
+}
+
+.pp-notif-item-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.pp-notif-item-cuerpo strong {
+  font-size: 0.85rem;
+}
+
+.pp-notif-item-cuerpo span {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.pp-notif-item-cuerpo time {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.pp-notif-ver-todas {
+  display: block;
+  text-align: center;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--blue);
+  text-decoration: none;
+  border-top: 1px solid var(--border);
+}
+
+/* Página notificaciones */
+.pp-notif-pagina {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.pp-notif-pagina-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.pp-notif-pagina-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+}
+
+.pp-notif-pagina-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pp-notif-pagina-vacio {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: white;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+}
+
+.pp-notif-pagina-vacio span {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.pp-notif-pagina-vacio-sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+}
+
+.pp-notif-pagina-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.pp-notif-pagina-item {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 1rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.pp-notif-pagina-item--nueva {
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.pp-notif-pagina-item--alta {
+  box-shadow: inset 3px 0 0 var(--orange);
+}
+
+.pp-notif-pagina-icono {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.pp-notif-pagina-cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-notif-pagina-cuerpo strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.pp-notif-pagina-cuerpo p {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.pp-notif-pagina-cuerpo time {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.pp-notif-pagina-link {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--blue);
+  white-space: nowrap;
+  align-self: center;
+}
+
+/* Caso de búsqueda */
+.pp-caso-busqueda {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.pp-caso-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pp-caso-eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--orange);
+}
+
+.pp-caso-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+}
+
+.pp-caso-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  max-width: 36rem;
+}
+
+.pp-caso-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.pp-caso-stat-alerta {
+  color: var(--orange);
+}
+
+.pp-caso-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 1.25rem;
+}
+
+.pp-caso-panel {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.pp-caso-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+}
+
+.pp-caso-timeline-vacio {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.pp-caso-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pp-caso-timeline-item {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 0.65rem;
+  padding-bottom: 1rem;
+  border-left: 2px solid var(--border);
+  margin-left: 15px;
+  padding-left: 1rem;
+}
+
+.pp-caso-timeline-item:last-child {
+  border-left-color: transparent;
+}
+
+.pp-caso-timeline-icono {
+  margin-left: -24px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.pp-caso-timeline-cuerpo time {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.pp-caso-timeline-cuerpo strong {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.88rem;
+}
+
+.pp-caso-timeline-cuerpo p {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.pp-caso-avist-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pp-caso-avist-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  font-size: 0.82rem;
+}
+
+.pp-caso-avist-estado {
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.pp-caso-avist-estado--pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pp-caso-avist-estado--verificado {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pp-caso-avist-estado--descartado {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.pp-caso-acciones {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Chat privado */
+.pp-chat-privado {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.pp-chat-privado-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-chat-privado-header strong {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.pp-chat-privado-header span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.pp-chat-reportar-btn {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.pp-chat-reporte-panel {
+  padding: 0.75rem 1rem;
+  background: #fff7ed;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-chat-reporte-panel label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+}
+
+.pp-chat-reporte-panel textarea {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  font-family: inherit;
+}
+
+.pp-chat-privado-mensajes {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.pp-chat-privado-vacio {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.pp-chat-privado-msg {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+}
+
+.pp-chat-privado-msg strong {
+  font-size: 0.78rem;
+}
+
+.pp-chat-privado-msg p {
+  margin: 0.2rem 0;
+  font-size: 0.88rem;
+}
+
+.pp-chat-privado-msg time {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.pp-chat-privado-input {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: white;
+  border-top: 1px solid var(--border);
+}
+
+.pp-chat-privado-input textarea {
+  flex: 1;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.65rem;
+  font-family: inherit;
+  resize: none;
+}
+
+.pp-chat-privado-input .submit-btn {
+  align-self: flex-end;
+  white-space: nowrap;
+}
+
+.pp-chat-pagina .btn-mascota {
+  margin-top: 1rem;
+}
+
+.pp-avistamiento-privado-cta {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.pp-avistamiento-privado-cta a {
+  font-weight: 800;
+  color: var(--blue);
+}
+
+@media (max-width: 768px) {
+  .pp-caso-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pp-notif-panel {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    top: auto;
+    bottom: 1rem;
+    width: auto;
+  }
+}

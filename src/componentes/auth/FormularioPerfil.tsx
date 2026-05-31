@@ -10,6 +10,8 @@ type Props = {
   telefonoInicial: string;
   ciudadInicial: string;
   email: string;
+  notificacionesEmailInicial?: boolean;
+  notificacionesInAppInicial?: boolean;
 };
 
 export function FormularioPerfil({
@@ -17,11 +19,19 @@ export function FormularioPerfil({
   telefonoInicial,
   ciudadInicial,
   email,
+  notificacionesEmailInicial = true,
+  notificacionesInAppInicial = true,
 }: Props) {
   const router = useRouter();
   const [nombre, setNombre] = useState(nombreInicial);
   const [telefono, setTelefono] = useState(telefonoInicial);
   const [ciudad, setCiudad] = useState(ciudadInicial);
+  const [notificacionesEmail, setNotificacionesEmail] = useState(
+    notificacionesEmailInicial
+  );
+  const [notificacionesInApp, setNotificacionesInApp] = useState(
+    notificacionesInAppInicial
+  );
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -32,7 +42,13 @@ export function FormularioPerfil({
     setError(null);
     setMensaje(null);
 
-    const resultado = await actualizarPerfil({ nombre, telefono, ciudad });
+    const resultado = await actualizarPerfil({
+      nombre,
+      telefono,
+      ciudad,
+      notificacionesEmail,
+      notificacionesInApp,
+    });
 
     setCargando(false);
 
@@ -97,6 +113,30 @@ export function FormularioPerfil({
           El correo no se puede cambiar aquí. Es tu identificador de acceso.
         </p>
       </div>
+
+      <fieldset className="perfil-notificaciones">
+        <legend>Notificaciones</legend>
+        <p className="perfil-campo-ayuda">
+          Solo recibirás avisos relevantes para ti (avistamientos, mensajes y
+          coincidencias de IA).
+        </p>
+        <label className="perfil-check">
+          <input
+            type="checkbox"
+            checked={notificacionesInApp}
+            onChange={(e) => setNotificacionesInApp(e.target.checked)}
+          />
+          Notificaciones en la app
+        </label>
+        <label className="perfil-check">
+          <input
+            type="checkbox"
+            checked={notificacionesEmail}
+            onChange={(e) => setNotificacionesEmail(e.target.checked)}
+          />
+          Avisos por correo (avistamientos y mensajes)
+        </label>
+      </fieldset>
 
       <button type="submit" disabled={cargando} className="submit-btn">
         {cargando ? "Guardando..." : "Guardar cambios"}

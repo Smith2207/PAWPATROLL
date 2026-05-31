@@ -1,8 +1,8 @@
 "use server";
 
-import { count, eq, sql } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { avistamientos, mascotas, users } from "@/lib/db/schema";
+import { avistamientos, mascotas, reportesAbuso, users } from "@/lib/db/schema";
 
 async function sesionAdmin() {
   const { auth } = await import("@/auth");
@@ -69,6 +69,29 @@ export async function listarAvistamientosAdmin(limite = 30) {
     .from(avistamientos)
     .leftJoin(mascotas, eq(avistamientos.mascotaId, mascotas.id))
     .orderBy(sql`${avistamientos.createdAt} desc`)
+    .limit(limite);
+}
+
+export async function listarReportesAbusoAdmin(limite = 25) {
+  await sesionAdmin();
+
+  return db
+    .select({
+      id: reportesAbuso.id,
+      motivo: reportesAbuso.motivo,
+      estado: reportesAbuso.estado,
+      createdAt: reportesAbuso.createdAt,
+      avistamientoId: reportesAbuso.avistamientoId,
+      numeroReporte: avistamientos.numeroReporte,
+      nombreMascota: mascotas.nombre,
+      reportante: users.name,
+      reportanteEmail: users.email,
+    })
+    .from(reportesAbuso)
+    .innerJoin(avistamientos, eq(reportesAbuso.avistamientoId, avistamientos.id))
+    .leftJoin(mascotas, eq(avistamientos.mascotaId, mascotas.id))
+    .innerJoin(users, eq(reportesAbuso.reportadoPor, users.id))
+    .orderBy(desc(reportesAbuso.createdAt))
     .limit(limite);
 }
 

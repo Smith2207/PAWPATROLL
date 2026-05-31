@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
   avistamientos,
-  historialEstadoMascota,
   mascotaFotos,
   mascotas,
   users,
@@ -25,6 +24,10 @@ import {
   type TipoMascota,
 } from "@/lib/mascotas/tipos";
 import { estimarRadioBusquedaMetros } from "@/lib/geo/cerco-perimetrico";
+import {
+  crearNotificacionPrivada,
+  registrarEventoCaso,
+} from "@/lib/casos/servicio-caso";
 function indexarClipMascota(mascotaId: string) {
   void import("@/lib/visual/indice-visual").then((m) =>
     m.sincronizarEmbeddingMascota(mascotaId)
@@ -59,24 +62,6 @@ function normalizarFicha(datos: DatosFichaMascota) {
     enfermedades: datos.enfermedades?.trim() || null,
     accesoExterior: datos.accesoExterior?.trim() || null,
   };
-}
-
-async function registrarHistorial(
-  mascotaId: string,
-  estadoAnterior: EstadoMascota,
-  estadoNuevo: EstadoMascota,
-  userId: string | null,
-  notas?: string
-) {
-  if (estadoAnterior === estadoNuevo) return;
-
-  await db.insert(historialEstadoMascota).values({
-    mascotaId,
-    estadoAnterior,
-    estadoNuevo,
-    userId,
-    notas: notas?.trim() || null,
-  });
 }
 
 async function guardarFotos(mascotaId: string, fotos: string[]) {
@@ -291,13 +276,7 @@ export async function obtenerMascotaPropia(id: string) {
     .where(eq(mascotaFotos.mascotaId, id))
     .orderBy(mascotaFotos.orden);
 
-  const historial = await db
-    .select()
-    .from(historialEstadoMascota)
-    .where(eq(historialEstadoMascota.mascotaId, id))
-    .orderBy(desc(historialEstadoMascota.createdAt));
-
-  return { mascota, fotos, historial };
+  return { mascota, fotos };
 }
 
 export async function obtenerMascotaPublica(slug: string) {
@@ -325,22 +304,10 @@ export async function obtenerMascotaPublica(slug: string) {
     .where(eq(mascotaFotos.mascotaId, fila.mascota.id))
     .orderBy(mascotaFotos.orden);
 
-  const historial = await db
-    .select({
-      estadoNuevo: historialEstadoMascota.estadoNuevo,
-      notas: historialEstadoMascota.notas,
-      createdAt: historialEstadoMascota.createdAt,
-    })
-    .from(historialEstadoMascota)
-    .where(eq(historialEstadoMascota.mascotaId, fila.mascota.id))
-    .orderBy(desc(historialEstadoMascota.createdAt))
-    .limit(20);
-
   return {
     mascota: fila.mascota,
     duenoNombre: fila.duenoNombre,
     fotos,
-    historial,
   };
 }
 
@@ -374,13 +341,6 @@ export async function crearMascota(
     })
     .returning({ id: mascotas.id, slug: mascotas.slug });
 
-  await db.insert(historialEstadoMascota).values({
-    mascotaId: insertada.id,
-    estadoAnterior: "EN_CASA",
-    estadoNuevo: "EN_CASA",
-    userId,
-    notas: "Creación de ficha digital",
-  });
   await guardarFotos(insertada.id, fotosNuevas);
 
   indexarClipMascota(insertada.id);
@@ -553,13 +513,43 @@ export async function cambiarEstadoMascota(
     })
     .where(eq(mascotas.id, id));
 
-  await registrarHistorial(
-    id,
-    actual.estado,
-    estadoNuevo,
-    userId,
-    opciones?.notas
-  );
+  if (estadoNuevo === "PERDIDA") {
+    await registrarEventoCaso({
+      mascotaId: id,
+      tipo: "ALERTA_ACTIVADA",
+      titulo: `${actual.nombre} reportada como perdida`,
+      detalle:
+        [opciones?.lugarPerdida?.trim(), opciones?.notas?.trim()]
+          .filter(Boolean)
+          .join(" · ") || undefined,
+      actorUserId: userId,
+    });
+  } else if (estadoNuevo === "REUNIDA") {
+    await registrarEventoCaso({
+      mascotaId: id,
+      tipo: "MASCOTA_RECUPERADA",
+      titulo: `¡${actual.nombre} reunida con su familia!`,
+      actorUserId: userId,
+    });
+    await crearNotificacionPrivada({
+      userId,
+      tipo: "CASO_RECUPERADO",
+      prioridad: "NORMAL",
+      titulo: `Caso cerrado: ${actual.nombre} reunida`,
+      cuerpo: "Felicitaciones. El caso de búsqueda quedó archivado.",
+      enlace: `/mis-mascotas/${id}`,
+      mascotaId: id,
+      grupoClave: `recuperada:${id}`,
+    });
+  } else if (estadoNuevo !== actual.estado) {
+    await registrarEventoCaso({
+      mascotaId: id,
+      tipo: "ESTADO_CAMBIADO",
+      titulo: `Estado: ${actual.estado} → ${estadoNuevo}`,
+      actorUserId: userId,
+      detalle: opciones?.notas,
+    });
+  }
 
   indexarClipMascota(id);
 

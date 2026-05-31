@@ -77,6 +77,8 @@ export default async function PaginaPerfil() {
               telefonoInicial={perfil.telefono ?? ""}
               ciudadInicial={perfil.ciudad ?? ""}
               email={perfil.email}
+              notificacionesEmailInicial={perfil.notificacionesEmail}
+              notificacionesInAppInicial={perfil.notificacionesInApp}
             />
             {!perfil.emailVerificado && (
               <div className="perfil-cuenta-acciones">

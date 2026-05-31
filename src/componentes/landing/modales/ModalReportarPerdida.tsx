@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
@@ -30,6 +30,53 @@ import {
 } from "@/componentes/landing/modales/FormularioDatosMascota";
 import { OverlayPublicando } from "@/componentes/ui/OverlayPublicando";
 import Link from "next/link";
+import { RUTAS_LANDING } from "@/lib/landing/rutas";
+
+const PASOS_PERDIDA = [
+  { id: 1, titulo: "Lo esencial" },
+  { id: 2, titulo: "Detalles" },
+  { id: 3, titulo: "Contacto" },
+] as const;
+
+function validarPaso1(
+  form: HTMLFormElement,
+  ubicacion: UbicacionSeleccionada | null,
+  fotos: string[]
+): string | null {
+  const nombre = form.elements.namedItem("nombre");
+  const nombreVal =
+    nombre instanceof HTMLInputElement ? nombre.value.trim() : "";
+  if (!nombreVal) return "Escribe el nombre de tu mascota.";
+
+  const tipo = form.elements.namedItem("tipo");
+  const tipoVal = tipo instanceof HTMLSelectElement ? tipo.value : "";
+  if (!tipoVal) return "Indica si es perro o gato.";
+
+  if (!coordenadasValidas(ubicacion)) {
+    return "Marca en el mapa dónde se perdió (busca la dirección o usa Ubicarme).";
+  }
+
+  if (fotos.length === 0) {
+    return "Sube al menos una foto de tu mascota.";
+  }
+
+  return null;
+}
+
+function validarPaso2(form: HTMLFormElement): string | null {
+  const acceso = form.elements.namedItem("accesoExterior");
+  const accesoVal =
+    acceso instanceof HTMLSelectElement ? acceso.value : "";
+  if (!accesoVal) {
+    return "Indica si tu mascota suele salir sola al exterior.";
+  }
+
+  const fecha = form.elements.namedItem("fechaPerdida");
+  const fechaVal = fecha instanceof HTMLInputElement ? fecha.value : "";
+  if (!fechaVal) return "Indica cuándo se perdió.";
+
+  return null;
+}
 
 function armarBorradorDesdeFormulario(
   fd: FormData,
@@ -72,7 +119,7 @@ function armarBorradorDesdeFormulario(
 
   const acceso = fd.get("accesoExterior")?.toString();
   if (!acceso) {
-    return { error: "Indica si tu mascota sale al exterior (afina el cerco de búsqueda)." };
+    return { error: "Indica si tu mascota suele salir sola al exterior." };
   }
 
   const datosMascota: DatosFichaMascota = {
@@ -154,6 +201,8 @@ export function ModalReportarPerdida() {
   const [recompensa, setRecompensa] = useState("");
   const [claveFormulario, setClaveFormulario] = useState(0);
   const [avisoBorrador, setAvisoBorrador] = useState(false);
+  const [paso, setPaso] = useState(1);
+  const formRef = useRef<HTMLFormElement>(null);
 
   function aplicarResultadoPublicacion() {
     const resultado = leerYQuitarExitoPerdida();
@@ -179,7 +228,10 @@ export function ModalReportarPerdida() {
   }, []);
 
   useEffect(() => {
-    if (modalAbierto !== "report") return;
+    if (modalAbierto !== "report") {
+      setPaso(1);
+      return;
+    }
 
     if (aplicarResultadoPublicacion()) return;
 
@@ -218,11 +270,41 @@ export function ModalReportarPerdida() {
     camara.establecerFotos(borrador.fotos);
     setClaveFormulario((k) => k + 1);
     setAvisoBorrador(true);
+    setPaso(1);
     setError(null);
     setExito(null);
   }, [modalAbierto]);
 
   const publicando = publicandoReporte === "perdida" || cargando;
+
+  function irAtras() {
+    setError(null);
+    setPaso((p) => Math.max(1, p - 1));
+  }
+
+  function irSiguiente() {
+    const form = formRef.current;
+    if (!form) return;
+
+    if (paso === 1) {
+      const err = validarPaso1(form, ubicacion, camara.fotosPreview);
+      if (err) {
+        setError(err);
+        return;
+      }
+    }
+
+    if (paso === 2) {
+      const err = validarPaso2(form);
+      if (err) {
+        setError(err);
+        return;
+      }
+    }
+
+    setError(null);
+    setPaso((p) => Math.min(3, p + 1));
+  }
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -232,14 +314,34 @@ export function ModalReportarPerdida() {
 
     if (status === "loading") return;
 
-    if (!coordenadasValidas(ubicacion)) {
-      setError(
-        "Indica dónde se perdió: busca la dirección, usa Ubicarme o marca el mapa."
-      );
+    const form = e.currentTarget;
+
+    if (paso < 3) {
+      irSiguiente();
       return;
     }
 
-    const fd = new FormData(e.currentTarget);
+    const err1 = validarPaso1(form, ubicacion, camara.fotosPreview);
+    if (err1) {
+      setError(err1);
+      setPaso(1);
+      return;
+    }
+
+    const err2 = validarPaso2(form);
+    if (err2) {
+      setError(err2);
+      setPaso(2);
+      return;
+    }
+
+    if (!coordenadasValidas(ubicacion)) {
+      setError("Marca en el mapa dónde se perdió.");
+      setPaso(1);
+      return;
+    }
+
+    const fd = new FormData(form);
     const borrador = armarBorradorDesdeFormulario(
       fd,
       ubicacion,
@@ -285,7 +387,16 @@ export function ModalReportarPerdida() {
 
   function verMapaYCerrar() {
     cerrarModal("report");
-    document.getElementById("mapa")?.scrollIntoView({ behavior: "smooth" });
+    router.push(`${RUTAS_LANDING.comunidad}#mapa`);
+  }
+
+  function compartirWhatsApp() {
+    if (!slugExito || typeof window === "undefined") return;
+    const url = `${window.location.origin}/mascota/${slugExito}`;
+    const texto = encodeURIComponent(
+      `Ayúdame a encontrar a mi mascota. Mira la alerta en PawPatrol: ${url}`
+    );
+    window.open(`https://wa.me/?text=${texto}`, "_blank", "noopener,noreferrer");
   }
 
   if (exito) {
@@ -310,13 +421,22 @@ export function ModalReportarPerdida() {
             </div>
           </div>
           {slugExito && (
-            <Link
-              href={`/mascota/${slugExito}`}
-              className="submit-btn submit-btn-blue"
-              onClick={() => cerrarModal("report")}
-            >
-              Ver ficha pública
-            </Link>
+            <>
+              <Link
+                href={`/mascota/${slugExito}`}
+                className="submit-btn submit-btn-blue"
+                onClick={() => cerrarModal("report")}
+              >
+                Ver ficha pública
+              </Link>
+              <button
+                type="button"
+                className="submit-btn submit-btn-blue"
+                onClick={compartirWhatsApp}
+              >
+                Compartir en WhatsApp
+              </button>
+            </>
           )}
           <button
             type="button"
@@ -346,18 +466,17 @@ export function ModalReportarPerdida() {
       <div className="modal-header">
         <div className="modal-header-accent" />
         <BotonCerrarModal tipo="report" />
-        <div className="modal-title">Perdí a mi mascota</div>
+        <div className="modal-title">Perdí mi mascota</div>
         <div className="modal-sub">
-          Completa la ficha y la ubicación. Al final te pediremos iniciar sesión
-          o crear una cuenta para activar la alerta de forma segura. También
-          puedes hacerlo con más detalle en{" "}
-          <a href="/mis-mascotas/ficha" className="modal-enlace-inline">
-            Mis fichas
-          </a>
-          .
+          {paso === 1 &&
+            "Cuéntanos lo esencial: nombre, foto y dónde se perdió. La comunidad podrá ayudarte en minutos."}
+          {paso === 2 &&
+            "Un poco más de detalle ayuda a quien la vea en la calle a reconocerla."}
+          {paso === 3 &&
+            "Tu contacto aparece en la ficha pública para que puedan escribirte."}
         </div>
       </div>
-      <form className="modal-body" onSubmit={enviar}>
+      <form ref={formRef} className="modal-body" noValidate onSubmit={enviar}>
         {avisoBorrador && (
           <p className="auth-alerta auth-alerta--info" role="status">
             Recuperamos tu borrador. Revisa los datos y continúa para publicar.
@@ -369,97 +488,134 @@ export function ModalReportarPerdida() {
           </p>
         )}
 
+        <div className="auth-pasos" aria-label="Progreso del reporte">
+          {PASOS_PERDIDA.map((p) => (
+            <div
+              key={p.id}
+              className={`auth-paso ${paso === p.id ? "auth-paso--activo" : ""} ${paso > p.id ? "auth-paso--hecho" : ""}`}
+            >
+              <span className="auth-paso-num">{p.id}</span>
+              <span className="auth-paso-titulo">{p.titulo}</span>
+            </div>
+          ))}
+        </div>
+
         <FormularioDatosMascota
           key={claveFormulario}
           valoresIniciales={valoresFicha}
+          pasoActivo={paso as 1 | 2 | 3}
         />
 
-        <div className="section-divider">📍 Ubicación donde se perdió</div>
+        <div className={paso === 1 ? "" : "pp-wizard-oculto"}>
+          <div className="section-divider">📍 Ubicación donde se perdió</div>
 
-        <SelectorUbicacionMapa
-          etiqueta="¿Dónde se perdió? *"
-          idInput="report-location"
-          icono="📍"
-          placeholder={PLACEHOLDER_UBICACION}
-          valor={ubicacion}
-          onChange={setUbicacion}
-          direccionTexto={direccion}
-          onDireccionChange={setDireccion}
-        />
-
-        <div className="form-group">
-          <label htmlFor="referenciasZona">Referencias adicionales de la zona</label>
-          <input
-            id="referenciasZona"
-            name="referenciasZona"
-            type="text"
-            placeholder="Ej: Cerca al mercado, frente al parque..."
-            value={referenciasZona}
-            onChange={(e) => setReferenciasZona(e.target.value)}
+          <SelectorUbicacionMapa
+            etiqueta="¿Dónde se perdió? *"
+            idInput="report-location"
+            icono="📍"
+            placeholder={PLACEHOLDER_UBICACION}
+            valor={ubicacion}
+            onChange={setUbicacion}
+            direccionTexto={direccion}
+            onDireccionChange={setDireccion}
           />
-        </div>
 
-        <FormularioFotosMascota camara={camara} />
-
-        <div className="section-divider">Datos de contacto en la ficha</div>
-
-        <div className="form-row">
           <div className="form-group">
-            <label htmlFor="contactoNombre">Tu nombre</label>
+            <label htmlFor="referenciasZona">
+              Referencias adicionales de la zona
+            </label>
             <input
-              id="contactoNombre"
-              name="contactoNombre"
+              id="referenciasZona"
+              name="referenciasZona"
               type="text"
-              placeholder="Nombre del dueño"
-              value={contactoNombre || sesion?.user?.name || ""}
-              onChange={(e) => setContactoNombre(e.target.value)}
+              placeholder="Ej: Cerca al mercado, frente al parque..."
+              value={referenciasZona}
+              onChange={(e) => setReferenciasZona(e.target.value)}
+            />
+          </div>
+
+          <FormularioFotosMascota camara={camara} />
+        </div>
+
+        <div className={paso === 3 ? "" : "pp-wizard-oculto"}>
+          <div className="section-divider">Datos de contacto en la ficha</div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="contactoNombre">Tu nombre</label>
+              <input
+                id="contactoNombre"
+                name="contactoNombre"
+                type="text"
+                placeholder="Nombre del dueño"
+                value={contactoNombre || sesion?.user?.name || ""}
+                onChange={(e) => setContactoNombre(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="contactoTelefono">
+                Teléfono (público en ficha)
+              </label>
+              <input
+                id="contactoTelefono"
+                name="contactoTelefono"
+                type="tel"
+                placeholder="+51 999 999 999"
+                value={contactoTelefono}
+                onChange={(e) => setContactoTelefono(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="contactoEmail">Correo (público en ficha)</label>
+            <input
+              id="contactoEmail"
+              name="contactoEmail"
+              type="email"
+              placeholder="tucorreo@ejemplo.com"
+              value={contactoEmail || sesion?.user?.email || ""}
+              onChange={(e) => setContactoEmail(e.target.value)}
             />
           </div>
           <div className="form-group">
-            <label htmlFor="contactoTelefono">Teléfono (público en ficha)</label>
+            <label htmlFor="recompensa">¿Ofrece recompensa?</label>
             <input
-              id="contactoTelefono"
-              name="contactoTelefono"
-              type="tel"
-              placeholder="+51 999 999 999"
-              value={contactoTelefono}
-              onChange={(e) => setContactoTelefono(e.target.value)}
+              id="recompensa"
+              name="recompensa"
+              type="text"
+              placeholder="Ej: S/. 200 a quien lo encuentre (opcional)"
+              value={recompensa}
+              onChange={(e) => setRecompensa(e.target.value)}
             />
           </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="contactoEmail">Correo (público en ficha)</label>
-          <input
-            id="contactoEmail"
-            name="contactoEmail"
-            type="email"
-            placeholder="tucorreo@ejemplo.com"
-            value={contactoEmail || sesion?.user?.email || ""}
-            onChange={(e) => setContactoEmail(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="recompensa">¿Ofrece recompensa?</label>
-          <input
-            id="recompensa"
-            name="recompensa"
-            type="text"
-            placeholder="Ej: S/. 200 a quien lo encuentre (opcional)"
-            value={recompensa}
-            onChange={(e) => setRecompensa(e.target.value)}
-          />
-        </div>
 
-        {!sesionActiva && (
+        {paso === 3 && !sesionActiva && (
           <p className="auth-alerta auth-alerta--info" role="note">
-            Al continuar, tu alerta quedará guardada y te pediremos iniciar sesión
-            o registrarte para publicarla.
+            Al activar la alerta, guardaremos tu reporte y te pediremos iniciar
+            sesión para publicarlo de forma segura.
           </p>
         )}
 
-        <button type="submit" className="submit-btn" disabled={publicando}>
-          {publicando ? "Activando alerta…" : "🚨 Activar alerta de búsqueda"}
-        </button>
+        <div className="auth-pasos-acciones">
+          {paso > 1 && (
+            <button
+              type="button"
+              className="btn-mascota btn-mascota--secundario"
+              onClick={irAtras}
+              disabled={publicando}
+            >
+              Atrás
+            </button>
+          )}
+          <button type="submit" className="submit-btn" disabled={publicando}>
+            {publicando
+              ? "Activando alerta…"
+              : paso < 3
+                ? "Continuar"
+                : "🚨 Activar alerta de búsqueda"}
+          </button>
+        </div>
       </form>
     </ModalContenedor>
   );

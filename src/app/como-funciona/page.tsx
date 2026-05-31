@@ -14,7 +14,8 @@ export default function PaginaComoFunciona() {
   return (
     <ContenedorPublico>
       <EncabezadoPagina
-        titulo="ℹ️ Cómo funciona PawPatrol"
+        eyebrow="Guía"
+        titulo="Cómo funciona PawPatrol"
         descripcion="Reporta, busca en el mapa y colabora con la comunidad para reunir mascotas con su familia."
       />
       <SeccionCaracteristicas sinEncabezado />

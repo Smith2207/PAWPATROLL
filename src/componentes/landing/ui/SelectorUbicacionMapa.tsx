@@ -187,8 +187,8 @@ export function SelectorUbicacionMapa({
         <div className="location-map-preview location-map-preview--real">
           <MapaPawPatrol
             altura="compacto"
-            marcadorUsuario={ubicacionActiva}
-            centrarEnUsuario={ubicacionActiva ?? undefined}
+            marcadorUsuario={ubicacionLista ? ubicacionActiva : null}
+            centrarEnUsuario={ubicacionLista ? ubicacionActiva : undefined}
             onClickMapa={(c) => {
               void geo.marcarEnMapa(c);
             }}

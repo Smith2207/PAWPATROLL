@@ -15,6 +15,7 @@
     "db:migrate-comportamiento": "node scripts/aplicar-migracion-0007.mjs",
     "db:migrate-acceso-exterior": "node scripts/aplicar-migracion-0008.mjs",
     "db:migrate-gemini-768": "node scripts/aplicar-migracion-0009.mjs",
+    "db:migrate-notificaciones": "node scripts/aplicar-migracion-0010.mjs",
     "db:reindexar-visual": "node scripts/reindexar-embeddings-visual.mjs",
     "db:studio": "drizzle-kit studio"
   },

@@ -24,7 +24,10 @@ export function canalesParaEvento(evento: EventoTiempoReal): CanalTiempoReal[] {
   if ("avistamientoId" in evento) {
     canales.push(`avistamiento:${evento.avistamientoId}`);
   }
-  return canales;
+  if (evento.tipo === "notificacion:nueva") {
+    canales.push(`usuario:${evento.userId}`);
+  }
+  return [...new Set(canales)];
 }
 
 export function registrarEmisorWs(

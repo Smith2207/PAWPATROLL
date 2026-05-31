@@ -30,7 +30,7 @@ export type ResultadoAuth =
 
 function mensajeCorreoVerificacion(enviado: boolean, error?: string) {
   if (enviado) {
-    return "Te enviamos un correo desde paw.patrol.soporte@gmail.com. Abre el enlace para activar tu cuenta (revisa también spam).";
+    return "Te enviamos un correo desde paw.patrol.soporte@gmail.com. Haz clic en el botón del mensaje para activar tu cuenta (revisa también spam).";
   }
   if (error) {
     return `Cuenta creada, pero no se pudo enviar el correo: ${error}. Puedes reenviarlo desde la página de verificación.`;
@@ -163,7 +163,7 @@ export async function verificarCorreoConToken(
 }
 
 const MENSAJE_RECUPERACION_ENVIADA =
-  "Si existe una cuenta con ese correo y contraseña, te enviamos un enlace para restablecerla (revisa también spam). El enlace vale 1 hora.";
+  "Si existe una cuenta con ese correo y contraseña, te enviamos un correo con un botón para restablecerla (revisa también spam). El acceso vale 1 hora.";
 
 export async function solicitarRecuperacionContrasena(
   email: string
@@ -319,6 +319,8 @@ export async function actualizarPerfil(datos: {
   nombre: string;
   telefono?: string;
   ciudad?: string;
+  notificacionesEmail?: boolean;
+  notificacionesInApp?: boolean;
 }): Promise<ResultadoAuth> {
   const { auth } = await import("@/auth");
   const sesion = await auth();
@@ -339,6 +341,12 @@ export async function actualizarPerfil(datos: {
       telefono: datos.telefono?.trim() || null,
       ciudad: datos.ciudad?.trim() || null,
       bienvenidaCompletada: true,
+      ...(datos.notificacionesEmail !== undefined && {
+        notificacionesEmail: datos.notificacionesEmail,
+      }),
+      ...(datos.notificacionesInApp !== undefined && {
+        notificacionesInApp: datos.notificacionesInApp,
+      }),
     })
     .where(eq(users.id, sesion.user.id));
 
@@ -415,6 +423,8 @@ export type DatosPerfilUsuario = {
   totalMascotas: number;
   mascotasPerdidas: number;
   mascotasEnCasa: number;
+  notificacionesEmail: boolean;
+  notificacionesInApp: boolean;
 };
 
 export async function obtenerDatosPerfil(): Promise<DatosPerfilUsuario | null> {
@@ -434,6 +444,8 @@ export async function obtenerDatosPerfil(): Promise<DatosPerfilUsuario | null> {
       image: users.image,
       passwordHash: users.passwordHash,
       emailVerified: users.emailVerified,
+      notificacionesEmail: users.notificacionesEmail,
+      notificacionesInApp: users.notificacionesInApp,
     })
     .from(users)
     .where(eq(users.id, sesion.user.id))
@@ -468,6 +480,8 @@ export async function obtenerDatosPerfil(): Promise<DatosPerfilUsuario | null> {
     totalMascotas: mascotas.length,
     mascotasPerdidas,
     mascotasEnCasa,
+    notificacionesEmail: usuario.notificacionesEmail,
+    notificacionesInApp: usuario.notificacionesInApp,
   };
 }
 

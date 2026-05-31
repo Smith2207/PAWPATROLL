@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   BotonCerrarModal,
   ModalContenedor,
@@ -43,6 +44,18 @@ import type { CaracteristicasVisuales } from "@/lib/visual/extraer-caracteristic
 import { TAMANOS } from "@/lib/mascotas/catalogos";
 import { CampoFechaHora } from "@/componentes/formulario/CampoFechaHora";
 import { valorDatetimeLocalActual } from "@/lib/fechas/datetime-local";
+import { RUTAS_LANDING } from "@/lib/landing/rutas";
+
+const PASOS_AVISTAMIENTO = [
+  { id: 1, titulo: "Foto" },
+  { id: 2, titulo: "Lugar" },
+  { id: 3, titulo: "Publicar" },
+] as const;
+
+const PASOS_FICHA = [
+  { id: 1, titulo: "Dónde la viste" },
+  { id: 2, titulo: "Publicar" },
+] as const;
 
 type Props = {
   mascotasPerdidas?: { id: string; nombre: string; slug: string }[];
@@ -65,6 +78,7 @@ export function ModalReportarAvistamiento({
     modalAbierto,
     publicandoReporte,
   } = useModales();
+  const router = useRouter();
   const { status: estadoSesion } = useSession();
   const sesionActiva = estadoSesion === "authenticated";
   const avistamientoDesdeFicha = Boolean(mascotaFijada?.id);
@@ -89,6 +103,12 @@ export function ModalReportarAvistamiento({
   const [referencias, setReferencias] = useState("");
   const [direccionMovimiento, setDireccionMovimiento] = useState("");
   const [avisoBorrador, setAvisoBorrador] = useState(false);
+  const [paso, setPaso] = useState(1);
+  const [detallesAbiertos, setDetallesAbiertos] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const pasos = avistamientoDesdeFicha ? PASOS_FICHA : PASOS_AVISTAMIENTO;
+  const pasoFinal = pasos.length;
 
   function aplicarCoincidenciaFoto(c: CoincidenciaVisual) {
     setIdentificadaPorFoto(c);
@@ -117,6 +137,8 @@ export function ModalReportarAvistamiento({
     setReferencias("");
     setDireccionMovimiento("");
     setAvisoBorrador(false);
+    setPaso(1);
+    setDetallesAbiertos(false);
   }, [mascotaFijada]);
 
   function aplicarResultadoPublicacion() {
@@ -157,7 +179,10 @@ export function ModalReportarAvistamiento({
   }, []);
 
   useEffect(() => {
-    if (modalAbierto !== "sighting") return;
+    if (modalAbierto !== "sighting") {
+      setPaso(1);
+      return;
+    }
     if (aplicarResultadoPublicacion()) return;
     if (mascotaFijada) return;
 
@@ -168,9 +193,48 @@ export function ModalReportarAvistamiento({
     setAvisoBorrador(true);
     setError(null);
     setExito(null);
+    restaurarDesdeBorrador(borrador.datos);
+    setAvisoBorrador(true);
+    setPaso(1);
+    setError(null);
+    setExito(null);
   }, [modalAbierto, mascotaFijada]);
 
   const publicando = publicandoReporte === "avistamiento" || cargando;
+
+  function irAtras() {
+    setError(null);
+    setPaso((p) => Math.max(1, p - 1));
+  }
+
+  function validarPasoActual(): string | null {
+    if (avistamientoDesdeFicha) {
+      if (paso === 1 && !coordenadasValidas(ubicacion)) {
+        return "Marca en el mapa dónde la viste (busca la dirección o usa Ubicarme).";
+      }
+      return null;
+    }
+
+    if (paso === 2 && !coordenadasValidas(ubicacion)) {
+      return "Marca en el mapa dónde la viste (busca la dirección o usa Ubicarme).";
+    }
+
+    if (paso === pasoFinal && !tipo.trim()) {
+      return "Indica si es perro o gato.";
+    }
+
+    return null;
+  }
+
+  function irSiguiente() {
+    const err = validarPasoActual();
+    if (err) {
+      setError(err);
+      return;
+    }
+    setError(null);
+    setPaso((p) => Math.min(pasoFinal, p + 1));
+  }
 
   const armarDatosAvistamiento = useCallback(
     (fd: FormData): DatosAvistamiento | null => {
@@ -232,10 +296,14 @@ export function ModalReportarAvistamiento({
     setError(null);
     setExito(null);
 
+    if (paso < pasoFinal) {
+      irSiguiente();
+      return;
+    }
+
     if (!coordenadasValidas(ubicacion)) {
-      setError(
-        "Busca una dirección con 🔍, usa Ubicarme o marca el punto en el mapa."
-      );
+      setError("Marca en el mapa dónde la viste.");
+      setPaso(avistamientoDesdeFicha ? 1 : 2);
       return;
     }
 
@@ -291,7 +359,7 @@ export function ModalReportarAvistamiento({
 
   function verMapaYCerrar() {
     cerrarModal("sighting");
-    document.getElementById("mapa")?.scrollIntoView({ behavior: "smooth" });
+    router.push(`${RUTAS_LANDING.comunidad}#mapa`);
   }
 
   if (exito) {
@@ -348,18 +416,21 @@ export function ModalReportarAvistamiento({
         <div className="modal-sub">
           {avistamientoDesdeFicha && mascotaFijada ? (
             <>
-              Estás reportando un avistamiento de <strong>{mascotaFijada.nombre}</strong>.
-              Indica dónde la viste en el mapa.
+              Reporte rápido para <strong>{mascotaFijada.nombre}</strong>. Marca
+              dónde la viste y publica en menos de un minuto.
             </>
           ) : (
             <>
-              Completa el reporte aquí. Para publicarlo de forma segura te
-              pediremos iniciar sesión o crear una cuenta al final.
+              {paso === 1 &&
+                "Opcional: sube una foto para buscar coincidencias con mascotas perdidas."}
+              {paso === 2 && "Marca el punto exacto donde la viste."}
+              {paso === 3 &&
+                "Revisa y publica. Los detalles extra son opcionales."}
             </>
           )}
         </div>
       </div>
-      <form className="modal-body" onSubmit={enviar}>
+      <form ref={formRef} className="modal-body" noValidate onSubmit={enviar}>
         {avisoBorrador && (
           <p className="auth-alerta auth-alerta--info" role="status">
             Recuperamos tu borrador. Revisa los datos y continúa para publicar.
@@ -369,6 +440,18 @@ export function ModalReportarAvistamiento({
           <p className="auth-alerta auth-alerta--error">{error}</p>
         )}
 
+        <div className="auth-pasos" aria-label="Progreso del avistamiento">
+          {pasos.map((p) => (
+            <div
+              key={p.id}
+              className={`auth-paso ${paso === p.id ? "auth-paso--activo" : ""} ${paso > p.id ? "auth-paso--hecho" : ""}`}
+            >
+              <span className="auth-paso-num">{p.id}</span>
+              <span className="auth-paso-titulo">{p.titulo}</span>
+            </div>
+          ))}
+        </div>
+
         {avistamientoDesdeFicha && mascotaFijada && (
           <div className="pp-avistamiento-ficha-fijada" role="status">
             <span className="pp-avistamiento-ficha-fijada-icono" aria-hidden>
@@ -376,33 +459,21 @@ export function ModalReportarAvistamiento({
             </span>
             <div>
               <strong>Mascota: {mascotaFijada.nombre}</strong>
-              <p>
-                Este avistamiento quedará vinculado a su ficha. No necesitas
-                elegirla en una lista.
-              </p>
+              <p>Este avistamiento quedará vinculado a su ficha.</p>
             </div>
             <input type="hidden" name="mascotaId" value={mascotaFijada.id} />
           </div>
         )}
 
+        {/* Paso 1 general: foto + IA */}
         {!avistamientoDesdeFicha && (
-          <>
-            <div className="pp-avistamiento-fotos-ayuda" role="note">
-              <strong>Dos usos de la foto (opcionales)</strong>
-              <ol>
-                <li>
-                  <em>Buscar coincidencia</em> — compara con mascotas perdidas
-                  registradas y puede rellenar la ficha automáticamente.
-                </li>
-                <li>
-                  <em>Foto del avistamiento</em> — se guarda en tu reporte para
-                  que el dueño la vea (más abajo).
-                </li>
-              </ol>
-            </div>
-            <div className="section-divider">
-              1 · Buscar mascota perdida por foto
-            </div>
+          <div className={paso === 1 ? "" : "pp-wizard-oculto"}>
+            <div className="section-divider">📷 Foto (recomendada)</div>
+            <SubirFotoAvistamiento
+              foto={fotoAvistamiento}
+              onChange={setFotoAvistamiento}
+            />
+            <div className="section-divider">Buscar coincidencias</div>
             <IdentificacionPorFoto
               compacto
               onElegir={aplicarCoincidenciaFoto}
@@ -422,147 +493,188 @@ export function ModalReportarAvistamiento({
                 </span>
                 <div>
                   <strong>{identificadaPorFoto.nombre}</strong> seleccionada
-                  <p>
-                    El avistamiento quedará vinculado a esta mascota perdida.
-                  </p>
+                  <p>El avistamiento quedará vinculado a esta mascota.</p>
                 </div>
               </div>
             )}
-          </>
-        )}
-
-        {!avistamientoDesdeFicha && mascotasPerdidas.length > 0 && (
-          <div className="form-group">
-            <label>¿De qué mascota perdida es el avistamiento?</label>
-            <select
-              name="mascotaId"
-              value={mascotaSeleccionada}
-              onChange={(e) => setMascotaSeleccionada(e.target.value)}
-            >
-              <option value="">No estoy seguro / avistamiento general</option>
-              {mascotasPerdidas.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nombre}
-                </option>
-              ))}
-            </select>
           </div>
         )}
 
-        <div className="section-divider">¿Qué viste?</div>
-
-        <div className="form-row">
-          <CampoTipoMascota
-            value={tipo}
-            onChange={(nuevoTipo) => {
-              setTipo(nuevoTipo);
-              if (
-                razaSeleccion &&
-                razaSeleccion !== OPCION_RAZA_OTRA &&
-                !obtenerRazasPorTipo(nuevoTipo).includes(razaSeleccion)
-              ) {
-                setRazaSeleccion("");
-                setRazaOtra("");
-              }
-            }}
-            requerido
-            deshabilitado={avistamientoDesdeFicha && Boolean(mascotaFijada?.tipo)}
-            label="¿Perro o gato?"
+        {/* Paso 2 general / Paso 1 ficha: mapa */}
+        <div
+          className={
+            (avistamientoDesdeFicha && paso === 1) ||
+            (!avistamientoDesdeFicha && paso === 2)
+              ? ""
+              : "pp-wizard-oculto"
+          }
+        >
+          <div className="section-divider">📍 Ubicación donde la viste</div>
+          <SelectorUbicacionMapa
+            etiqueta="¿Dónde la viste? *"
+            idInput="sighting-location"
+            icono="👁️"
+            placeholder={PLACEHOLDER_UBICACION}
+            valor={ubicacion}
+            onChange={setUbicacion}
+            direccionTexto={direccion}
+            onDireccionChange={setDireccion}
           />
-          <CampoTamano
-            label="Tamaño aproximado"
-            vacio="—"
-            value={tamano}
-            onChange={setTamano}
-          />
+          {avistamientoDesdeFicha && (
+            <>
+              <div className="section-divider">Foto del avistamiento (opcional)</div>
+              <SubirFotoAvistamiento
+                foto={fotoAvistamiento}
+                onChange={setFotoAvistamiento}
+              />
+            </>
+          )}
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label>Color principal</label>
-            <input
-              name="color"
-              type="text"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              placeholder="Ej: negro con blanco"
+        {/* Paso final: confirmar y publicar */}
+        <div className={paso === pasoFinal ? "" : "pp-wizard-oculto"}>
+          {!avistamientoDesdeFicha && mascotasPerdidas.length > 0 && (
+            <div className="form-group">
+              <label>¿De qué mascota perdida es el avistamiento?</label>
+              <select
+                name="mascotaId"
+                value={mascotaSeleccionada}
+                onChange={(e) => setMascotaSeleccionada(e.target.value)}
+              >
+                <option value="">No estoy seguro / avistamiento general</option>
+                {mascotasPerdidas.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="form-row">
+            <CampoTipoMascota
+              value={tipo}
+              onChange={(nuevoTipo) => {
+                setTipo(nuevoTipo);
+                if (
+                  razaSeleccion &&
+                  razaSeleccion !== OPCION_RAZA_OTRA &&
+                  !obtenerRazasPorTipo(nuevoTipo).includes(razaSeleccion)
+                ) {
+                  setRazaSeleccion("");
+                  setRazaOtra("");
+                }
+              }}
+              requerido
+              deshabilitado={
+                avistamientoDesdeFicha && Boolean(mascotaFijada?.tipo)
+              }
+              label="¿Perro o gato?"
+            />
+            <CampoTamano
+              label="Tamaño aproximado"
+              vacio="—"
+              value={tamano}
+              onChange={setTamano}
             />
           </div>
-          <CampoRaza
-            tipo={tipo}
-            seleccion={razaSeleccion}
-            otra={razaOtra}
-            onSeleccionChange={setRazaSeleccion}
-            onOtraChange={setRazaOtra}
-            label="Raza (si la identificas)"
+
+          <CampoFechaHora
+            label="Fecha y hora del avistamiento"
+            id="sighting-datetime"
+            value={fechaAvistamiento}
+            onChange={setFechaAvistamiento}
+            requerido
           />
-        </div>
 
-        <div className="section-divider">2 · Foto del avistamiento (evidencia)</div>
-        <SubirFotoAvistamiento foto={fotoAvistamiento} onChange={setFotoAvistamiento} />
-
-        <CampoFechaHora
-          label="Fecha y hora del avistamiento"
-          id="sighting-datetime"
-          value={fechaAvistamiento}
-          onChange={setFechaAvistamiento}
-          requerido
-        />
-
-        <div className="section-divider">📍 Ubicación donde la viste</div>
-
-        <SelectorUbicacionMapa
-          etiqueta="¿Dónde la viste? *"
-          idInput="sighting-location"
-          icono="👁️"
-          placeholder={PLACEHOLDER_UBICACION}
-          valor={ubicacion}
-          onChange={setUbicacion}
-          direccionTexto={direccion}
-          onDireccionChange={setDireccion}
-        />
-
-        <div className="form-group">
-          <label>¿En qué dirección se movía?</label>
-          <select
-            name="direccionMovimiento"
-            value={direccionMovimiento}
-            onChange={(e) => setDireccionMovimiento(e.target.value)}
+          <button
+            type="button"
+            className="pp-detalles-toggle"
+            aria-expanded={detallesAbiertos}
+            onClick={() => setDetallesAbiertos((v) => !v)}
           >
-            {DIRECCIONES_MOVIMIENTO.map((d) => (
-              <option key={d} value={d === "No lo noté" ? "" : d}>
-                {d}
-              </option>
-            ))}
-          </select>
+            {detallesAbiertos ? "▾ Ocultar detalles" : "▸ Añadir más detalles (opcional)"}
+          </button>
+
+          {detallesAbiertos && (
+            <>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Color principal</label>
+                  <input
+                    name="color"
+                    type="text"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    placeholder="Ej: negro con blanco"
+                  />
+                </div>
+                <CampoRaza
+                  tipo={tipo}
+                  seleccion={razaSeleccion}
+                  otra={razaOtra}
+                  onSeleccionChange={setRazaSeleccion}
+                  onOtraChange={setRazaOtra}
+                  label="Raza (si la identificas)"
+                />
+              </div>
+              <div className="form-group">
+                <label>¿En qué dirección se movía?</label>
+                <select
+                  name="direccionMovimiento"
+                  value={direccionMovimiento}
+                  onChange={(e) => setDireccionMovimiento(e.target.value)}
+                >
+                  {DIRECCIONES_MOVIMIENTO.map((d) => (
+                    <option key={d} value={d === "No lo noté" ? "" : d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Referencia y más detalles</label>
+                <textarea
+                  name="referencia"
+                  rows={3}
+                  value={referencias}
+                  onChange={(e) => setReferencias(e.target.value)}
+                  placeholder="Ej: Llevaba collar rojo, esquina con la farmacia..."
+                />
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="form-group">
-          <label>Referencia y más detalles</label>
-          <textarea
-            name="referencia"
-            rows={3}
-            value={referencias}
-            onChange={(e) => setReferencias(e.target.value)}
-            placeholder="Ej: Llevaba collar rojo, esquina con la farmacia, muy asustado..."
-          />
-        </div>
-
-        {!sesionActiva && (
+        {paso === pasoFinal && !sesionActiva && (
           <p className="auth-alerta auth-alerta--info" role="note">
-            Al continuar, tu reporte quedará guardado y te pediremos iniciar
-            sesión o registrarte. El dueño verá tu nombre y teléfono de tu
-            perfil.
+            Al publicar, guardaremos tu reporte y te pediremos iniciar sesión.
           </p>
         )}
 
-        <button
-          type="submit"
-          className="submit-btn submit-btn-blue"
-          disabled={publicando}
-        >
-          {publicando ? "Publicando..." : "👁️ Publicar avistamiento"}
-        </button>
+        <div className="auth-pasos-acciones">
+          {paso > 1 && (
+            <button
+              type="button"
+              className="btn-mascota btn-mascota--secundario"
+              onClick={irAtras}
+              disabled={publicando}
+            >
+              Atrás
+            </button>
+          )}
+          <button
+            type="submit"
+            className="submit-btn submit-btn-blue"
+            disabled={publicando}
+          >
+            {publicando
+              ? "Publicando..."
+              : paso < pasoFinal
+                ? "Continuar"
+                : "👁️ Publicar avistamiento"}
+          </button>
+        </div>
       </form>
     </ModalContenedor>
   );

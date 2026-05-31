@@ -48,19 +48,25 @@
     }
     .nav-links a:hover { color: var(--navy); }
     .nav-links a:hover::after { width: 100%; }
-    .nav-links a.nav-link--activo,
-    .nav-drawer-links a.nav-link--activo {
-      color: var(--blue);
-      font-weight: 900;
-    }
-    .nav-links a.nav-link--activo::after { width: 100%; }
+.nav-links a.nav-link--activo,
+.nav-drawer-links a.nav-link--activo {
+  color: var(--blue);
+  font-weight: 900;
+  background: var(--blue-light);
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+}
+
+.nav-links a.nav-link--activo::after {
+  display: none;
+}
 
     .pp-pagina-publica { min-height: 60vh; }
 
     .pp-encabezado-pagina {
-      max-width: 720px;
+      max-width: var(--ancho-contenido);
       margin: 0 auto;
-      padding: 1.5rem 1.25rem 0.5rem;
+      padding: 1.5rem var(--padding-pagina) 0.5rem;
       text-align: center;
     }
     .pp-encabezado-pagina h1 {
@@ -70,7 +76,7 @@
       margin: 0 0 0.5rem;
     }
     .pp-encabezado-pagina p {
-      margin: 0;
+      margin: 0 auto;
       color: var(--muted);
       font-weight: 600;
       font-size: 0.95rem;
@@ -193,16 +199,46 @@
     }
     .btn-secondary:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.45); transform: translateY(-2px); }
 
-    .hero-stats { display: flex; gap: 0; margin-top: 2.5rem; }
+    .hero-stats { display: flex; gap: 0.75rem; margin-top: 2.5rem; flex-wrap: wrap; }
     .stat {
-      padding: 0 1.8rem; text-align: center;
-      border-right: 1px solid rgba(255,255,255,0.12);
+      padding: 0.85rem 1.1rem; text-align: left;
+      border-right: none;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      backdrop-filter: blur(8px);
+      min-width: 7rem;
+      flex: 1;
     }
-    .stat:first-child { padding-left: 0; }
-    .stat:last-child { border-right: none; }
-    .stat-num { font-family: 'Fredoka One', cursive; font-size: 2rem; color: white; line-height: 1; }
-    .stat-num span { color: var(--orange2); }
-    .stat-label { font-size: 0.73rem; color: rgba(255,255,255,0.55); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
+    .stat:first-child { padding-left: 1.1rem; }
+    .stat-num { font-family: 'Fredoka One', cursive; font-size: 1.75rem; color: white; line-height: 1; }
+    .stat--alerta .stat-num span { color: #fdba74; }
+    .stat--ok .stat-num span { color: #6ee7b7; }
+    .stat--avist .stat-num span { color: #93c5fd; }
+    .stat--comunidad .stat-num span { color: #fde68a; }
+    .stat-label { font-size: 0.68rem; color: rgba(255,255,255,0.65); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+    .hero-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-blob--1 {
+      width: 320px;
+      height: 320px;
+      background: rgba(var(--orange-rgb), 0.35);
+      top: -80px;
+      right: 10%;
+    }
+    .hero-blob--2 {
+      width: 260px;
+      height: 260px;
+      background: rgba(74, 143, 212, 0.4);
+      bottom: -60px;
+      left: 5%;
+    }
 
     /* â”€â”€â”€ HERO MAP CARD â”€â”€â”€ */
     .hero-visual { position: relative; display: flex; justify-content: center; align-items: center; }
@@ -411,7 +447,18 @@
       background: rgba(var(--orange-rgb),0.08); padding: 4px 14px; border-radius: 20px;
       margin-bottom: 0.8rem;
     }
-    .section-title { font-family: 'Fredoka One', cursive; font-size: 2.4rem; color: var(--navy); line-height: 1.15; }
+    .section-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.75rem, 4vw, 2.4rem);
+      color: var(--navy);
+      line-height: 1.15;
+    }
+    .section-header .section-title {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
     .section-sub { font-size: 1rem; color: var(--muted); font-weight: 600; margin-top: 0.5rem; }
 
     /* â”€â”€â”€ FEATURES GRID â”€â”€â”€ */

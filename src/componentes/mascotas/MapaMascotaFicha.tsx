@@ -79,18 +79,17 @@ export function MapaMascotaFicha({
 
   return (
     <section
-      className="ficha-publica-mapa"
+      className="ficha-publica-mapa ficha-publica-mapa--destacado"
       id="mapa-mascota"
       aria-labelledby="mapa-mascota-titulo"
     >
       <div className="ficha-publica-mapa-cabecera">
         <div>
           <h2 id="mapa-mascota-titulo" className="ficha-publica-mapa-titulo">
-            🗺️ Mapa de {nombre}
+            Mapa de búsqueda
           </h2>
           <p className="ficha-publica-mapa-desc">
-            El cerco naranja crece y se desplaza según los avistamientos. Refugios
-            probables y ruta <strong>solo de {nombre}</strong>.
+            Zona activa y avistamientos de <strong>{nombre}</strong>
           </p>
         </div>
         {totalAvistamientos > 0 && (
@@ -122,19 +121,19 @@ export function MapaMascotaFicha({
           <div className="ficha-publica-mapa-leyenda" aria-hidden>
             {tieneZonaPerdida && (
               <>
-                <span title="Cerco de búsqueda (M5)">
-                  <i style={{ background: "var(--orange)" }} /> Cerco
+                <span className="ficha-publica-mapa-leyenda-pill ficha-publica-mapa-leyenda-pill--zona">
+                  Zona de búsqueda
                 </span>
-                <span title="Radio base">
-                  <i style={{ background: "#94a3b8" }} /> Base
+                <span className="ficha-publica-mapa-leyenda-pill ficha-publica-mapa-leyenda-pill--base">
+                  Área base
                 </span>
-                <span title="Refugios probables">
-                  <i style={{ background: "#818cf8" }} /> 🏠 Refugio
+                <span className="ficha-publica-mapa-leyenda-pill ficha-publica-mapa-leyenda-pill--refugio">
+                  Refugio
                 </span>
               </>
             )}
-            <span title="Avistamientos de esta mascota">
-              <i style={{ background: "var(--mint)" }} /> #N avist.
+            <span className="ficha-publica-mapa-leyenda-pill ficha-publica-mapa-leyenda-pill--avist">
+              Avistamientos
             </span>
           </div>
 
@@ -144,7 +143,7 @@ export function MapaMascotaFicha({
             mascotaId={mascotaId}
             nombreMascota={nombre}
             altura="ficha"
-            mostrarCalor={totalAvistamientos > 1}
+            mostrarCalor={false}
             mostrarCercos={tieneZonaPerdida}
             mostrarRefugios={tieneZonaPerdida}
             marcadorUsuario={miUbicacion}

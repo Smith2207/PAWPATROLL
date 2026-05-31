@@ -39,7 +39,7 @@ export default async function PaginaVerificarCorreo({ searchParams }: Props) {
         {pendiente && !ok && (
           <p className="auth-alerta auth-alerta--ok">
             Cuenta creada. Te enviamos un correo automático desde{" "}
-            <strong>paw.patrol.soporte@gmail.com</strong> con el enlace de
+            <strong>paw.patrol.soporte@gmail.com</strong> con un botón de
             verificación (válido 24 h). Revisa también spam.
           </p>
         )}

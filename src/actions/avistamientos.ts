@@ -16,6 +16,12 @@ import { coordenadasValidas, type Coordenadas } from "@/lib/geo/tipos";
 import { esTipoMascotaPermitido, TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 import { emitirTiempoReal } from "@/lib/tiempo-real/hub";
 import { enviarCorreoAvistamientoNuevo, enviarCorreoMensajeChat } from "@/lib/email/enviarAvistamiento";
+import {
+  crearNotificacionPrivada,
+  registrarCoincidenciaIaDueno,
+  registrarEventoCaso,
+  usuarioAceptaNotificacionesEmail,
+} from "@/lib/casos/servicio-caso";
 
 export type DatosAvistamiento = {
   mascotaId?: string;
@@ -34,6 +40,8 @@ export type DatosAvistamiento = {
   nombreReportante?: string;
   telefonoReportante?: string;
   enTiempoReal?: boolean;
+  /** Similitud IA 0–1 al vincular foto con mascota */
+  similitudIa?: number;
 };
 
 export type AvistamientoConMensajes = Awaited<
@@ -81,7 +89,6 @@ async function notificarDuenoAvistamiento(
       email: users.email,
       nombreDueno: users.name,
       nombreMascota: mascotas.nombre,
-      slug: mascotas.slug,
     })
     .from(mascotas)
     .innerJoin(users, eq(mascotas.userId, users.id))
@@ -94,7 +101,7 @@ async function notificarDuenoAvistamiento(
     emailDueno: fila.email,
     nombreDueno: fila.nombreDueno,
     nombreMascota: fila.nombreMascota,
-    slugMascota: fila.slug,
+    mascotaId,
     numeroReporte,
     direccion,
   });
@@ -193,11 +200,76 @@ export async function crearAvistamiento(
     });
 
   if (datos.mascotaId) {
+    const [dueno] = await db
+      .select({ userId: mascotas.userId, slug: mascotas.slug, nombre: mascotas.nombre })
+      .from(mascotas)
+      .where(eq(mascotas.id, datos.mascotaId))
+      .limit(1);
+
     void notificarDuenoAvistamiento(
       datos.mascotaId,
       insertado.numeroReporte,
       direccionLimpia
     );
+
+    if (dueno) {
+      await registrarEventoCaso({
+        mascotaId: datos.mascotaId,
+        avistamientoId: insertado.id,
+        tipo: "AVISTAMIENTO_NUEVO",
+        titulo: `Nuevo avistamiento #${insertado.numeroReporte}`,
+        detalle: direccionLimpia ?? undefined,
+        actorUserId: userId,
+      });
+
+      if (datos.fotoUrl?.startsWith("data:image/")) {
+        await registrarEventoCaso({
+          mascotaId: datos.mascotaId,
+          avistamientoId: insertado.id,
+          tipo: "FOTO_AGREGADA",
+          titulo: `Foto en avistamiento #${insertado.numeroReporte}`,
+          actorUserId: userId,
+        });
+      }
+
+      await crearNotificacionPrivada({
+        userId: dueno.userId,
+        tipo: "AVISTAMIENTO_NUEVO",
+        prioridad: "ALTA",
+        titulo: `Nuevo avistamiento de ${dueno.nombre}`,
+        cuerpo: direccionLimpia ?? "Alguien reportó haber visto a tu mascota.",
+        enlace: `/mis-mascotas/${datos.mascotaId}/caso`,
+        mascotaId: datos.mascotaId,
+        avistamientoId: insertado.id,
+      });
+
+      if (userId) {
+        await crearNotificacionPrivada({
+          userId,
+          tipo: "AVISTAMIENTO_NUEVO",
+          prioridad: "NORMAL",
+          titulo: `Tu avistamiento #${insertado.numeroReporte} fue registrado`,
+          cuerpo: "Puedes chatear en privado con el dueño desde tu panel.",
+          enlace: `/avistamiento/${insertado.id}`,
+          mascotaId: datos.mascotaId,
+          avistamientoId: insertado.id,
+          grupoClave: `avist-creado:${insertado.id}`,
+        });
+      }
+
+      if (
+        datos.similitudIa != null &&
+        datos.similitudIa >= 0.65 &&
+        datos.fotoUrl?.startsWith("data:image/")
+      ) {
+        await registrarCoincidenciaIaDueno({
+          mascotaId: datos.mascotaId,
+          avistamientoId: insertado.id,
+          similitud: datos.similitudIa,
+          detalle: `Coincidencia en avistamiento #${insertado.numeroReporte}`,
+        });
+      }
+    }
   }
 
   emitirTiempoReal({
@@ -246,6 +318,11 @@ export async function listarAvistamientosPorMascota(
     .orderBy(desc(avistamientos.numeroReporte));
 
   if (lista.length === 0) return [];
+
+  const incluirMensajes = Boolean(opciones?.dueno);
+  if (!incluirMensajes) {
+    return lista.map((av) => ({ ...av, mensajes: [] }));
+  }
 
   const ids = lista.map((a) => a.id);
   const mensajes = await db
@@ -301,6 +378,40 @@ export async function gestionarEstadoAvistamiento(
     })
     .where(eq(avistamientos.id, avistamientoId));
 
+  const tipoEvento =
+    estado === "VERIFICADO" ? "AVISTAMIENTO_VERIFICADO" : "AVISTAMIENTO_DESCARTADO";
+  await registrarEventoCaso({
+    mascotaId: av.mascotaId,
+    avistamientoId,
+    tipo: tipoEvento,
+    titulo:
+      estado === "VERIFICADO"
+        ? `Avistamiento #${av.numeroReporte} verificado`
+        : `Avistamiento #${av.numeroReporte} descartado`,
+    actorUserId: userId,
+  });
+
+  if (av.userId) {
+    await crearNotificacionPrivada({
+      userId: av.userId,
+      tipo:
+        estado === "VERIFICADO"
+          ? "AVISTAMIENTO_VERIFICADO"
+          : "AVISTAMIENTO_DESCARTADO",
+      titulo:
+        estado === "VERIFICADO"
+          ? "Tu avistamiento fue verificado"
+          : "Tu avistamiento fue descartado",
+      cuerpo:
+        estado === "DESCARTADO" && motivoDescarte
+          ? motivoDescarte
+          : undefined,
+      enlace: `/avistamiento/${avistamientoId}`,
+      mascotaId: av.mascotaId,
+      avistamientoId,
+    });
+  }
+
   emitirTiempoReal({
     tipo: "avistamiento:actualizado",
     mascotaId: av.mascotaId,
@@ -328,7 +439,7 @@ export async function gestionarEstadoAvistamiento(
 export async function enviarMensajeAvistamiento(
   avistamientoId: string,
   contenido: string,
-  autorNombre?: string
+  _autorNombre?: string
 ): Promise<ResultadoAuth & { id?: string }> {
   const texto = contenido.trim();
   if (texto.length < 1) {
@@ -339,6 +450,9 @@ export async function enviarMensajeAvistamiento(
   }
 
   const userId = await sesionUsuario();
+  if (!userId) {
+    return { ok: false, error: "Debes iniciar sesión para enviar mensajes." };
+  }
 
   const [av] = await db
     .select({
@@ -361,13 +475,11 @@ export async function enviarMensajeAvistamiento(
 
   const esDueno = userId === av.mascotaUserId;
   const esReportante = userId != null && av.av.userId === userId;
-  const invitadoConNombre =
-    !userId && Boolean(autorNombre?.trim()) && !av.av.userId;
 
-  if (!esDueno && !esReportante && !invitadoConNombre) {
+  if (!esDueno && !esReportante) {
     return {
       ok: false,
-      error: "Inicia sesión o indica tu nombre para escribir al dueño.",
+      error: "Solo el dueño y quien reportó pueden usar este chat privado.",
     };
   }
 
@@ -376,7 +488,7 @@ export async function enviarMensajeAvistamiento(
     .values({
       avistamientoId,
       userId,
-      autorNombre: autorNombre?.trim() || null,
+      autorNombre: null,
       contenido: texto,
     })
     .returning({ id: mensajesAvistamiento.id });
@@ -388,24 +500,86 @@ export async function enviarMensajeAvistamiento(
   });
 
   const nombreAutor =
-    autorNombre?.trim() ||
-    (esDueno ? av.nombreDueno : av.av.nombreReportante) ||
-    "Un vecino";
+    (esDueno ? av.nombreDueno : av.av.nombreReportante) || "Participante";
 
-  const emailDestino = esDueno
-    ? null
-    : av.emailDueno;
-  const nombreDestino = esDueno ? null : av.nombreDueno;
-
-  if (emailDestino && av.slug && av.nombreMascota) {
-    void enviarCorreoMensajeChat({
-      emailDestino,
-      nombreDestino,
-      nombreMascota: av.nombreMascota,
-      slugMascota: av.slug,
-      autorMensaje: nombreAutor ?? "Alguien",
-      extracto: texto.slice(0, 200),
+  if (av.av.mascotaId) {
+    await registrarEventoCaso({
+      mascotaId: av.av.mascotaId,
+      avistamientoId,
+      tipo: "MENSAJE_ENVIADO",
+      titulo: `Nuevo mensaje en avistamiento #${av.av.numeroReporte}`,
+      detalle: texto.slice(0, 120),
+      actorUserId: userId ?? undefined,
     });
+  }
+
+  const enlaceChat = `/avistamiento/${avistamientoId}`;
+  const enlaceCaso = av.av.mascotaId
+    ? `/mis-mascotas/${av.av.mascotaId}/caso`
+    : enlaceChat;
+
+  if (esDueno && av.av.userId) {
+    await crearNotificacionPrivada({
+      userId: av.av.userId,
+      tipo: "MENSAJE_NUEVO",
+      prioridad: "NORMAL",
+      titulo: `Respuesta sobre ${av.nombreMascota ?? "tu avistamiento"}`,
+      cuerpo: texto.slice(0, 160),
+      enlace: enlaceChat,
+      mascotaId: av.av.mascotaId ?? undefined,
+      avistamientoId,
+      grupoClave: `msg:${avistamientoId}:reportante`,
+    });
+
+    if (av.av.userId) {
+      const [reportante] = await db
+        .select({ email: users.email, name: users.name })
+        .from(users)
+        .where(eq(users.id, av.av.userId))
+        .limit(1);
+
+      if (
+        reportante?.email &&
+        (await usuarioAceptaNotificacionesEmail(av.av.userId))
+      ) {
+        void enviarCorreoMensajeChat({
+          emailDestino: reportante.email,
+          nombreDestino: reportante.name,
+          nombreMascota: av.nombreMascota ?? "Mascota",
+          slugMascota: av.slug ?? "",
+          autorMensaje: nombreAutor ?? "Dueño",
+          extracto: texto.slice(0, 200),
+          enlacePrivado: enlaceChat,
+        });
+      }
+    }
+  } else if (av.mascotaUserId) {
+    await crearNotificacionPrivada({
+      userId: av.mascotaUserId,
+      tipo: "MENSAJE_NUEVO",
+      prioridad: "NORMAL",
+      titulo: `Mensaje sobre ${av.nombreMascota ?? "tu mascota"}`,
+      cuerpo: texto.slice(0, 160),
+      enlace: enlaceCaso,
+      mascotaId: av.av.mascotaId ?? undefined,
+      avistamientoId,
+      grupoClave: `msg:${avistamientoId}:dueno`,
+    });
+
+    if (
+      av.emailDueno &&
+      (await usuarioAceptaNotificacionesEmail(av.mascotaUserId))
+    ) {
+      void enviarCorreoMensajeChat({
+        emailDestino: av.emailDueno,
+        nombreDestino: av.nombreDueno,
+        nombreMascota: av.nombreMascota ?? "Mascota",
+        slugMascota: av.slug ?? "",
+        autorMensaje: nombreAutor ?? "Alguien",
+        extracto: texto.slice(0, 200),
+        enlacePrivado: enlaceCaso,
+      });
+    }
   }
 
   if (av.slug) revalidatePath(`/mascota/${av.slug}`);

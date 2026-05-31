@@ -15,6 +15,7 @@ import "@/estilos/perfil.css";
 import "@/estilos/responsive.css";
 import "@/estilos/mapa.css";
 import "@/estilos/visual.css";
+import "@/estilos/notificaciones.css";
 import "@/estilos/admin.css";
 
 const nunito = Nunito({
