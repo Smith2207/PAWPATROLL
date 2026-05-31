@@ -5,7 +5,7 @@ import type { obtenerMascotaPublica } from "@/actions/mascotas";
 import type { DatosMapaMascota } from "@/actions/mapa";
 import Link from "next/link";
 import { BotonReportarAvistamiento } from "@/componentes/mascotas/BotonReportarAvistamiento";
-import { SeccionAvistamientosMascota } from "@/componentes/avistamientos/SeccionAvistamientosMascota";
+import { TimelineAvistamientos } from "@/componentes/mascotas/TimelineAvistamientos";
 import type { AvistamientoConMensajes } from "@/actions/avistamientos";
 
 type DatosPublicos = NonNullable<Awaited<ReturnType<typeof obtenerMascotaPublica>>>;
@@ -25,7 +25,11 @@ export function FichaPublicaMascota({
   avistamientos?: AvistamientoConMensajes[];
   esDueno?: boolean;
 }) {
-  const { mascota, duenoNombre, fotos, historial } = datos;
+  const { mascota, duenoNombre, fotos } = datos;
+
+  const mostrarTimeline =
+    mascota.estado === "PERDIDA" &&
+    (avistamientos.length > 0 || mascota.fechaPerdida);
 
   const metas = [
     mascota.tipo,
@@ -34,7 +38,7 @@ export function FichaPublicaMascota({
     mascota.edad,
   ].filter(Boolean) as string[];
 
-  const datosFicha = [
+  const datosInformacion = [
     mascota.color && { label: "Color", valor: mascota.color, icono: "🎨" },
     mascota.tamano && { label: "Tamaño", valor: mascota.tamano, icono: "📏" },
     mascota.peso && { label: "Peso", valor: mascota.peso, icono: "⚖️" },
@@ -67,13 +71,24 @@ export function FichaPublicaMascota({
       valor: mascota.contactoPublico,
       icono: "📞",
       ancho: true,
+      enlace: mascota.contactoPublico.includes("@")
+        ? `mailto:${mascota.contactoPublico}`
+        : `tel:${mascota.contactoPublico.replace(/\s/g, "")}`,
     },
   ].filter(Boolean) as {
     label: string;
     valor: string;
     icono: string;
     ancho?: boolean;
+    enlace?: string;
   }[];
+
+  const detallesTexto = [
+    mascota.descripcion,
+    mascota.senasParticulares &&
+      `Señas particulares: ${mascota.senasParticulares}`,
+    mascota.enfermedades && `Salud: ${mascota.enfermedades}`,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="ficha-publica">
@@ -83,7 +98,7 @@ export function FichaPublicaMascota({
 
       <div
         className={`ficha-publica-contenedor ${
-          historial.length > 0 ? "ficha-publica-contenedor--con-historial" : ""
+          mostrarTimeline ? "ficha-publica-contenedor--con-lateral" : ""
         }`}
       >
         <article
@@ -95,21 +110,22 @@ export function FichaPublicaMascota({
                 : ""
           }`}
         >
-          <div className="ficha-publica-media">
-            <CarruselFotosPublica fotos={fotos} nombre={mascota.nombre} />
-            {mascota.estado === "PERDIDA" && datosMapa && (
-              <MapaMascotaFicha
-                nombre={mascota.nombre}
-                mascotaId={mascota.id}
-                tipo={mascota.tipo}
-                color={mascota.color}
-                raza={mascota.raza}
-                datos={datosMapa}
-              />
-            )}
-          </div>
+        <div className="ficha-publica-columna-izq">
+          <CarruselFotosPublica fotos={fotos} nombre={mascota.nombre} />
 
-          <div className="ficha-publica-cuerpo">
+          {mascota.estado === "PERDIDA" && datosMapa && (
+            <MapaMascotaFicha
+              nombre={mascota.nombre}
+              mascotaId={mascota.id}
+              tipo={mascota.tipo}
+              color={mascota.color}
+              raza={mascota.raza}
+              datos={datosMapa}
+            />
+          )}
+        </div>
+
+        <div className="ficha-publica-cuerpo">
           <header className="ficha-publica-encabezado">
             <BadgeEstadoMascota estado={mascota.estado} />
             <h1 className="ficha-publica-titulo">{mascota.nombre}</h1>
@@ -128,18 +144,18 @@ export function FichaPublicaMascota({
                 🚨
               </span>
               <p>
-                Esta mascota está <strong>perdida</strong>. Si la ves, usa el botón
-                de abajo para reportar un avistamiento vinculado a{" "}
+                Esta mascota está <strong>perdida</strong>. Si la ves, usa el
+                botón de abajo para reportar un avistamiento vinculado a{" "}
                 <strong>{mascota.nombre}</strong>.
               </p>
             </div>
           )}
 
-          {datosFicha.length > 0 && (
+          {datosInformacion.length > 0 && (
             <section className="ficha-publica-seccion">
               <h2 className="ficha-publica-seccion-titulo">Información</h2>
               <div className="ficha-publica-datos">
-                {datosFicha.map((d) => (
+                {datosInformacion.map((d) => (
                   <div
                     key={d.label}
                     className={`ficha-publica-dato ${d.ancho ? "ficha-publica-dato--ancho" : ""}`}
@@ -149,7 +165,13 @@ export function FichaPublicaMascota({
                     </span>
                     <div className="ficha-publica-dato-texto">
                       <label>{d.label}</label>
-                      <span>{d.valor}</span>
+                      {d.enlace ? (
+                        <a className="ficha-publica-dato-enlace" href={d.enlace}>
+                          {d.valor}
+                        </a>
+                      ) : (
+                        <span>{d.valor}</span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -157,28 +179,20 @@ export function FichaPublicaMascota({
             </section>
           )}
 
-          {(mascota.descripcion || mascota.enfermedades || mascota.senasParticulares) && (
+          {detallesTexto.length > 0 && (
             <section className="ficha-publica-seccion">
               <h2 className="ficha-publica-seccion-titulo">Detalles</h2>
-              {mascota.descripcion && (
-                <p className="ficha-publica-bloque-texto">{mascota.descripcion}</p>
-              )}
-              {mascota.enfermedades && (
-                <p className="ficha-publica-bloque-texto">
-                  <span className="ficha-publica-bloque-etiqueta">Salud / enfermedades</span>
-                  {mascota.enfermedades}
-                </p>
-              )}
-              {mascota.senasParticulares && (
-                <p className="ficha-publica-bloque-texto">
-                  <span className="ficha-publica-bloque-etiqueta">Señas particulares</span>
-                  {mascota.senasParticulares}
-                </p>
-              )}
+              <div className="ficha-publica-detalles-cajas">
+                {detallesTexto.map((texto) => (
+                  <p key={texto} className="ficha-publica-detalle-caja">
+                    {texto}
+                  </p>
+                ))}
+              </div>
             </section>
           )}
 
-          <div className="ficha-publica-pie">
+          <footer className="ficha-publica-pie">
             {duenoNombre && (
               <p className="ficha-publica-dueno">
                 <span className="ficha-publica-dueno-etiqueta">Publicado por</span>
@@ -198,42 +212,28 @@ export function FichaPublicaMascota({
                 🗺️ Ver mapa de avistamientos
               </Link>
             )}
-          </div>
-          </div>
+          </footer>
+        </div>
         </article>
 
-        {historial.length > 0 && (
-          <aside className="tarjeta-panel ficha-publica-historial">
-            <h2 className="ficha-publica-seccion-titulo">Historial</h2>
-            <ul className="historial-lista ficha-publica-historial-lista">
-              {historial.map((h, i) => (
-                <li key={i} className="historial-item ficha-publica-historial-item">
-                  <BadgeEstadoMascota estado={h.estadoNuevo} />
-                  {h.notas && (
-                    <p className="historial-item-notas">{h.notas}</p>
-                  )}
-                  <time className="historial-item-fecha">
-                    {new Date(h.createdAt).toLocaleString("es-PE", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </time>
-                </li>
-              ))}
-            </ul>
+        {mostrarTimeline && (
+          <aside className="ficha-publica-lateral">
+            <TimelineAvistamientos
+              avistamientos={avistamientos}
+              fechaAlerta={mascota.fechaPerdida?.toISOString()}
+              nombreMascota={mascota.nombre}
+              lateral
+            />
+            {esDueno && (
+              <p className="ficha-publica-caso-dueno">
+                <Link href={`/mis-mascotas/${mascota.id}/caso`}>
+                  Gestionar caso →
+                </Link>
+              </p>
+            )}
           </aside>
         )}
       </div>
-
-      {mascota.estado === "PERDIDA" && (
-        <SeccionAvistamientosMascota
-          mascotaId={mascota.id}
-          nombreMascota={mascota.nombre}
-          avistamientosIniciales={avistamientos}
-          esDueno={esDueno}
-          prediccion={datosMapa?.prediccion ?? null}
-        />
-      )}
     </div>
   );
 }

@@ -91,6 +91,7 @@ export function PaginaCasosActivos({ mascotasIniciales }: Props) {
   return (
     <>
       <EncabezadoPagina
+        eyebrow="Búsqueda"
         titulo="Casos activos"
         descripcion="Mascotas perdidas con ficha pública. Busca por nombre, raza, color o zona."
       />

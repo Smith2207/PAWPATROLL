@@ -1,6 +1,12 @@
 import { listarDatosMapaPublico } from "@/actions/mapa";
+import {
+  listarActividadComunidad,
+  listarTopColaboradores,
+} from "@/actions/comunidad";
 import { ContenedorPublico } from "@/componentes/landing/ContenedorPublico";
+import { EncabezadoPagina } from "@/componentes/landing/EncabezadoPagina";
 import { SeccionMapa } from "@/componentes/landing/SeccionMapa";
+import { SeccionFeedComunidad } from "@/componentes/comunidad/SeccionFeedComunidad";
 import { conTimeout } from "@/lib/utilidades/timeout";
 import type { DatosMapaPublico } from "@/actions/mapa";
 import type { Metadata } from "next";
@@ -20,16 +26,28 @@ export default async function PaginaComunidad() {
     puntosCalor: [],
   };
   let errorCarga = false;
+  let actividad: Awaited<ReturnType<typeof listarActividadComunidad>> = [];
+  let colaboradores: Awaited<ReturnType<typeof listarTopColaboradores>> = [];
 
   try {
-    datosMapa = await conTimeout(listarDatosMapaPublico(), 8000);
+    [datosMapa, actividad, colaboradores] = await Promise.all([
+      conTimeout(listarDatosMapaPublico(), 8000),
+      conTimeout(listarActividadComunidad(), 8000),
+      conTimeout(listarTopColaboradores(), 8000),
+    ]);
   } catch {
     errorCarga = true;
   }
 
   return (
     <ContenedorPublico errorCarga={errorCarga}>
-      <SeccionMapa datos={datosMapa} />
+      <EncabezadoPagina
+        eyebrow="Mapa en vivo"
+        titulo="Comunidad"
+        descripcion="Zonas de búsqueda, avistamientos reportados y actividad reciente de vecinos colaboradores."
+      />
+      <SeccionMapa datos={datosMapa} sinEncabezado />
+      <SeccionFeedComunidad actividad={actividad} colaboradores={colaboradores} />
     </ContenedorPublico>
   );
 }

@@ -33,8 +33,7 @@ export function SubirFotoAvistamiento({ foto, onChange }: Props) {
     <div className="form-group">
       <label>Foto que viste en la calle (opcional)</label>
       <p className="form-ficha-ayuda" style={{ marginTop: 0 }}>
-        Se adjunta al reporte. No es la misma búsqueda CLIP de arriba: aquí guardas
-        la evidencia para el dueño.
+        Se adjunta al reporte como evidencia para el dueño.
       </p>
 
       <div className="pp-foto-avistamiento-grid">

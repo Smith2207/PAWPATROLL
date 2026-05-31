@@ -1,5 +1,6 @@
 import {
   listarAvistamientosAdmin,
+  listarReportesAbusoAdmin,
   obtenerEstadisticasAdmin,
 } from "@/actions/admin";
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
@@ -8,9 +9,10 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function PaginaAdmin() {
-  const [stats, recientes] = await Promise.all([
+  const [stats, recientes, reportes] = await Promise.all([
     obtenerEstadisticasAdmin(),
     listarAvistamientosAdmin(20),
+    listarReportesAbusoAdmin(15),
   ]);
 
   return (
@@ -58,6 +60,51 @@ export default async function PaginaAdmin() {
           <a href="/api/admin/export" className="admin-btn-export">
             📥 Descargar avistamientos (CSV)
           </a>
+        </section>
+
+        <section className="admin-seccion">
+          <h2>Reportes de contenido sospechoso</h2>
+          <p className="admin-seccion-desc">
+            Alertas de chats privados. No accedas a conversaciones salvo moderación
+            necesaria.
+          </p>
+          {reportes.length === 0 ? (
+            <p className="admin-vacio">Sin reportes pendientes.</p>
+          ) : (
+            <div className="admin-tabla-wrap">
+              <table className="admin-tabla">
+                <thead>
+                  <tr>
+                    <th>Avistamiento</th>
+                    <th>Mascota</th>
+                    <th>Reportó</th>
+                    <th>Motivo</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportes.map((r) => (
+                    <tr key={r.id}>
+                      <td>
+                        <Link href={`/avistamiento/${r.avistamientoId}`}>
+                          #{r.numeroReporte}
+                        </Link>
+                      </td>
+                      <td>{r.nombreMascota ?? "—"}</td>
+                      <td>{r.reportante ?? r.reportanteEmail}</td>
+                      <td>{r.motivo.slice(0, 80)}{r.motivo.length > 80 ? "…" : ""}</td>
+                      <td>
+                        {new Date(r.createdAt).toLocaleString("es-PE", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         <section className="admin-seccion">

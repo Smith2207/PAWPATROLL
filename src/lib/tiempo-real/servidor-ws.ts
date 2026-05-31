@@ -13,7 +13,10 @@ function parsearCanales(raw: unknown): CanalTiempoReal[] {
   return raw.filter(
     (c): c is CanalTiempoReal =>
       typeof c === "string" &&
-      (c === "mapa" || c.startsWith("mascota:") || c.startsWith("avistamiento:"))
+      (c === "mapa" ||
+        c.startsWith("mascota:") ||
+        c.startsWith("avistamiento:") ||
+        c.startsWith("usuario:"))
   );
 }
 

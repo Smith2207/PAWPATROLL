@@ -31,12 +31,21 @@ type Props = {
   tipoInicial?: string;
   razaInicial?: string | null;
   valoresIniciales?: ValoresInicialesFichaMascota;
+  /** Wizard: 1 esencial, 2 detalles, 3 contacto (campos ocultos). Sin valor = formulario completo visible. */
+  pasoActivo?: 1 | 2 | 3;
 };
+
+function clasePaso(seccion: 1 | 2, paso?: 1 | 2 | 3) {
+  if (!paso) return "";
+  if (seccion === 1) return paso === 1 ? "" : "pp-wizard-oculto";
+  return paso === 2 ? "" : "pp-wizard-oculto";
+}
 
 export function FormularioDatosMascota({
   tipoInicial = "",
   razaInicial,
   valoresIniciales,
+  pasoActivo,
 }: Props) {
   const tipoIni = valoresIniciales?.tipo ?? tipoInicial;
   const razaIni = valoresIniciales?.raza ?? razaInicial;
@@ -58,96 +67,111 @@ export function FormularioDatosMascota({
     }
   }
 
+  const wizard = pasoActivo != null;
+
   return (
     <>
-      <div className="section-divider">Datos de la mascota</div>
-
       <input
         type="hidden"
         name="raza"
         value={componerRaza(razaSeleccion, razaOtra)}
       />
 
-      <div className="form-row">
-        <div className="form-group">
-          <label>Nombre de la mascota *</label>
-          <input
-            name="nombre"
-            type="text"
-            placeholder="Ej: Max"
-            required
-            defaultValue={valoresIniciales?.nombre ?? ""}
+      <div className={clasePaso(1, pasoActivo)}>
+        {!wizard && <div className="section-divider">Datos de la mascota</div>}
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="mascota-nombre">Nombre de la mascota *</label>
+            <input
+              id="mascota-nombre"
+              name="nombre"
+              type="text"
+              placeholder="Ej: Max"
+              required
+              defaultValue={valoresIniciales?.nombre ?? ""}
+            />
+          </div>
+          <CampoTipoMascota
+            value={tipo}
+            onChange={onTipoChange}
+            requerido
+            label="Perro o gato"
           />
         </div>
-        <CampoTipoMascota
-          value={tipo}
-          onChange={onTipoChange}
-          requerido
-          label="Perro o gato"
-        />
       </div>
 
-      <div className="form-row">
-        <CampoRaza
+      <div className={clasePaso(2, pasoActivo)}>
+        {wizard && pasoActivo === 2 && (
+          <div className="section-divider">Más detalles</div>
+        )}
+        <div className="form-row">
+          <CampoRaza
+            tipo={tipo}
+            seleccion={razaSeleccion}
+            otra={razaOtra}
+            onSeleccionChange={setRazaSeleccion}
+            onOtraChange={setRazaOtra}
+          />
+          <CampoSexo defaultValue={valoresIniciales?.sexo ?? ""} />
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="mascota-color">Color principal</label>
+            <input
+              id="mascota-color"
+              name="color"
+              type="text"
+              placeholder="Ej: Dorado, marrón"
+              defaultValue={valoresIniciales?.color ?? ""}
+            />
+          </div>
+          <CampoTamano
+            label="Tamaño"
+            defaultValue={valoresIniciales?.tamano ?? ""}
+          />
+        </div>
+
+        <CampoAccesoExterior
           tipo={tipo}
-          seleccion={razaSeleccion}
-          otra={razaOtra}
-          onSeleccionChange={setRazaSeleccion}
-          onOtraChange={setRazaOtra}
-        />
-        <CampoSexo defaultValue={valoresIniciales?.sexo ?? ""} />
-      </div>
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>Color principal</label>
-          <input
-            name="color"
-            type="text"
-            placeholder="Ej: Dorado, marrón"
-            defaultValue={valoresIniciales?.color ?? ""}
-          />
-        </div>
-        <CampoTamano
-          label="Tamaño"
-          defaultValue={valoresIniciales?.tamano ?? ""}
-        />
-      </div>
-
-      <CampoAccesoExterior
-        tipo={tipo}
-        defaultValue={valoresIniciales?.accesoExterior}
-        requerido
-      />
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>Edad aproximada</label>
-          <input
-            name="edad"
-            type="text"
-            placeholder="Ej: 3 años"
-            defaultValue={valoresIniciales?.edad ?? ""}
-          />
-        </div>
-        <CampoFechaHora
-          label="Fecha y hora de pérdida"
-          name="fechaPerdida"
+          defaultValue={valoresIniciales?.accesoExterior}
           requerido
-          defaultValue={valoresIniciales?.fechaPerdida}
         />
-      </div>
 
-      <div className="section-divider">Accesorios e identificación</div>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="mascota-edad">Edad aproximada</label>
+            <input
+              id="mascota-edad"
+              name="edad"
+              type="text"
+              placeholder="Ej: 3 años (opcional)"
+              defaultValue={valoresIniciales?.edad ?? ""}
+            />
+          </div>
+          <CampoFechaHora
+            label="Fecha y hora de pérdida"
+            name="fechaPerdida"
+            requerido
+            defaultValue={valoresIniciales?.fechaPerdida}
+          />
+        </div>
 
-      <div className="form-group">
-        <label>Descripción adicional</label>
-        <textarea
-          name="descripcion"
-          rows={2}
-          placeholder="Señas particulares, collar azul, cicatrices, comportamiento especial..."
-          defaultValue={valoresIniciales?.descripcion ?? ""}
-        />
+        {!wizard && (
+          <div className="section-divider">Accesorios e identificación</div>
+        )}
+
+        <div className="form-group">
+          <label htmlFor="mascota-descripcion">Descripción adicional</label>
+          <textarea
+            id="mascota-descripcion"
+            name="descripcion"
+            rows={2}
+            placeholder="Collar, señas particulares, comportamiento… (opcional)"
+            defaultValue={valoresIniciales?.descripcion ?? ""}
+          />
+        </div>
       </div>
     </>
   );

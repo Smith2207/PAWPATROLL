@@ -44,7 +44,7 @@ export default async function PaginaFichaPublicaMascota({ params }: Props) {
     : [];
 
   return (
-    <EnvolturaPaginasApp>
+    <EnvolturaPaginasApp pie>
       <FichaPublicaMascota
         datos={datos}
         datosMapa={datosMapa}

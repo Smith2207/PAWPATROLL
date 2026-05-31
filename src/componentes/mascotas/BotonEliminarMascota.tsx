@@ -11,7 +11,7 @@ export function BotonEliminarMascota({ id, nombre }: { id: string; nombre: strin
   async function eliminar() {
     if (
       !confirm(
-        `¿Eliminar la ficha de ${nombre}? Se borrarán fotos e historial.`
+        `¿Eliminar la ficha de ${nombre}? Se borrarán fotos y avistamientos vinculados.`
       )
     ) {
       return;

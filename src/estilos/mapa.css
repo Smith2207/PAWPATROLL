@@ -227,11 +227,16 @@
   }
 }
 
-/* Altura la define flex en .ficha-publica-mapa (columna izquierda) */
+/* Mapa en ficha pública: proporción fluida, sin marco fijo */
 .ficha-publica-mapa .pp-mapa-wrap {
-  border-radius: 10px;
+  border: none;
+  border-radius: 8px;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: 16 / 9;
 }
 
+.ficha-publica-mapa .pp-mapa--ficha,
 .pp-mapa--ficha {
   min-height: 0;
   height: 100%;
@@ -625,9 +630,10 @@
 }
 
 .seccion-mapa-wrap {
-  padding: 2.5rem 1.5rem 3rem;
-  max-width: 1240px;
+  padding: 1rem var(--padding-pagina) 3rem;
+  max-width: var(--ancho-contenido);
   margin: 0 auto;
+  width: 100%;
 }
 
 .seccion-mapa-header {

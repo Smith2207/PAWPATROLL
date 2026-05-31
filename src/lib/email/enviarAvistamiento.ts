@@ -9,7 +9,7 @@ export async function enviarCorreoAvistamientoNuevo(opciones: {
   emailDueno: string;
   nombreDueno: string | null;
   nombreMascota: string;
-  slugMascota: string;
+  mascotaId: string;
   numeroReporte: number;
   direccion: string | null;
 }) {
@@ -18,7 +18,7 @@ export async function enviarCorreoAvistamientoNuevo(opciones: {
   const transporte = obtenerTransporte();
   if (!transporte) return;
 
-  const enlace = `${urlBaseApp()}/mascota/${opciones.slugMascota}#avistamientos`;
+  const enlace = `${urlBaseApp()}/mis-mascotas/${opciones.mascotaId}/caso`;
 
   try {
     await transporte.sendMail({
@@ -45,13 +45,16 @@ export async function enviarCorreoMensajeChat(opciones: {
   slugMascota: string;
   autorMensaje: string;
   extracto: string;
+  enlacePrivado?: string;
 }) {
   if (!correoSoporteConfigurado()) return;
 
   const transporte = obtenerTransporte();
   if (!transporte) return;
 
-  const enlace = `${urlBaseApp()}/mascota/${opciones.slugMascota}#avistamientos`;
+  const enlace =
+    opciones.enlacePrivado ??
+    `${urlBaseApp()}/mascota/${opciones.slugMascota}#avistamientos`;
 
   try {
     await transporte.sendMail({

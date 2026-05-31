@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { useModales } from "@/contexto/ContextoModales";
 import type {
   CoincidenciaVisual,
   FiltrosBusquedaVisual,
@@ -10,6 +11,10 @@ import {
   extraerCaracteristicasDesdeDataUrl,
   type CaracteristicasVisuales,
 } from "@/lib/visual/extraer-caracteristicas";
+import {
+  nivelParecido,
+  textoParecido,
+} from "@/lib/visual/etiquetas-parecido";
 
 type Props = {
   onElegir?: (c: CoincidenciaVisual) => void;
@@ -27,6 +32,7 @@ export function IdentificacionPorFoto({
   filtros,
   onCaracteristicas,
 }: Props) {
+  const { abrirModal } = useModales();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -34,8 +40,6 @@ export function IdentificacionPorFoto({
   const [coincidencias, setCoincidencias] = useState<CoincidenciaVisual[]>([]);
   const [indiceVacio, setIndiceVacio] = useState(false);
   const [busquedaLista, setBusquedaLista] = useState(false);
-  const [caracteristicas, setCaracteristicas] =
-    useState<CaracteristicasVisuales | null>(null);
 
   function elegirArchivo() {
     if (!cargando) inputRef.current?.click();
@@ -47,7 +51,6 @@ export function IdentificacionPorFoto({
     setError(null);
     setIndiceVacio(false);
     setBusquedaLista(false);
-    setCaracteristicas(null);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -74,10 +77,9 @@ export function IdentificacionPorFoto({
 
       try {
         const attrs = await extraerCaracteristicasDesdeDataUrl(dataUrl);
-        setCaracteristicas(attrs);
         onCaracteristicas?.(attrs);
       } catch {
-        setCaracteristicas(null);
+        /* solo autocompletado interno del formulario */
       }
 
       try {
@@ -126,8 +128,8 @@ export function IdentificacionPorFoto({
 
       {!compacto && (
         <p className="foto-ia-intro">
-          Subí una foto y la comparamos con las mascotas <strong>perdidas</strong>{" "}
-          registradas en PawPatrol.
+          Subí una foto y buscamos mascotas <strong>perdidas</strong> que se
+          parezcan. La confirmación la hace la comunidad, no la IA.
         </p>
       )}
 
@@ -184,19 +186,6 @@ export function IdentificacionPorFoto({
         </div>
       )}
 
-      {caracteristicas && (
-        <div className="foto-ia-caracteristicas" role="status">
-          <strong>Análisis visual (M3)</strong>
-          <ul>
-            <li>
-              Color predominante: <em>{caracteristicas.colorPredominante}</em>
-            </li>
-            <li>Tamaño en foto: {caracteristicas.tamanoEstimado}</li>
-            <li>{caracteristicas.patrones[0]}</li>
-          </ul>
-        </div>
-      )}
-
       {error && (
         <div className="foto-ia-alerta foto-ia-alerta--error" role="alert">
           {error}
@@ -205,8 +194,17 @@ export function IdentificacionPorFoto({
 
       {indiceVacio && busquedaLista && !error && (
         <div className="foto-ia-alerta foto-ia-alerta--info">
-          Aún no hay mascotas perdidas indexadas con foto. Cuando alguien reporte
-          una pérdida, podrás buscar aquí.
+          <p className="foto-ia-alerta-texto">
+            Aún no hay mascotas perdidas registradas con foto. Cuando alguien
+            reporte una pérdida, podrás buscar aquí.
+          </p>
+          <button
+            type="button"
+            className="foto-ia-btn-usar foto-ia-btn-indice-vacio"
+            onClick={() => abrirModal("report")}
+          >
+            Reportar mascota perdida
+          </button>
         </div>
       )}
 
@@ -214,15 +212,20 @@ export function IdentificacionPorFoto({
         <div className="foto-ia-resultados">
           <div className="foto-ia-resultados-cabecera">
             <span className="foto-ia-resultados-titulo">
-              Coincidencias encontradas
+              Se parece a estas mascotas reportadas
             </span>
             <span className="foto-ia-resultados-cantidad">
               {coincidencias.length}
             </span>
           </div>
+          <p className="foto-ia-disclaimer">
+            Orientación automática por foto. Verifica siempre con el dueño antes
+            de afirmar que es la misma mascota.
+          </p>
           <ul className="foto-ia-lista">
             {coincidencias.map((c, i) => {
               const seleccionada = mascotaSeleccionadaId === c.mascotaId;
+              const nivel = nivelParecido(c.similitud);
               return (
                 <li
                   key={c.mascotaId}
@@ -244,15 +247,17 @@ export function IdentificacionPorFoto({
                     <div className="foto-ia-item-fila">
                       <strong>{c.nombre}</strong>
                       {i === 0 && (
-                        <span className="foto-ia-badge-mejor">Mejor match</span>
+                        <span className="foto-ia-badge-mejor">Más parecida</span>
                       )}
                     </div>
+                    {c.descripcionAi && (
+                      <p className="foto-ia-descripcion-ai">{c.descripcionAi}</p>
+                    )}
                     <div className="foto-ia-barra-meta">
-                      <span>Similitud visual</span>
-                      <span className="foto-ia-porcentaje">{c.similitud}%</span>
+                      <span>{textoParecido(c.similitud)}</span>
                     </div>
                     <div
-                      className="foto-ia-barra"
+                      className={`foto-ia-barra foto-ia-barra--${nivel}`}
                       role="presentation"
                       aria-hidden
                     >

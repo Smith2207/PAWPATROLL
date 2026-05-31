@@ -3,7 +3,6 @@ import { auth } from "@/auth";
 import { obtenerMascotaPropia } from "@/actions/mascotas";
 import { BotonEliminarMascota } from "@/componentes/mascotas/BotonEliminarMascota";
 import { FormularioFichaMascota } from "@/componentes/mascotas/FormularioFichaMascota";
-import { HistorialEstadosMascota } from "@/componentes/mascotas/HistorialEstadosMascota";
 import { PanelCambioEstado } from "@/componentes/mascotas/PanelCambioEstado";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import Link from "next/link";
@@ -26,7 +25,7 @@ export default async function PaginaEditarMascota({ params }: Props) {
 
   if (!datos) notFound();
 
-  const { mascota, fotos, historial } = datos;
+  const { mascota, fotos } = datos;
 
   return (
     <EnvolturaPaginasApp>
@@ -39,15 +38,19 @@ export default async function PaginaEditarMascota({ params }: Props) {
         <Link href="/mis-mascotas" className="btn-mascota btn-mascota--secundario">
           ← Listado
         </Link>
+        {mascota.estado === "PERDIDA" && (
+          <Link
+            href={`/mis-mascotas/${mascota.id}/caso`}
+            className="btn-mascota"
+          >
+            Caso de búsqueda
+          </Link>
+        )}
       </div>
 
       <div className="ficha-mascota-layout">
         <div>
           <PanelCambioEstado mascota={mascota} />
-          <div className="tarjeta-panel" style={{ marginTop: "1.25rem" }}>
-            <h2>Historial de estados</h2>
-            <HistorialEstadosMascota historial={historial} />
-          </div>
           <div style={{ marginTop: "1rem" }}>
             <BotonEliminarMascota id={mascota.id} nombre={mascota.nombre} />
           </div>

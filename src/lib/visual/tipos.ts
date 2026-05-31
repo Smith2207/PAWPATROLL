@@ -7,6 +7,7 @@ export type CoincidenciaVisual = {
   fotoUrl: string | null;
   similitud: number;
   modelo: string;
+  descripcionAi?: string | null;
 };
 
 export type ResultadoBusquedaVisual = {

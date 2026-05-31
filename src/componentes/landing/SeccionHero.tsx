@@ -21,22 +21,18 @@ export function SeccionHero({ estadisticas, datosMapa }: Props) {
 
   const perdidasEnMapa = datosMapa?.perdidas.length ?? 0;
 
-  const hayDatos =
-    estadisticas &&
-    estadisticas.perdidasActivas +
-      estadisticas.reunidas +
-      estadisticas.avistamientos +
-      estadisticas.usuarios >
-      0;
+  const hayDatos = Boolean(estadisticas);
 
   return (
     <div className="hero-wrap" id="inicio">
       <div className="hero-dots" />
+      <div className="hero-blob hero-blob--1" aria-hidden />
+      <div className="hero-blob hero-blob--2" aria-hidden />
       <div className="hero">
         <div>
           <div className="hero-badge">
             <span className="dot" />
-            Mapa comunitario · Avistamientos · Búsqueda por foto
+            Comunidad activa · Puno y alrededores
           </div>
           <h1>
             Reúne a tu <span className="highlight">mascota perdida</span> con
@@ -53,14 +49,14 @@ export function SeccionHero({ estadisticas, datosMapa }: Props) {
               className="btn-primary"
               onClick={() => abrirModal("report")}
             >
-              Perdí a mi mascota
+              🚨 Perdí mi mascota
             </button>
             <button
               type="button"
               className="btn-secondary"
               onClick={() => abrirModal("sighting")}
             >
-              Vi una mascota
+              👁️ Vi una mascota
             </button>
           </div>
           <p className="hero-ayuda-foto">
@@ -74,27 +70,36 @@ export function SeccionHero({ estadisticas, datosMapa }: Props) {
             </button>
           </p>
 
+          <div className="hero-enlaces-secundarios">
+            <Link href={RUTAS_LANDING.casosActivos} className="hero-enlace-pagina">
+              Ver casos activos
+            </Link>
+            <Link href={RUTAS_LANDING.comunidad} className="hero-enlace-pagina hero-enlace-pagina--mapa">
+              Abrir mapa comunitario
+            </Link>
+          </div>
+
           {hayDatos && estadisticas && (
             <div className="hero-stats">
-              <div className="stat">
+              <div className="stat stat--alerta">
                 <div className="stat-num">
                   <span>{formatear(estadisticas.perdidasActivas)}</span>
                 </div>
                 <div className="stat-label">Casos activos</div>
               </div>
-              <div className="stat">
+              <div className="stat stat--ok">
                 <div className="stat-num">
                   <span>{formatear(estadisticas.reunidas)}</span>
                 </div>
                 <div className="stat-label">Reunidas</div>
               </div>
-              <div className="stat">
+              <div className="stat stat--avist">
                 <div className="stat-num">
                   <span>{formatear(estadisticas.avistamientos)}</span>
                 </div>
                 <div className="stat-label">Avistamientos</div>
               </div>
-              <div className="stat">
+              <div className="stat stat--comunidad">
                 <div className="stat-num">
                   <span>{formatear(estadisticas.usuarios)}</span>
                 </div>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   gestionarEstadoAvistamiento,
-  enviarMensajeAvistamiento,
   listarAvistamientosPorMascota,
   type AvistamientoConMensajes,
 } from "@/actions/avistamientos";
@@ -25,83 +25,6 @@ function etiquetaEstado(estado: string) {
   if (estado === "VERIFICADO") return "✓ Verificado";
   if (estado === "DESCARTADO") return "✗ Descartado";
   return "⏳ Pendiente";
-}
-
-function ChatAvistamiento({
-  av,
-  esDueno,
-  nombreMascota,
-}: {
-  av: AvistamientoConMensajes;
-  esDueno: boolean;
-  nombreMascota: string;
-}) {
-  const [texto, setTexto] = useState("");
-  const [nombreInvitado, setNombreInvitado] = useState(av.nombreReportante ?? "");
-  const [pendiente, iniciar] = useTransition();
-  const router = useRouter();
-
-  const enviar = () => {
-    iniciar(async () => {
-      const res = await enviarMensajeAvistamiento(
-        av.id,
-        texto,
-        esDueno ? undefined : nombreInvitado || undefined
-      );
-      if (res.ok) {
-        setTexto("");
-        router.refresh();
-      } else {
-        alert(res.error ?? "No se pudo enviar.");
-      }
-    });
-  };
-
-  return (
-    <div className="chat-avistamiento">
-      <h4 className="chat-avistamiento-titulo">💬 Chat con el dueño</h4>
-      <ul className="chat-avistamiento-mensajes">
-        {av.mensajes.length === 0 && (
-          <li className="chat-avistamiento-vacio">Sin mensajes aún.</li>
-        )}
-        {av.mensajes.map((m) => (
-          <li key={m.id} className="chat-avistamiento-msg">
-            <strong>{m.autorNombre ?? "Usuario"}</strong>
-            <p>{m.contenido}</p>
-            <time>
-              {new Date(m.createdAt).toLocaleString("es-PE", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}
-            </time>
-          </li>
-        ))}
-      </ul>
-      {!esDueno && !av.userId && (
-        <label className="chat-avistamiento-nombre">
-          Tu nombre
-          <input
-            type="text"
-            value={nombreInvitado}
-            onChange={(e) => setNombreInvitado(e.target.value)}
-            placeholder="Para que te reconozcan"
-          />
-        </label>
-      )}
-      <div className="chat-avistamiento-form">
-        <textarea
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          placeholder={`Escribe sobre ${nombreMascota}…`}
-          rows={2}
-          maxLength={2000}
-        />
-        <button type="button" disabled={pendiente || !texto.trim()} onClick={enviar}>
-          {pendiente ? "Enviando…" : "Enviar"}
-        </button>
-      </div>
-    </div>
-  );
 }
 
 export function SeccionAvistamientosMascota({
@@ -129,7 +52,7 @@ export function SeccionAvistamientosMascota({
       evento.tipo === "mensaje:nuevo" &&
       evento.mascotaId === mascotaId
     ) {
-      void recargar();
+      if (esDueno) void recargar();
       return;
     }
     if (
@@ -171,9 +94,18 @@ export function SeccionAvistamientosMascota({
         👁️ Avistamientos de {nombreMascota}
       </h2>
       <p className="seccion-avistamientos-intro">
-        Solo reportes vinculados a esta mascota. El mapa de arriba muestra la misma
-        información en el espacio.
+        Reportes verificados en el mapa. La comunicación con testigos es privada:
+        solo tú y quien reportó pueden chatear.
       </p>
+
+      {esDueno && (
+        <p className="pp-avistamiento-privado-cta">
+          <Link href={`/mis-mascotas/${mascotaId}/caso`}>
+            Abrir caso de búsqueda →
+          </Link>
+          {" "}Timeline, chats y notificaciones centralizados.
+        </p>
+      )}
 
       {lista.length === 0 ? (
         <p className="seccion-avistamientos-vacio">
@@ -198,7 +130,7 @@ export function SeccionAvistamientosMascota({
                 <p className="timeline-avistamiento-lugar">📍 {av.direccion}</p>
               )}
               {av.descripcion && <p>{av.descripcion}</p>}
-              {av.nombreReportante && (
+              {esDueno && av.nombreReportante && (
                 <p className="timeline-avistamiento-reportante">
                   Reportó: <strong>{av.nombreReportante}</strong>
                   {av.telefonoReportante ? ` · ${av.telefonoReportante}` : ""}
@@ -233,7 +165,17 @@ export function SeccionAvistamientosMascota({
                 </div>
               )}
 
-              <ChatAvistamiento av={av} esDueno={esDueno} nombreMascota={nombreMascota} />
+              {esDueno ? (
+                <p className="pp-avistamiento-privado-cta">
+                  <Link href={`/avistamiento/${av.id}`}>
+                    Abrir chat privado →
+                  </Link>
+                </p>
+              ) : (
+                <p className="pp-avistamiento-privado-cta">
+                  El dueño contactará al reportante de forma privada si hace falta.
+                </p>
+              )}
             </li>
           ))}
         </ol>

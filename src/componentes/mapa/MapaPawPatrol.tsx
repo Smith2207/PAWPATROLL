@@ -54,6 +54,112 @@ function invalidarTamanoMapaSeguro(mapa: L.Map, contenedor?: HTMLElement | null)
   }
 }
 
+function contenedorMapaVisible(contenedor: HTMLElement | null | undefined): boolean {
+  if (!contenedor?.isConnected) return false;
+  const { width, height } = contenedor.getBoundingClientRect();
+  return width >= 1 && height >= 1;
+}
+
+type OpcionesCalor = {
+  radius?: number;
+  blur?: number;
+  maxZoom?: number;
+  gradient?: Record<number, string>;
+};
+
+/** leaflet.heat falla con IndexSizeError si el canvas del mapa mide 0×0 */
+function agregarCapaCalorSegura(
+  mapa: L.Map,
+  contenedor: HTMLElement | null | undefined,
+  puntos: [number, number, number?][],
+  opciones: OpcionesCalor = {}
+): L.Layer | null {
+  if (puntos.length === 0 || !contenedorMapaVisible(contenedor)) return null;
+  try {
+    invalidarTamanoMapaSeguro(mapa, contenedor);
+    return L.heatLayer(puntos, {
+      radius: 28,
+      blur: 22,
+      maxZoom: 17,
+      gradient: {
+        0.2: "#3b82f6",
+        0.5: "#eab308",
+        0.8: "#f97316",
+        1: "#ef4444",
+      },
+      ...opciones,
+    }).addTo(mapa);
+  } catch {
+    return null;
+  }
+}
+
+function observarHastaCapaCalor(
+  mapa: L.Map,
+  contenedor: HTMLElement | null | undefined,
+  puntos: [number, number, number?][],
+  onListo: (capa: L.Layer) => void
+): () => void {
+  const wrap =
+    contenedor?.closest(".ficha-publica-mapa-envoltorio") ??
+    contenedor?.parentElement ??
+    contenedor;
+  if (!wrap) return () => {};
+
+  let capa: L.Layer | null = null;
+  const intentar = () => {
+    if (capa) return true;
+    capa = agregarCapaCalorSegura(mapa, contenedor, puntos);
+    if (capa) {
+      onListo(capa);
+      return true;
+    }
+    return false;
+  };
+
+  if (intentar()) return () => {};
+
+  const ro = new ResizeObserver(() => {
+    if (intentar()) ro.disconnect();
+  });
+  ro.observe(wrap);
+
+  const t1 = window.setTimeout(intentar, 120);
+  const t2 = window.setTimeout(intentar, 350);
+
+  return () => {
+    ro.disconnect();
+    window.clearTimeout(t1);
+    window.clearTimeout(t2);
+    if (capa) {
+      try {
+        mapa.removeLayer(capa);
+      } catch {
+        /* ya removida */
+      }
+    }
+  };
+}
+
+/** flyTo seguro: omitir si el mapa está oculto (p. ej. wizard con display:none) */
+function volarAPuntoSeguro(
+  mapa: L.Map,
+  contenedor: HTMLElement | null,
+  punto: Coordenadas,
+  zoom = 17
+) {
+  if (!coordenadasValidas(punto) || !contenedorMapaVisible(contenedor)) return;
+  try {
+    invalidarTamanoMapaSeguro(mapa, contenedor);
+    mapa.flyTo([punto.lat, punto.lng], zoom, {
+      animate: true,
+      duration: 0.8,
+    });
+  } catch {
+    /* contenedor sin layout o transición de visibilidad */
+  }
+}
+
 type Props = {
   datos?: DatosMapaPublico;
   prediccion?: PrediccionComportamiento | null;
@@ -226,54 +332,98 @@ export function MapaPawPatrol({
   const precisionRef = useRef<L.Circle | null>(null);
 
   useEffect(() => {
-    if (!contenedorRef.current || mapaRef.current) return;
+    const contenedor = contenedorRef.current;
+    if (!contenedor || mapaRef.current) return;
 
-    configurarIconosLeaflet();
-
-    const centro = centrarEnUsuario ?? calcularCentro(datos);
-    const mapa = L.map(contenedorRef.current, {
-      scrollWheelZoom: true,
-      zoomControl: altura !== "hero",
-    }).setView([centro.lat, centro.lng], datos?.perdidas.length ? 13 : 12);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(mapa);
-
-    const capas = L.layerGroup().addTo(mapa);
-    mapaRef.current = mapa;
-    capasRef.current = capas;
-
-    if (onClickMapa) {
-      mapa.on("click", (e) => {
-        onClickMapa({ lat: e.latlng.lat, lng: e.latlng.lng });
-      });
-    }
-
+    let cancelado = false;
+    let mapa: L.Map | null = null;
     let ro: ResizeObserver | undefined;
     let rafResize = 0;
-    if (altura === "ficha" && contenedorRef.current.parentElement) {
-      const wrap = contenedorRef.current.parentElement;
-      const contenedor = contenedorRef.current;
-      ro = new ResizeObserver(() => {
-        cancelAnimationFrame(rafResize);
-        rafResize = requestAnimationFrame(() => {
-          invalidarTamanoMapaSeguro(mapa, contenedor);
+
+    const iniciarMapa = () => {
+      if (cancelado || mapaRef.current || !contenedorRef.current) return false;
+      if (!contenedorMapaVisible(contenedorRef.current)) return false;
+
+      configurarIconosLeaflet();
+
+      const centro = centrarEnUsuario ?? calcularCentro(datos);
+      mapa = L.map(contenedorRef.current, {
+        scrollWheelZoom: true,
+        zoomControl: altura !== "hero",
+      }).setView([centro.lat, centro.lng], datos?.perdidas.length ? 13 : 12);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(mapa);
+
+      const capas = L.layerGroup().addTo(mapa);
+      mapaRef.current = mapa;
+      capasRef.current = capas;
+
+      if (onClickMapa) {
+        mapa.on("click", (e) => {
+          onClickMapa({ lat: e.latlng.lat, lng: e.latlng.lng });
         });
+      }
+
+      const wrap =
+        contenedor.closest(".ficha-publica-mapa-envoltorio") ??
+        contenedor.parentElement;
+      if (wrap) {
+        ro = new ResizeObserver(() => {
+          cancelAnimationFrame(rafResize);
+          rafResize = requestAnimationFrame(() => {
+            if (mapaRef.current) {
+              invalidarTamanoMapaSeguro(mapaRef.current, contenedor);
+            }
+          });
+        });
+        ro.observe(wrap);
+      }
+
+      invalidarTamanoMapaSeguro(mapa, contenedor);
+      return true;
+    };
+
+    if (!iniciarMapa()) {
+      const wrap =
+        contenedor.closest(".ficha-publica-mapa-envoltorio") ??
+        contenedor.parentElement ??
+        contenedor;
+      const roInicio = new ResizeObserver(() => {
+        if (iniciarMapa()) roInicio.disconnect();
       });
-      ro.observe(wrap);
-      window.setTimeout(
-        () => invalidarTamanoMapaSeguro(mapa, contenedor),
-        120
-      );
+      roInicio.observe(wrap);
+      window.setTimeout(() => {
+        if (iniciarMapa()) roInicio.disconnect();
+      }, 80);
+      window.setTimeout(() => {
+        if (iniciarMapa()) roInicio.disconnect();
+      }, 250);
+
+      return () => {
+        cancelado = true;
+        roInicio.disconnect();
+        cancelAnimationFrame(rafResize);
+        ro?.disconnect();
+        if (mapaRef.current) {
+          mapaRef.current.remove();
+          mapaRef.current = null;
+          capasRef.current = null;
+          calorRef.current = null;
+          usuarioRef.current = null;
+          precisionRef.current = null;
+        }
+      };
     }
 
     return () => {
+      cancelado = true;
       cancelAnimationFrame(rafResize);
       ro?.disconnect();
-      mapa.remove();
+      mapa?.remove();
       mapaRef.current = null;
       capasRef.current = null;
       calorRef.current = null;
@@ -287,6 +437,8 @@ export function MapaPawPatrol({
     const capas = capasRef.current;
     if (!mapa || !capas) return;
 
+    const cleanups: (() => void)[] = [];
+
     capas.clearLayers();
     if (calorRef.current) {
       mapa.removeLayer(calorRef.current);
@@ -294,17 +446,18 @@ export function MapaPawPatrol({
     }
 
     if (datos && mostrarCalorEfectivo && datos.puntosCalor.length > 0) {
-      calorRef.current = L.heatLayer(datos.puntosCalor, {
-        radius: 28,
-        blur: 22,
-        maxZoom: 17,
-        gradient: {
-          0.2: "#3b82f6",
-          0.5: "#eab308",
-          0.8: "#f97316",
-          1: "#ef4444",
-        },
-      }).addTo(mapa);
+      const contenedor = contenedorRef.current;
+      const puntos = datos.puntosCalor;
+      const capa = agregarCapaCalorSegura(mapa, contenedor, puntos);
+      if (capa) {
+        calorRef.current = capa;
+      } else {
+        cleanups.push(
+          observarHastaCapaCalor(mapa, contenedor, puntos, (c) => {
+            calorRef.current = c;
+          })
+        );
+      }
     }
 
     if (prediccion?.centro && mostrarCercosEfectivo) {
@@ -485,19 +638,48 @@ export function MapaPawPatrol({
     }
 
     if (bounds.length > 1) {
-      mapa.fitBounds(L.latLngBounds(bounds), { padding: [40, 40], maxZoom: 14 });
+      try {
+        if (contenedorMapaVisible(contenedorRef.current)) {
+          mapa.fitBounds(L.latLngBounds(bounds), {
+            padding: [40, 40],
+            maxZoom: 14,
+          });
+        }
+      } catch {
+        /* contenedor sin layout */
+      }
     } else if (bounds.length === 1) {
-      mapa.setView(bounds[0], 14);
+      try {
+        mapa.setView(bounds[0], 14);
+      } catch {
+        /* contenedor sin layout */
+      }
     }
 
     if (altura === "ficha") {
       const contenedor = contenedorRef.current;
-      const id = window.setTimeout(
-        () => invalidarTamanoMapaSeguro(mapa, contenedor),
-        80
-      );
-      return () => window.clearTimeout(id);
+      const id = window.setTimeout(() => {
+        invalidarTamanoMapaSeguro(mapa, contenedor);
+        if (
+          !calorRef.current &&
+          datos &&
+          mostrarCalorEfectivo &&
+          datos.puntosCalor.length > 0
+        ) {
+          const capa = agregarCapaCalorSegura(
+            mapa,
+            contenedor,
+            datos.puntosCalor
+          );
+          if (capa) calorRef.current = capa;
+        }
+      }, 80);
+      cleanups.push(() => window.clearTimeout(id));
     }
+
+    return () => {
+      cleanups.forEach((fn) => fn());
+    };
   }, [
     datos,
     prediccion,
@@ -513,6 +695,7 @@ export function MapaPawPatrol({
 
   useEffect(() => {
     const mapa = mapaRef.current;
+    const contenedor = contenedorRef.current;
     if (!mapa) return;
 
     if (usuarioRef.current) {
@@ -526,9 +709,11 @@ export function MapaPawPatrol({
 
     const punto: UbicacionSeleccionada | null | undefined =
       marcadorUsuario ?? centrarEnUsuario;
-    if (punto && coordenadasValidas(punto)) {
-      const precision = punto.precisionMetros;
-      if (precision && precision > 0 && precision < 500) {
+    if (!punto || !coordenadasValidas(punto)) return;
+
+    const precision = punto.precisionMetros;
+    if (precision && precision > 0 && precision < 500) {
+      try {
         precisionRef.current = L.circle([punto.lat, punto.lng], {
           radius: precision,
           color: "#4285F4",
@@ -536,9 +721,13 @@ export function MapaPawPatrol({
           fillOpacity: 0.15,
           weight: 1,
         }).addTo(mapa);
+      } catch {
+        /* mapa sin layout */
       }
+    }
 
-      const etiquetaPopup = punto.etiqueta?.trim() || "Tu ubicación";
+    const etiquetaPopup = punto.etiqueta?.trim() || "Tu ubicación";
+    try {
       usuarioRef.current = L.marker([punto.lat, punto.lng], {
         icon: iconoUbicacionUsuario(),
         zIndexOffset: 1000,
@@ -547,12 +736,31 @@ export function MapaPawPatrol({
           `<div class="pp-popup-titulo">📍 Estás aquí</div><div class="pp-popup-meta">${etiquetaPopup}</div>`
         )
         .addTo(mapa);
-
-      mapa.flyTo([punto.lat, punto.lng], 17, {
-        animate: true,
-        duration: 0.8,
-      });
+    } catch {
+      /* mapa sin layout */
     }
+
+    volarAPuntoSeguro(mapa, contenedor, punto);
+
+    const wrap = contenedor?.parentElement;
+    let ro: ResizeObserver | undefined;
+    let timer = 0;
+
+    const reintentarVuelo = () => {
+      volarAPuntoSeguro(mapa, contenedor, punto);
+    };
+
+    if (wrap) {
+      ro = new ResizeObserver(() => reintentarVuelo());
+      ro.observe(wrap);
+    }
+
+    timer = window.setTimeout(reintentarVuelo, 180);
+
+    return () => {
+      ro?.disconnect();
+      window.clearTimeout(timer);
+    };
   }, [marcadorUsuario, centrarEnUsuario]);
 
   return (

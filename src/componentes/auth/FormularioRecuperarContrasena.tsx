@@ -32,7 +32,7 @@ export function FormularioRecuperarContrasena() {
   return (
     <>
       <p className="auth-sub">
-        Te enviaremos un enlace a tu correo (válido 1 hora). Solo aplica a cuentas
+        Te enviaremos un correo con un botón para restablecer tu contraseña (válido 1 hora). Solo aplica a cuentas
         registradas con correo y contraseña, no a inicio con Google.
       </p>
 

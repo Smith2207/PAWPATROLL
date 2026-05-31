@@ -1,19 +1,21 @@
 "use client";
 
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
+import { CampanaNotificaciones } from "@/componentes/notificaciones/CampanaNotificaciones";
+import { ENLACES_NAV, RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-const ENLACES_SESION = [
-  { href: "/", etiqueta: "Inicio", exacto: true },
-  { href: "/mis-mascotas", etiqueta: "Mis mascotas", exacto: false },
-  { href: "/perfil", etiqueta: "Mi perfil", exacto: true },
+const ENLACES_CUENTA = [
+  { href: "/mis-mascotas", etiqueta: "Mis mascotas" },
+  { href: "/notificaciones", etiqueta: "Notificaciones" },
+  { href: "/perfil", etiqueta: "Mi perfil" },
 ] as const;
 
-function enlaceActivo(pathname: string, href: string, exacto: boolean) {
-  if (exacto) return pathname === href;
+function enlaceActivo(pathname: string, href: string) {
+  if (href === RUTAS_LANDING.inicio) return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -34,6 +36,11 @@ export function BarraNavegacionApp() {
     setMenuAbierto(false);
   }
 
+  const enlaces = [
+    ...ENLACES_NAV,
+    ...(sesionActiva ? ENLACES_CUENTA : []),
+  ];
+
   return (
     <nav className="nav-principal nav-principal--app">
       <Link className="logo" href="/" onClick={cerrar}>
@@ -41,36 +48,31 @@ export function BarraNavegacionApp() {
         <span className="logo-texto">PawPatrol</span>
       </Link>
 
-      {sesionActiva && (
-        <div className="nav-centro nav-centro--escritorio">
-          <div className="nav-links nav-links--app">
-            {ENLACES_SESION.filter((e) => {
-              if (e.href === "/perfil" && pathname.startsWith("/perfil")) return false;
-              if (e.href === "/mis-mascotas" && pathname === "/mis-mascotas") return false;
-              return true;
-            }).map((enlace) => (
-              <Link
-                key={enlace.href}
-                href={enlace.href}
-                className={
-                  enlaceActivo(pathname, enlace.href, enlace.exacto)
-                    ? "nav-link--activo"
-                    : undefined
-                }
-                aria-current={
-                  enlaceActivo(pathname, enlace.href, enlace.exacto)
-                    ? "page"
-                    : undefined
-                }
-              >
-                {enlace.etiqueta}
-              </Link>
-            ))}
-          </div>
+      <div className="nav-centro nav-centro--escritorio">
+        <div
+          className={`nav-links nav-links--app ${sesionActiva ? "nav-links--con-sesion" : ""}`}
+        >
+          {enlaces.map((enlace) => (
+            <Link
+              key={enlace.href}
+              href={enlace.href}
+              className={
+                enlaceActivo(pathname, enlace.href)
+                  ? "nav-link--activo"
+                  : undefined
+              }
+              aria-current={
+                enlaceActivo(pathname, enlace.href) ? "page" : undefined
+              }
+            >
+              {enlace.etiqueta}
+            </Link>
+          ))}
         </div>
-      )}
+      </div>
 
       <div className="nav-actions nav-actions--escritorio">
+        <CampanaNotificaciones />
         <MenuUsuario compacto={sesionActiva} />
       </div>
 
@@ -94,30 +96,25 @@ export function BarraNavegacionApp() {
       )}
 
       <div className={`nav-drawer ${menuAbierto ? "nav-drawer--abierto" : ""}`}>
-        {sesionActiva && (
-          <div className="nav-drawer-links">
-            {ENLACES_SESION.filter((e) => {
-              if (e.href === "/perfil" && pathname.startsWith("/perfil")) return false;
-              if (e.href === "/mis-mascotas" && pathname === "/mis-mascotas") return false;
-              return true;
-            }).map((enlace) => (
-              <Link
-                key={enlace.href}
-                href={enlace.href}
-                className={
-                  enlaceActivo(pathname, enlace.href, enlace.exacto)
-                    ? "nav-link--activo"
-                    : undefined
-                }
-                onClick={cerrar}
-              >
-                {enlace.etiqueta}
-              </Link>
-            ))}
-          </div>
-        )}
+        <div className="nav-drawer-links">
+          {enlaces.map((enlace) => (
+            <Link
+              key={enlace.href}
+              href={enlace.href}
+              className={
+                enlaceActivo(pathname, enlace.href)
+                  ? "nav-link--activo"
+                  : undefined
+              }
+              onClick={cerrar}
+            >
+              {enlace.etiqueta}
+            </Link>
+          ))}
+        </div>
         <div className="nav-drawer-actions">
-          <MenuUsuario enMenuMovil compacto />
+          <CampanaNotificaciones />
+          <MenuUsuario enMenuMovil compacto={sesionActiva} />
         </div>
       </div>
     </nav>

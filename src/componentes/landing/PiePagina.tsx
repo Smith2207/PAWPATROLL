@@ -7,7 +7,7 @@ export function PiePagina() {
         </div>
         <div className="footer-text">
           © 2026 <span>PawPatrol</span> — Universidad Nacional del Altiplano ·
-          Ingeniería Estadistica e Informatica · Puno, Perú
+          Ingeniería Estadística e Informática · Puno, Perú
           <div className="footer-members">
             Branly Paucar · Lenin Apaza · Geremi Venegas · Fernando Mamani ·
             Eddy Mamani
