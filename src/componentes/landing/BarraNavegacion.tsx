@@ -1,7 +1,14 @@
 "use client";
 
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
-import { ENLACES_NAV, RUTAS_LANDING } from "@/lib/landing/rutas";
+import { EnlaceMisMascotasNav } from "@/componentes/layout/EnlaceMisMascotasNav";
+import { Icono } from "@/componentes/ui/Icono";
+import {
+  ENLACES_NAV,
+  ENLACES_NAV_EXPLORAR,
+  ENLACES_NAV_SESION,
+  RUTAS_LANDING,
+} from "@/lib/landing/rutas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -25,10 +32,14 @@ export function BarraNavegacion() {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
+  const enlacesCentro = sesionActiva ? ENLACES_NAV_SESION : ENLACES_NAV;
+
   return (
     <nav className="nav-principal nav-principal--landing">
       <Link className="logo" href={RUTAS_LANDING.inicio}>
-        <div className="logo-icon">🐾</div>
+        <div className="logo-icon">
+          <Icono nombre="huella" size={20} />
+        </div>
         <span className="logo-texto">PawPatrol</span>
       </Link>
 
@@ -36,7 +47,7 @@ export function BarraNavegacion() {
         <div
           className={`nav-links ${sesionActiva ? "nav-links--con-sesion" : ""}`}
         >
-          {ENLACES_NAV.map((enlace) => (
+          {enlacesCentro.map((enlace) => (
             <Link
               key={enlace.href}
               href={enlace.href}
@@ -45,11 +56,7 @@ export function BarraNavegacion() {
               {enlace.etiqueta}
             </Link>
           ))}
-          {sesionActiva && (
-            <Link href="/mis-mascotas" className="nav-link-externo">
-              Mis mascotas
-            </Link>
-          )}
+          {sesionActiva && <EnlaceMisMascotasNav pathname={pathname} />}
         </div>
       </div>
 
@@ -64,7 +71,11 @@ export function BarraNavegacion() {
         aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
         onClick={() => setMenuAbierto((v) => !v)}
       >
-        {menuAbierto ? "✕" : "☰"}
+        {menuAbierto ? (
+          <Icono nombre="cerrar" size={22} />
+        ) : (
+          <Icono nombre="menu" size={22} />
+        )}
       </button>
 
       {menuAbierto && (
@@ -78,7 +89,7 @@ export function BarraNavegacion() {
 
       <div className={`nav-drawer ${menuAbierto ? "nav-drawer--abierto" : ""}`}>
         <div className="nav-drawer-links">
-          {ENLACES_NAV.map((enlace) => (
+          {enlacesCentro.map((enlace) => (
             <Link
               key={enlace.href}
               href={enlace.href}
@@ -89,9 +100,27 @@ export function BarraNavegacion() {
             </Link>
           ))}
           {sesionActiva && (
-            <Link href="/mis-mascotas" onClick={() => setMenuAbierto(false)}>
-              Mis mascotas
-            </Link>
+            <EnlaceMisMascotasNav
+              pathname={pathname}
+              onNavigate={() => setMenuAbierto(false)}
+            />
+          )}
+          {sesionActiva && (
+            <div className="nav-drawer-seccion">
+              <span className="nav-drawer-seccion-titulo">Explorar</span>
+              {ENLACES_NAV_EXPLORAR.map((enlace) => (
+                <Link
+                  key={enlace.href}
+                  href={enlace.href}
+                  className={`nav-drawer-secundario ${
+                    enlaceActivo(enlace.href) ? "nav-link--activo" : ""
+                  }`.trim()}
+                  onClick={() => setMenuAbierto(false)}
+                >
+                  {enlace.etiqueta}
+                </Link>
+              ))}
+            </div>
           )}
         </div>
         <div className="nav-drawer-actions">

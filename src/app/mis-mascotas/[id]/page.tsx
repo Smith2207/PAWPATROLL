@@ -8,6 +8,7 @@ import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
+import { Icono } from "@/componentes/ui/Icono";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -26,6 +27,9 @@ export default async function PaginaEditarMascota({ params }: Props) {
   if (!datos) notFound();
 
   const { mascota, fotos } = datos;
+  const fotoPrincipal =
+    fotos.find((f) => f.esPrincipal)?.url ?? fotos[0]?.url ?? null;
+  const mascotaPanel = { ...mascota, fotoPrincipal };
 
   return (
     <EnvolturaPaginasApp>
@@ -35,22 +39,24 @@ export default async function PaginaEditarMascota({ params }: Props) {
           <h1 style={{ marginBottom: 4 }}>{mascota.nombre}</h1>
           <BadgeEstadoMascota estado={mascota.estado} />
         </div>
-        <Link href="/mis-mascotas" className="btn-mascota btn-mascota--secundario">
-          ← Listado
+        <Link href="/mis-mascotas" className="btn-mascota btn-mascota--secundario pp-enlace-icono">
+          <Icono nombre="izquierda" size={14} />
+          Listado
         </Link>
         {mascota.estado === "PERDIDA" && (
           <Link
             href={`/mis-mascotas/${mascota.id}/caso`}
-            className="btn-mascota"
+            className="btn-mascota pp-enlace-icono"
           >
-            Caso de búsqueda
+            <Icono nombre="mensaje" size={16} className="pp-icon--btn" />
+            Chats y avistamientos
           </Link>
         )}
       </div>
 
       <div className="ficha-mascota-layout">
         <div>
-          <PanelCambioEstado mascota={mascota} />
+          <PanelCambioEstado mascota={mascotaPanel} />
           <div style={{ marginTop: "1rem" }}>
             <BotonEliminarMascota id={mascota.id} nombre={mascota.nombre} />
           </div>

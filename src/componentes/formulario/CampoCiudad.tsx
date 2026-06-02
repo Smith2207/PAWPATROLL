@@ -191,11 +191,6 @@ export function CampoCiudad({
       {ayuda && !errorApi && (
         <p className="perfil-campo-ayuda">{ayuda}</p>
       )}
-      {!ayuda && !errorApi && termino.length >= 2 && (
-        <p className="perfil-campo-ayuda">
-          Catálogo oficial UBIGEO (Perú). Ej: Juliaca → Puno / San Roman / Juliaca
-        </p>
-      )}
     </div>
   );
 }

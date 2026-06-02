@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { listarMisMascotas } from "@/actions/mascotas";
 import { AvisoSmtpDueño } from "@/componentes/mascotas/AvisoSmtpDueño";
 import { TarjetaMascotaLista } from "@/componentes/mascotas/TarjetaMascotaLista";
+import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
@@ -58,15 +59,16 @@ export default async function PaginaMisMascotas() {
         {avistamientosPendientes > 0 && (
           <p className="mascotas-alerta-pendientes" role="status">
             Tienes <strong>{avistamientosPendientes}</strong> avistamiento
-            {avistamientosPendientes === 1 ? "" : "s"} por revisar en tus fichas
-            (marca verificar o descartar en cada reporte).
+            {avistamientosPendientes === 1 ? "" : "s"} por revisar. Abre el{" "}
+            <strong>caso de búsqueda</strong> de cada mascota para chatear y
+            marcar como verificado o descartado.
           </p>
         )}
 
         {mascotas.length === 0 ? (
           <div className="mascotas-vacio tarjeta-panel">
             <span className="mascotas-vacio-icono" aria-hidden>
-              🐾
+              <Icono nombre="huella" size={40} />
             </span>
             <h2>Tu primera ficha</h2>
             <p>

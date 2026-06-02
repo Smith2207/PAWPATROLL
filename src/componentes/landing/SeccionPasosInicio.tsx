@@ -1,29 +1,36 @@
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";
 
-const PASOS = [
+const PASOS: {
+  num: string;
+  icono: NombreIcono;
+  titulo: string;
+  desc: string;
+  tono: "orange" | "blue" | "mint";
+}[] = [
   {
     num: "1",
-    icono: "🚨",
+    icono: "alerta" as const,
     titulo: "Activa la alerta",
     desc: "Nombre, foto y dónde se perdió. Publicamos tu ficha en segundos.",
     tono: "orange",
   },
   {
     num: "2",
-    icono: "👁️",
+    icono: "ojo" as const,
     titulo: "La comunidad reporta",
     desc: "Vecinos marcan en el mapa dónde la vieron, con foto si pueden.",
     tono: "blue",
   },
   {
     num: "3",
-    icono: "🎉",
+    icono: "celebracion" as const,
     titulo: "Te reunimos",
     desc: "Coordina por mensajes y marca el caso como reunido cuando vuelva.",
     tono: "mint",
   },
-] as const;
+];
 
 export function SeccionPasosInicio() {
   return (
@@ -48,7 +55,9 @@ export function SeccionPasosInicio() {
               {p.num}
             </span>
             <span className="pp-home-paso-icono-wrap" aria-hidden>
-              <span className="pp-home-paso-icono">{p.icono}</span>
+              <span className="pp-home-paso-icono">
+                <Icono nombre={p.icono} size={28} />
+              </span>
             </span>
             <h3 className="pp-home-paso-titulo">{p.titulo}</h3>
             <p className="pp-home-paso-desc">{p.desc}</p>
@@ -57,7 +66,8 @@ export function SeccionPasosInicio() {
       </div>
       <p className="pp-home-pasos-enlace">
         <Link href={RUTAS_LANDING.comoFunciona}>
-          Ver guía completa con todas las funciones →
+          Ver guía completa con todas las funciones
+          <Icono nombre="derecha" size={16} className="pp-icon--btn" />
         </Link>
       </p>
     </section>

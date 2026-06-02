@@ -29,6 +29,7 @@ import {
   type ValoresInicialesFichaMascota,
 } from "@/componentes/landing/modales/FormularioDatosMascota";
 import { OverlayPublicando } from "@/componentes/ui/OverlayPublicando";
+import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 
@@ -412,8 +413,8 @@ export function ModalReportarPerdida() {
         </div>
         <div className="modal-body pp-avistamiento-exito-panel">
           <div className="pp-avistamiento-exito" role="status">
-            <span className="pp-avistamiento-exito-icono" aria-hidden>
-              ✅
+            <span className="pp-avistamiento-exito-icono">
+              <Icono nombre="checkCirculo" size={28} />
             </span>
             <div>
               <strong>¡Alerta publicada!</strong>
@@ -443,7 +444,7 @@ export function ModalReportarPerdida() {
             className="submit-btn"
             onClick={verMapaYCerrar}
           >
-            🗺️ Ver en el mapa
+            <Icono nombre="mapa" size={18} className="pp-icon--btn" /> Ver en el mapa
           </button>
           <button
             type="button"
@@ -507,12 +508,14 @@ export function ModalReportarPerdida() {
         />
 
         <div className={paso === 1 ? "" : "pp-wizard-oculto"}>
-          <div className="section-divider">📍 Ubicación donde se perdió</div>
+          <div className="section-divider">
+            <Icono nombre="ubicacion" size={16} className="pp-icon--btn" /> Ubicación donde se perdió
+          </div>
 
           <SelectorUbicacionMapa
             etiqueta="¿Dónde se perdió? *"
             idInput="report-location"
-            icono="📍"
+            icono="ubicacion"
             placeholder={PLACEHOLDER_UBICACION}
             valor={ubicacion}
             onChange={setUbicacion}
@@ -613,7 +616,11 @@ export function ModalReportarPerdida() {
               ? "Activando alerta…"
               : paso < 3
                 ? "Continuar"
-                : "🚨 Activar alerta de búsqueda"}
+                : (
+                  <>
+                    <Icono nombre="alerta" size={18} className="pp-icon--btn" /> Activar alerta de búsqueda
+                  </>
+                )}
           </button>
         </div>
       </form>

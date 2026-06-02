@@ -13,7 +13,7 @@ import {
   verificationTokens,
 } from "@/lib/db/schema";
 import type { RolUsuario } from "@/lib/db/schema";
-import { normalizarCorreo, rolParaNuevoUsuario } from "@/lib/auth/admin";
+import { normalizarCorreo, rolParaNuevoUsuario, esCorreoAdmin } from "@/lib/auth/admin";
 import { imagenParaJwt } from "@/lib/auth/imagen-token";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -52,6 +52,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const valido = await bcrypt.compare(password, usuario.passwordHash);
         if (!valido) return null;
+
+        if (usuario.activo === false) return null;
 
         if (!usuario.emailVerified) {
           return null;
@@ -98,38 +100,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             ...(imagenPersonalizada ? {} : { image: fotoGoogle }),
             emailVerified: new Date(),
             rol: rolParaNuevoUsuario(correo),
+            ...(esCorreoAdmin(correo) ? { bienvenidaCompletada: true } : {}),
           })
           .where(eq(users.email, correo));
+
+        const [cuenta] = await db
+          .select({ activo: users.activo })
+          .from(users)
+          .where(eq(users.email, correo))
+          .limit(1);
+
+        if (cuenta?.activo === false) return false;
       }
       return true;
     },
     async jwt({ token, user, trigger }) {
-      if (trigger === "update" && token.email) {
-        const [usuario] = await db
-          .select({
-            id: users.id,
-            rol: users.rol,
-            name: users.name,
-          })
-          .from(users)
-          .where(eq(users.email, token.email as string))
-          .limit(1);
-
-        if (usuario) {
-          token.id = usuario.id;
-          token.rol = usuario.rol;
-          token.name = usuario.name;
-        }
-
-        return token;
-      }
-
-      if (user) {
-        token.id = user.id;
-        token.rol = (user as { rol?: RolUsuario }).rol ?? "CIUDADANO";
-        token.name = user.name;
-        token.picture = imagenParaJwt(user.image);
-      } else if (token.email && !token.id) {
+      async function sincronizarTokenConUsuario(correo: string) {
         const [usuario] = await db
           .select({
             id: users.id,
@@ -138,15 +124,53 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             image: users.image,
           })
           .from(users)
-          .where(eq(users.email, token.email))
+          .where(eq(users.email, correo))
           .limit(1);
 
-        if (usuario) {
-          token.id = usuario.id;
-          token.rol = usuario.rol;
-          token.name = usuario.name;
-          token.picture = imagenParaJwt(usuario.image);
+        if (!usuario) return;
+
+        const rol = esCorreoAdmin(correo) ? "ADMINISTRADOR" : usuario.rol;
+        if (usuario.rol !== rol) {
+          await db.update(users).set({ rol }).where(eq(users.id, usuario.id));
         }
+
+        token.id = usuario.id;
+        token.email = correo;
+        token.rol = rol;
+        token.name = usuario.name;
+        token.picture = imagenParaJwt(usuario.image);
+      }
+
+      if (trigger === "update" && token.email) {
+        await sincronizarTokenConUsuario(normalizarCorreo(token.email as string));
+        return token;
+      }
+
+      if (user?.email) {
+        await sincronizarTokenConUsuario(normalizarCorreo(user.email));
+        return token;
+      }
+
+      if (user?.id) {
+        const [usuario] = await db
+          .select({ email: users.email })
+          .from(users)
+          .where(eq(users.id, user.id))
+          .limit(1);
+
+        if (usuario?.email) {
+          await sincronizarTokenConUsuario(normalizarCorreo(usuario.email));
+          return token;
+        }
+      }
+
+      if (user) {
+        token.id = user.id;
+        token.rol = (user as { rol?: RolUsuario }).rol ?? "CIUDADANO";
+        token.name = user.name;
+        token.picture = imagenParaJwt(user.image);
+      } else if (token.email) {
+        await sincronizarTokenConUsuario(normalizarCorreo(token.email as string));
       }
 
       return token;

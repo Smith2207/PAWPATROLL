@@ -1,6 +1,7 @@
 "use client";
 
 import { obtenerImagenPerfilSesion } from "@/actions/autenticacion";
+import { Icono } from "@/componentes/ui/Icono";
 import { useModales } from "@/contexto/ContextoModales";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -109,7 +110,7 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
           onClick={() => abrirModal("report")}
         >
           <span className="nav-cta-icono" aria-hidden>
-            🚨
+            <Icono nombre="alerta" size={16} />
           </span>
           <span className="nav-cta-texto">Perdí mi mascota</span>
         </button>
@@ -118,6 +119,7 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
   }
 
   const nombre = sesion.user.name ?? sesion.user.email?.split("@")[0] ?? "Cuenta";
+  const esAdmin = sesion.user.rol === "ADMINISTRADOR";
 
   const chipUsuario = enPerfil ? (
     <span
@@ -151,6 +153,12 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
   if (enMenuMovil) {
     return (
       <div className={claseContenedor}>
+        {esAdmin && (
+          <Link href="/admin" className="nav-drawer-admin pp-enlace-icono">
+            <Icono nombre="escudo" size={16} />
+            Panel administrativo
+          </Link>
+        )}
         {chipUsuario}
         <button
           type="button"
@@ -165,7 +173,7 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
           onClick={() => abrirModal("report")}
         >
           <span className="nav-cta-icono" aria-hidden>
-            🚨
+            <Icono nombre="alerta" size={16} />
           </span>
           <span className="nav-cta-texto">Perdí mi mascota</span>
         </button>
@@ -175,6 +183,16 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
 
   return (
     <div className={claseContenedor}>
+      {esAdmin && (
+        <Link
+          href="/admin"
+          className="nav-admin-enlace pp-enlace-icono"
+          title="Panel administrativo"
+        >
+          <Icono nombre="escudo" size={16} />
+          <span className="nav-admin-texto">Admin</span>
+        </Link>
+      )}
       {chipUsuario}
       <button
         type="button"
@@ -191,7 +209,7 @@ export function MenuUsuario({ enMenuMovil = false, compacto = false }: Props) {
         title="Reportar mascota perdida"
       >
         <span className="nav-cta-icono" aria-hidden>
-          🚨
+          <Icono nombre="alerta" size={16} />
         </span>
         <span className="nav-cta-texto">Perdí</span>
       </button>

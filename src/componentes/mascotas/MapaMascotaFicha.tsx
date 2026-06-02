@@ -112,9 +112,7 @@ export function MapaMascotaFicha({
             color={color}
             raza={raza}
             className="ficha-publica-mapa-btn"
-          >
-            👁️ Reportar avistamiento
-          </BotonReportarAvistamiento>
+          />
         </>
       ) : (
         <>

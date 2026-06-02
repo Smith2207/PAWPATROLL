@@ -1,6 +1,7 @@
 "use client";
 
 import { useModales } from "@/contexto/ContextoModales";
+import { Icono } from "@/componentes/ui/Icono";
 
 export function SeccionBusquedaFotoInicio() {
   const { abrirBusquedaPorFoto } = useModales();
@@ -25,14 +26,17 @@ export function SeccionBusquedaFotoInicio() {
             className="btn-primary pp-home-busqueda-foto-btn"
             onClick={abrirBusquedaPorFoto}
           >
-            📷 Buscar por foto
+            <Icono nombre="camara" size={18} className="pp-icon--btn" />
+            Buscar por foto
           </button>
         </div>
         <div className="pp-home-busqueda-foto-visual" aria-hidden>
           <div className="pp-home-busqueda-foto-demo">
-            <span>📷</span>
-            <span className="pp-home-busqueda-foto-flecha">→</span>
-            <span>🐾</span>
+            <Icono nombre="camara" size={32} />
+            <span className="pp-home-busqueda-foto-flecha">
+              <Icono nombre="derecha" size={24} />
+            </span>
+            <Icono nombre="huella" size={32} />
           </div>
           <p>Se parece a estas mascotas reportadas</p>
         </div>

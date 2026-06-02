@@ -1,5 +1,6 @@
 "use client";
 
+import { Icono } from "@/componentes/ui/Icono";
 import { FormularioRegistro } from "@/componentes/auth/FormularioRegistro";
 import {
   BotonCerrarModal,
@@ -32,7 +33,9 @@ export function ModalRegistro() {
       <div className="modal-header">
         <div className="modal-header-accent" />
         <BotonCerrarModal tipo="registro" />
-        <div className="modal-title">🐾 Crear cuenta</div>
+        <div className="modal-title">
+          <Icono nombre="huella" size={20} className="pp-icon--btn" /> Crear cuenta
+        </div>
         <div className="modal-sub">{subtitulo}</div>
       </div>
       <div className="modal-body">

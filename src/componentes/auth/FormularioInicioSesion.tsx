@@ -2,6 +2,7 @@
 
 import { signIn, useSession } from "next-auth/react";
 import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
+import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -104,13 +105,15 @@ export function FormularioInicioSesion({ enModal = false }: Props) {
 
       {verificado && !enModal && (
         <p className="auth-alerta auth-alerta--ok">
-          ✅ Correo verificado. Ya puedes iniciar sesión.
+          <Icono nombre="checkCirculo" size={16} className="pp-icon--btn" />
+          Correo verificado. Ya puedes iniciar sesión.
         </p>
       )}
 
       {passwordRestablecida && (
         <p className="auth-alerta auth-alerta--ok">
-          ✅ Contraseña actualizada. Inicia sesión con tu nueva contraseña.
+          <Icono nombre="checkCirculo" size={16} className="pp-icon--btn" />
+          Contraseña actualizada. Inicia sesión con tu nueva contraseña.
         </p>
       )}
 

@@ -4,7 +4,6 @@ import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   avistamientos,
-  eventosCaso,
   lecturasChat,
   mascotas,
   mensajesAvistamiento,
@@ -83,19 +82,11 @@ export async function obtenerCasoBusqueda(mascotaId: string) {
   if (!mascota) return null;
   if (!esAdmin && mascota.estado !== "PERDIDA") return null;
 
-  const [eventos, avistamientosLista] = await Promise.all([
-    db
-      .select()
-      .from(eventosCaso)
-      .where(eq(eventosCaso.mascotaId, mascotaId))
-      .orderBy(desc(eventosCaso.createdAt))
-      .limit(50),
-    db
-      .select()
-      .from(avistamientos)
-      .where(eq(avistamientos.mascotaId, mascotaId))
-      .orderBy(desc(avistamientos.numeroReporte)),
-  ]);
+  const avistamientosLista = await db
+    .select()
+    .from(avistamientos)
+    .where(eq(avistamientos.mascotaId, mascotaId))
+    .orderBy(desc(avistamientos.numeroReporte));
 
   const ids = avistamientosLista.map((a) => a.id);
   const mensajes =
@@ -107,6 +98,22 @@ export async function obtenerCasoBusqueda(mascotaId: string) {
           .orderBy(asc(mensajesAvistamiento.createdAt))
       : [];
 
+  const userIds = [
+    ...new Set(
+      avistamientosLista
+        .map((a) => a.userId)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  const usuarios =
+    userIds.length > 0
+      ? await db
+          .select({ id: users.id, name: users.name, image: users.image })
+          .from(users)
+          .where(inArray(users.id, userIds))
+      : [];
+  const usuariosPorId = new Map(usuarios.map((u) => [u.id, u]));
+
   const mensajesPorAv = new Map<string, typeof mensajes>();
   for (const m of mensajes) {
     const arr = mensajesPorAv.get(m.avistamientoId) ?? [];
@@ -116,11 +123,18 @@ export async function obtenerCasoBusqueda(mascotaId: string) {
 
   return {
     mascota,
-    eventos,
-    avistamientos: avistamientosLista.map((av) => ({
-      ...av,
-      mensajes: mensajesPorAv.get(av.id) ?? [],
-    })),
+    avistamientos: avistamientosLista.map((av) => {
+      const reportante = av.userId ? usuariosPorId.get(av.userId) : null;
+      return {
+        ...av,
+        mensajes: mensajesPorAv.get(av.id) ?? [],
+        reportanteNombre:
+          reportante?.name?.trim() ||
+          av.nombreReportante?.trim() ||
+          "Participante",
+        reportanteImagen: reportante?.image ?? null,
+      };
+    }),
   };
 }
 
@@ -154,12 +168,26 @@ export async function obtenerChatPrivadoAvistamiento(avistamientoId: string) {
     ? await esDuenoMascota(av.mascotaId, userId)
     : false;
 
+  let reportanteNombre =
+    av.av.nombreReportante?.trim() || "Participante";
+  if (av.av.userId) {
+    const [reportante] = await db
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, av.av.userId))
+      .limit(1);
+    if (reportante?.name?.trim()) {
+      reportanteNombre = reportante.name.trim();
+    }
+  }
+
   return {
     avistamiento: av.av,
     nombreMascota: av.nombreMascota,
     slug: av.slug,
     mensajes,
     esDueno,
+    reportanteNombre,
   };
 }
 

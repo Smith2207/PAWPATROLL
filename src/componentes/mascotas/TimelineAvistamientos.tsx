@@ -1,4 +1,5 @@
 import type { AvistamientoConMensajes } from "@/actions/avistamientos";
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 
 type Props = {
   avistamientos: AvistamientoConMensajes[];
@@ -27,7 +28,7 @@ export function TimelineAvistamientos({
     fecha: Date;
     titulo: string;
     detalle?: string;
-    icono: string;
+    icono: NombreIcono;
     tipo: TipoEvento;
   }[] = [];
 
@@ -37,7 +38,7 @@ export function TimelineAvistamientos({
       fecha: new Date(fechaAlerta),
       titulo: "Alerta activada",
       detalle: `Se publicó la búsqueda de ${nombreMascota}`,
-      icono: "🚨",
+      icono: "alerta",
       tipo: "alerta",
     });
   }
@@ -54,18 +55,16 @@ export function TimelineAvistamientos({
       id: av.id,
       fecha: new Date(av.createdAt),
       titulo:
-        av.estado === "VERIFICADO"
-          ? `Avistamiento #${av.numeroReporte} verificado`
-          : av.estado === "DESCARTADO"
-            ? `Avistamiento #${av.numeroReporte} descartado`
-            : `Avistamiento #${av.numeroReporte}`,
+        av.estado === "DESCARTADO"
+          ? `Avistamiento #${av.numeroReporte} descartado`
+          : `Avistamiento #${av.numeroReporte}`,
       detalle: av.direccion ?? av.referencias ?? undefined,
       icono:
         av.estado === "VERIFICADO"
-          ? "✓"
+          ? "check"
           : av.estado === "DESCARTADO"
-            ? "✗"
-            : "👁️",
+            ? "cerrar"
+            : "ojo",
       tipo,
     });
   }
@@ -89,7 +88,7 @@ export function TimelineAvistamientos({
             className={`pp-timeline-item pp-timeline-item--${e.tipo}`}
           >
             <span className="pp-timeline-icono" aria-hidden>
-              {e.icono}
+              <Icono nombre={e.icono} size={16} />
             </span>
             <div className="pp-timeline-cuerpo">
               <time dateTime={e.fecha.toISOString()}>{formatearFecha(e.fecha)}</time>

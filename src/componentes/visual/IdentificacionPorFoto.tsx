@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { Icono } from "@/componentes/ui/Icono";
 import { useModales } from "@/contexto/ContextoModales";
 import type {
   CoincidenciaVisual,
@@ -129,7 +130,7 @@ export function IdentificacionPorFoto({
       {!compacto && (
         <p className="foto-ia-intro">
           Subí una foto y buscamos mascotas <strong>perdidas</strong> que se
-          parezcan. La confirmación la hace la comunidad, no la IA.
+          parezcan.
         </p>
       )}
 
@@ -140,8 +141,8 @@ export function IdentificacionPorFoto({
           onClick={elegirArchivo}
           disabled={cargando}
         >
-          <span className="foto-ia-zona-icono" aria-hidden>
-            📷
+          <span className="foto-ia-zona-icono">
+            <Icono nombre="camara" size={32} />
           </span>
           <span className="foto-ia-zona-titulo">Subir o tomar foto</span>
           <span className="foto-ia-zona-sub">
@@ -240,7 +241,7 @@ export function IdentificacionPorFoto({
                     />
                   ) : (
                     <div className="foto-ia-item-foto foto-ia-item-foto--vacía">
-                      🐾
+                      <Icono nombre="huella" size={24} />
                     </div>
                   )}
                   <div className="foto-ia-item-cuerpo">
@@ -273,9 +274,13 @@ export function IdentificacionPorFoto({
                           className={`foto-ia-btn-usar${seleccionada ? " foto-ia-btn-usar--activo" : ""}`}
                           onClick={() => onElegir(c)}
                         >
-                          {seleccionada
-                            ? "✓ Seleccionada"
-                            : "Usar en avistamiento"}
+                          {seleccionada ? (
+                            <>
+                              <Icono nombre="check" size={14} className="pp-icon--btn" /> Seleccionada
+                            </>
+                          ) : (
+                            "Usar en avistamiento"
+                          )}
                         </button>
                       ) : null}
                       <Link

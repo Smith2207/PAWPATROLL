@@ -16,7 +16,7 @@ export function ModalIniciarSesion() {
   const pendientePerdida =
     perdidaPendienteAuth || hayPerdidaPendienteAuth();
 
-  let titulo = "👋 Bienvenido a PawPatrol";
+  let titulo = "Bienvenido a PawPatrol";
   let subtitulo =
     "Inicia sesión para ayudar a encontrar mascotas perdidas";
 

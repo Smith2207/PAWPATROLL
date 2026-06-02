@@ -1,6 +1,7 @@
 "use client";
 
 import { VisorLightboxFotos } from "@/componentes/mascotas/VisorLightboxFotos";
+import { Icono } from "@/componentes/ui/Icono";
 import { useCallback, useEffect, useState } from "react";
 
 type Foto = {
@@ -49,7 +50,9 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
   if (total === 0) {
     return (
       <div className="carrusel-ficha carrusel-ficha--vacio" aria-label="Sin fotos">
-        <span className="carrusel-ficha-placeholder">🐾</span>
+        <span className="carrusel-ficha-placeholder">
+          <Icono nombre="huella" size={48} />
+        </span>
         <span className="carrusel-ficha-sin-foto">Sin fotos disponibles</span>
       </div>
     );
@@ -78,7 +81,9 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
                 alt={`${nombre} — foto ${indice + 1} de ${total}`}
                 className={`carrusel-ficha-imagen ${transicion ? "carrusel-ficha-imagen--fade" : ""}`}
               />
-              <span className="carrusel-ficha-zoom-hint">🔍 Clic para ampliar</span>
+              <span className="carrusel-ficha-zoom-hint">
+                <Icono nombre="buscar" size={14} className="pp-icon--btn" /> Clic para ampliar
+              </span>
             </button>
 
             {hayVarias && (

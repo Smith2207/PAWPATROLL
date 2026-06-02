@@ -24,3 +24,15 @@ export const ENLACES_NAV = [
   { href: RUTAS_LANDING.comunidad, etiqueta: "Comunidad" },
   { href: RUTAS_LANDING.comoFunciona, etiqueta: "Cómo funciona" },
 ] as const;
+
+/** Menú reducido cuando el usuario ya inició sesión (menos ruido visual). */
+export const ENLACES_NAV_SESION = [
+  { href: RUTAS_LANDING.inicio, etiqueta: "Inicio" },
+  { href: RUTAS_LANDING.comunidad, etiqueta: "Comunidad" },
+] as const;
+
+/** Solo en menú móvil / secundario para usuarios logueados. */
+export const ENLACES_NAV_EXPLORAR = [
+  { href: RUTAS_LANDING.casosActivos, etiqueta: "Casos activos" },
+  { href: RUTAS_LANDING.comoFunciona, etiqueta: "Cómo funciona" },
+] as const;

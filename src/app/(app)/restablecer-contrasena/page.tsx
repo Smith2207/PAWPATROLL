@@ -1,4 +1,5 @@
 import { FormularioRestablecerContrasena } from "@/componentes/auth/FormularioRestablecerContrasena";
+import { Icono } from "@/componentes/ui/Icono";
 import { validarTokenRecuperacion } from "@/lib/auth/recuperar-contrasena";
 
 type Props = {
@@ -32,7 +33,10 @@ export default async function PaginaRestablecerContrasena({
   return (
     <div className="auth-pagina">
       <div className="auth-card">
-        <h1>🔐 Nueva contraseña</h1>
+        <h1>
+          <Icono nombre="candado" size={22} className="pp-icon--btn" />
+          Nueva contraseña
+        </h1>
         <FormularioRestablecerContrasena
           email={email}
           token={token}

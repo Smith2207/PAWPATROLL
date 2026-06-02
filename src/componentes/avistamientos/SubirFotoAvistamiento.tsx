@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 import { useCamaraReporte } from "@/hooks/useCamaraReporte";
 
 type Props = {
@@ -52,7 +53,9 @@ export function SubirFotoAvistamiento({ foto, onChange }: Props) {
             style={{ display: "none" }}
             onChange={(e) => previewFotos(e.target)}
           />
-          <div className="photo-upload-icon">🖼️</div>
+          <div className="photo-upload-icon">
+            <Icono nombre="imagen" size={28} />
+          </div>
           <div className="photo-upload-text">Subir imagen</div>
         </div>
 
@@ -63,7 +66,9 @@ export function SubirFotoAvistamiento({ foto, onChange }: Props) {
           onClick={() => void abrirCamara()}
           onKeyDown={(e) => e.key === "Enter" && void abrirCamara()}
         >
-          <div className="photo-upload-icon">📸</div>
+          <div className="photo-upload-icon">
+            <Icono nombre="camara" size={28} />
+          </div>
           <div className="photo-upload-text">Tomar foto</div>
         </div>
       </div>
@@ -74,10 +79,10 @@ export function SubirFotoAvistamiento({ foto, onChange }: Props) {
           <canvas id={ids.canvas} style={{ display: "none" }} />
           <div className="pp-camara-acciones">
             <button type="button" onClick={capturarFoto}>
-              📸 Capturar
+              <Icono nombre="camara" size={16} className="pp-icon--btn" /> Capturar
             </button>
             <button type="button" onClick={cerrarCamara}>
-              ✕
+              <Icono nombre="cerrar" size={16} />
             </button>
           </div>
         </div>

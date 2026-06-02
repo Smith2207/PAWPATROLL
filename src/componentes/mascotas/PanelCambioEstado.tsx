@@ -2,6 +2,7 @@
 
 import { cambiarEstadoMascota } from "@/actions/mascotas";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
+import { AccesoCasoBusqueda } from "@/componentes/mascotas/AccesoCasoBusqueda";
 import type { EstadoMascota, Mascota } from "@/lib/db/schema";
 import {
   ETIQUETAS_ESTADO,
@@ -11,6 +12,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { SelectorUbicacionMapa } from "@/componentes/landing/ui/SelectorUbicacionMapa";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
@@ -22,16 +24,20 @@ import {
 } from "@/lib/fechas/datetime-local";
 
 const ACCIONES: Partial<
-  Record<EstadoMascota, { label: string; variant?: string }>
+  Record<EstadoMascota, { icono: NombreIcono; label: string; variant?: string }>
 > = {
-  PERDIDA: { label: "🔴 Marcar como perdida" },
-  ENCONTRADA: { label: "🟡 Marcar como encontrada" },
-  REUNIDA: { label: "🟢 Marcar como reunida" },
-  EN_CASA: { label: "🏠 Volver a en casa" },
+  PERDIDA: { icono: "alertaCirculo", label: "Marcar como perdida" },
+  ENCONTRADA: { icono: "alertaCirculo", label: "Marcar como encontrada" },
+  REUNIDA: { icono: "checkCirculo", label: "Marcar como reunida" },
+  EN_CASA: { icono: "casa", label: "Volver a en casa" },
 };
 
 type Props = {
-  mascota: Mascota;
+  mascota: Mascota & {
+    avistamientosPendientes?: number;
+    totalAvistamientos?: number;
+    fotoPrincipal?: string | null;
+  };
 };
 
 export function PanelCambioEstado({ mascota }: Props) {
@@ -105,19 +111,24 @@ export function PanelCambioEstado({ mascota }: Props) {
 
       {esFichaPublica(mascota.estado) && (
         <p style={{ fontSize: "0.82rem", marginBottom: "1rem" }}>
-          <Link href={`/mascota/${mascota.slug}`} target="_blank">
-            Ver ficha pública →
+          <Link href={`/mascota/${mascota.slug}`} target="_blank" className="pp-enlace-icono">
+            Ver ficha pública
+            <Icono nombre="derecha" size={14} />
           </Link>
         </p>
       )}
 
       {mascota.estado === "PERDIDA" && (
-        <p style={{ fontSize: "0.82rem", marginBottom: "1rem" }}>
-          <Link href={`/mis-mascotas/${mascota.id}/caso`}>
-            Caso de búsqueda →
-          </Link>
-          {" "}Timeline, chats privados y avistamientos.
-        </p>
+        <div style={{ marginBottom: "1rem" }}>
+          <AccesoCasoBusqueda
+            mascotaId={mascota.id}
+            nombreMascota={mascota.nombre}
+            tipo={mascota.tipo}
+            fotoPrincipal={mascota.fotoPrincipal}
+            avistamientosPendientes={mascota.avistamientosPendientes}
+            totalAvistamientos={mascota.totalAvistamientos}
+          />
+        </div>
       )}
 
       {mensaje && <p className="auth-alerta auth-alerta--ok">{mensaje}</p>}
@@ -135,7 +146,7 @@ export function PanelCambioEstado({ mascota }: Props) {
           <SelectorUbicacionMapa
             etiqueta="Zona en el mapa (cerco de búsqueda) *"
             idInput="perdida-map"
-            icono="📍"
+            icono="ubicacion"
             placeholder={PLACEHOLDER_UBICACION}
             valor={ubicacionPerdida}
             onChange={setUbicacionPerdida}
@@ -164,7 +175,18 @@ export function PanelCambioEstado({ mascota }: Props) {
             disabled={cargando}
             onClick={() => aplicar(estado)}
           >
-            {ACCIONES[estado]?.label ?? ETIQUETAS_ESTADO[estado]}
+            {ACCIONES[estado] ? (
+              <>
+                <Icono
+                  nombre={ACCIONES[estado]!.icono}
+                  size={16}
+                  className="pp-icon--btn"
+                />{" "}
+                {ACCIONES[estado]!.label}
+              </>
+            ) : (
+              ETIQUETAS_ESTADO[estado]
+            )}
           </button>
         ))}
       </div>

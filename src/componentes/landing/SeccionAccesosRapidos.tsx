@@ -1,29 +1,36 @@
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";
 
-const ACCESOS = [
+const ACCESOS: {
+  href: string;
+  icono: NombreIcono;
+  titulo: string;
+  desc: string;
+  tono: "orange" | "blue" | "mint";
+}[] = [
   {
     href: RUTAS_LANDING.casosActivos,
-    icono: "🔍",
+    icono: "buscar" as const,
     titulo: "Casos activos",
     desc: "Fichas de mascotas perdidas con foto, datos y contacto.",
     tono: "orange",
   },
   {
     href: RUTAS_LANDING.comunidad,
-    icono: "🗺️",
+    icono: "mapa" as const,
     titulo: "Comunidad",
-    desc: "Mapa en vivo con zonas de búsqueda y avistamientos.",
+    desc: "Mapa en vivo con mascotas perdidas (punto donde se perdieron).",
     tono: "blue",
   },
   {
     href: RUTAS_LANDING.comoFunciona,
-    icono: "ℹ️",
+    icono: "info" as const,
     titulo: "Cómo funciona",
     desc: "Guía paso a paso para dueños y vecinos colaboradores.",
     tono: "mint",
   },
-] as const;
+];
 
 export function SeccionAccesosRapidos() {
   return (
@@ -42,14 +49,14 @@ export function SeccionAccesosRapidos() {
             className={`pp-acceso-card pp-acceso-card--${a.tono}`}
           >
             <span className="pp-acceso-icono" aria-hidden>
-              {a.icono}
+              <Icono nombre={a.icono} size={24} />
             </span>
             <span className="pp-acceso-texto">
               <strong>{a.titulo}</strong>
               <span>{a.desc}</span>
             </span>
             <span className="pp-acceso-flecha" aria-hidden>
-              →
+              <Icono nombre="derecha" size={18} />
             </span>
           </Link>
         ))}

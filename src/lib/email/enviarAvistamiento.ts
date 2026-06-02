@@ -24,7 +24,7 @@ export async function enviarCorreoAvistamientoNuevo(opciones: {
     await transporte.sendMail({
       from: remitentePorDefecto(),
       to: opciones.emailDueno,
-      subject: `👁️ Nuevo avistamiento de ${opciones.nombreMascota} — PawPatrol`,
+      subject: `Nuevo avistamiento de ${opciones.nombreMascota} — PawPatrol`,
       html: plantillaAvistamientoNuevo({
         nombreDueno: opciones.nombreDueno,
         nombreMascota: opciones.nombreMascota,
@@ -60,7 +60,7 @@ export async function enviarCorreoMensajeChat(opciones: {
     await transporte.sendMail({
       from: remitentePorDefecto(),
       to: opciones.emailDestino,
-      subject: `💬 Nuevo mensaje sobre ${opciones.nombreMascota} — PawPatrol`,
+      subject: `Nuevo mensaje sobre ${opciones.nombreMascota} — PawPatrol`,
       html: plantillaMensajeChatAvistamiento({
         nombreDestino: opciones.nombreDestino,
         nombreMascota: opciones.nombreMascota,

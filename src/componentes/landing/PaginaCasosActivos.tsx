@@ -11,6 +11,7 @@ import {
   SeccionMascotasRecientes,
   type MascotaPublicaTarjeta,
 } from "@/componentes/landing/SeccionMascotasRecientes";
+import { Icono } from "@/componentes/ui/Icono";
 import {
   hayFiltrosBusqueda,
   mensajeSinResultados,
@@ -111,7 +112,10 @@ export function PaginaCasosActivos({ mascotasIniciales }: Props) {
       />
       {!busquedaActiva && mascotas.length > 0 && (
         <p className="pp-casos-enlace-mapa">
-          <Link href={RUTAS_LANDING.comunidad}>Ver todos en el mapa comunitario →</Link>
+          <Link href={RUTAS_LANDING.comunidad} className="pp-enlace-icono">
+            Ver todos en el mapa comunitario
+            <Icono nombre="derecha" size={14} />
+          </Link>
         </p>
       )}
     </>

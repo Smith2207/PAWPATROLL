@@ -1,4 +1,5 @@
 import type { PrediccionComportamiento } from "@/lib/comportamiento/prediccion";
+import { Icono } from "@/componentes/ui/Icono";
 
 type Props = {
   prediccion: PrediccionComportamiento;
@@ -9,7 +10,7 @@ export function PanelComportamiento({ prediccion, nombreMascota }: Props) {
   return (
     <section className="panel-comportamiento" aria-labelledby="comportamiento-titulo">
       <h2 id="comportamiento-titulo" className="ficha-publica-seccion-titulo">
-        🧠 Búsqueda inteligente
+        <Icono nombre="cerebro" size={20} className="pp-icon--btn" /> Búsqueda inteligente
       </h2>
       <p className="panel-comportamiento-perfil">{prediccion.perfilConductual.etiqueta}</p>
       <p className="panel-comportamiento-evidencia" role="note">

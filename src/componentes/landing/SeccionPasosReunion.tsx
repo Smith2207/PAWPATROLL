@@ -1,29 +1,36 @@
-const PASOS = [
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
+
+const PASOS: {
+  num: string;
+  icono: NombreIcono;
+  titulo: string;
+  desc: string;
+}[] = [
   {
     num: "01",
-    icono: "📋",
+    icono: "lista" as const,
     titulo: "Crea la ficha",
     desc: "Registra nombre, fotos, raza y datos de contacto. Marca la mascota como perdida con fecha y punto en el mapa.",
   },
   {
     num: "02",
-    icono: "🗺️",
+    icono: "mapa" as const,
     titulo: "Comparte y mapa",
     desc: "Publica el enlace de la ficha. Aparece en el mapa comunitario con su zona de búsqueda.",
   },
   {
     num: "03",
-    icono: "👁️",
+    icono: "ojo" as const,
     titulo: "Avistamientos",
     desc: "Cualquier persona reporta dónde la vio, con ubicación y foto opcional. El dueño recibe aviso y puede verificar el reporte.",
   },
   {
     num: "04",
-    icono: "🎉",
+    icono: "celebracion" as const,
     titulo: "Reunión",
     desc: "Coordina por mensajes en la ficha y marca el caso como reunido cuando vuelva a casa.",
   },
-] as const;
+];
 
 type Props = { sinEncabezado?: boolean };
 
@@ -57,7 +64,9 @@ export function SeccionPasosReunion({ sinEncabezado = false }: Props) {
           {PASOS.map((p) => (
             <div key={p.num} className="step-card">
               <div className="step-num">{p.num}</div>
-              <div className="step-icon">{p.icono}</div>
+              <div className="step-icon">
+                <Icono nombre={p.icono} size={28} />
+              </div>
               <div className="step-title">{p.titulo}</div>
               <div className="step-desc">{p.desc}</div>
             </div>

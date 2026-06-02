@@ -23,7 +23,6 @@ export default async function PaginaCasoBusqueda({ params }: Props) {
     <EnvolturaPaginasApp>
       <VistaCasoBusqueda
         mascota={caso.mascota}
-        eventos={caso.eventos}
         avistamientos={caso.avistamientos}
       />
     </EnvolturaPaginasApp>

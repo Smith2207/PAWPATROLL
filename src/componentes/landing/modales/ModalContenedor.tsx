@@ -1,6 +1,7 @@
 "use client";
 
 import { useModales, type TipoModal } from "@/contexto/ContextoModales";
+import { Icono } from "@/componentes/ui/Icono";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -55,7 +56,7 @@ export function BotonCerrarModal({
         cerrarModal(tipo);
       }}
     >
-      ✕
+      <Icono nombre="cerrar" size={16} />
     </button>
   );
 }

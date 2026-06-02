@@ -13,7 +13,7 @@ export async function enviarCorreoVerificacion(
   const transporte = obtenerTransporte();
 
   if (!transporte) {
-    console.info("\n📧 [PawPatrol] Verificación (SMTP no configurado)");
+    console.info("\n[PawPatrol] Verificación (SMTP no configurado)");
     console.info("   Para:", email);
     console.info("   Enlace:", enlace, "\n");
     return {

@@ -20,4 +20,4 @@ export const DIRECCIONES_MOVIMIENTO = [
 ] as const;
 
 export const PLACEHOLDER_UBICACION =
-  "Ej: Jr. Lima 345, Parque Pino, Puno — escribe y pulsa 🔍";
+  "Ej: Jr. Lima 345, Parque Pino, Puno — escribe y pulsa buscar";

@@ -13,10 +13,12 @@ import type { PrediccionComportamiento } from "@/lib/comportamiento/prediccion";
 import {
   configurarIconosLeaflet,
   iconoFoto,
-  iconoHtml,
+  iconoSvgMapa,
   iconoUbicacionUsuario,
   TAMANO_MARCADOR_FOTO,
 } from "@/lib/geo/leaflet-iconos";
+import { tituloPopupMapa } from "@/lib/geo/iconos-mapa-html";
+import { Icono } from "@/componentes/ui/Icono";
 import {
   agruparMarcadoresCercanos,
   centroideGrupo,
@@ -207,7 +209,7 @@ function miniaturaPopup(foto: string | null, nombre: string): string {
 function popupPerdida(p: MarcadorPerdidaMapa, esMapaIndividual: boolean): string {
   const enlace = esMapaIndividual
     ? ""
-    : `<a class="pp-popup-link" href="/mascota/${p.slug}">Ver ficha →</a>`;
+    : `<a class="pp-popup-link" href="/mascota/${p.slug}">Ver ficha <span class="pp-popup-flecha">›</span></a>`;
   const cerco = p.prediccion?.cerco;
   const lineaCerco = cerco
     ? `Cerco: ~${(p.radioMetros / 1000).toFixed(1)} km — ${cerco.motivoAjuste}`
@@ -217,12 +219,21 @@ function popupPerdida(p: MarcadorPerdidaMapa, esMapaIndividual: boolean): string
     : "";
   return `
     ${miniaturaPopup(p.fotoPrincipal, p.nombre)}
-    <div class="pp-popup-titulo">📍 Se perdió aquí — ${p.nombre}</div>
+    <div class="pp-popup-titulo">${tituloPopupMapa("ubicacion", `Se perdió aquí — ${p.nombre}`)}</div>
     <div class="pp-popup-meta">${p.tipo}${p.lugarPerdida ? ` · ${p.lugarPerdida}` : ""}</div>
     ${perfil}
     <div class="pp-popup-meta">${lineaCerco}</div>
     <div class="pp-popup-meta">${p.totalAvistamientos} avistamiento(s) registrados</div>
     ${enlace}
+  `;
+}
+
+function popupPerdidaComunidad(p: MarcadorPerdidaMapa): string {
+  return `
+    ${miniaturaPopup(p.fotoPrincipal, p.nombre)}
+    <div class="pp-popup-titulo">${tituloPopupMapa("ubicacion", `Se perdió aquí — ${p.nombre}`)}</div>
+    <div class="pp-popup-meta">${p.tipo}${p.lugarPerdida ? ` · ${p.lugarPerdida}` : ""}</div>
+    <a class="pp-popup-link" href="/mascota/${p.slug}">Ver ficha con mapa detallado <span class="pp-popup-flecha">›</span></a>
   `;
 }
 
@@ -235,7 +246,7 @@ function popupAvistamiento(a: MarcadorAvistamientoMapa): string {
     ${miniaturaPopup(foto, a.nombreMascota ?? "Mascota")}
     <div class="pp-popup-titulo">${titulo}</div>
     <div class="pp-popup-meta">${textoDireccion(a.direccion)}</div>
-    ${a.slugMascota ? `<a class="pp-popup-link" href="/mascota/${a.slugMascota}">Ver ficha →</a>` : ""}
+    ${a.slugMascota ? `<a class="pp-popup-link" href="/mascota/${a.slugMascota}">Ver ficha <span class="pp-popup-flecha">›</span></a>` : ""}
   `;
 }
 
@@ -536,7 +547,7 @@ export function MapaPawPatrol({
         L.marker([p.lat, p.lng], {
           icon: iconoFoto(p.fotoPrincipal, {
             clase: "pp-marcador--perdida",
-            fallbackEmoji: emojiPorTipo(p.tipo),
+            fallbackContenido: emojiPorTipo(p.tipo),
             tamano: TAMANO_MARCADOR_FOTO,
             colorFamilia: cercoColorPorPerdida
               ? estiloFamilia.color
@@ -544,7 +555,11 @@ export function MapaPawPatrol({
           }),
           zIndexOffset: 1000,
         })
-          .bindPopup(popupPerdida(p, esMapaIndividual))
+          .bindPopup(
+            soloPerdidas && !esMapaIndividual
+              ? popupPerdidaComunidad(p)
+              : popupPerdida(p, esMapaIndividual)
+          )
           .addTo(capas);
       });
     }
@@ -564,12 +579,12 @@ export function MapaPawPatrol({
           weight: 1,
         })
           .bindPopup(
-            `<div class="pp-popup-titulo">🏠 Refugio probable</div><div class="pp-popup-meta">${z.etiqueta} · ${Math.round(z.probabilidad * 100)}%</div>`
+            `<div class="pp-popup-titulo">${tituloPopupMapa("casa", "Refugio probable")}</div><div class="pp-popup-meta">${z.etiqueta} · ${Math.round(z.probabilidad * 100)}%</div>`
           )
           .addTo(capas);
 
         L.marker([z.lat, z.lng], {
-          icon: iconoHtml("🏠", "pp-marcador--refugio"),
+          icon: iconoSvgMapa("casa", "pp-marcador--refugio"),
         }).addTo(capas);
       }
     }
@@ -617,9 +632,15 @@ export function MapaPawPatrol({
               ? COLOR_AVISTAMIENTO_SIN_VINCULO
               : undefined;
 
+        const tipoAv =
+          grupo[0]?.mascotaId != null
+            ? (datos?.perdidas.find((p) => p.id === grupo[0]!.mascotaId)?.tipo ??
+              "")
+            : "";
+
         const icon = iconoFoto(fotoPin, {
           clase: "pp-marcador--avistamiento",
-          fallbackEmoji: "📍",
+          fallbackContenido: emojiPorTipo(tipoAv),
           badges: numerosReporte,
           tamano: TAMANO_MARCADOR_FOTO,
           colorFamilia: colorAv,
@@ -733,7 +754,7 @@ export function MapaPawPatrol({
         zIndexOffset: 1000,
       })
         .bindPopup(
-          `<div class="pp-popup-titulo">📍 Estás aquí</div><div class="pp-popup-meta">${etiquetaPopup}</div>`
+          `<div class="pp-popup-titulo">${tituloPopupMapa("ubicacion", "Estás aquí")}</div><div class="pp-popup-meta">${etiquetaPopup}</div>`
         )
         .addTo(mapa);
     } catch {
@@ -789,7 +810,11 @@ export function MapaPawPatrol({
           }}
           aria-label="Ubicarme en el mapa"
         >
-          {geolocalizando ? "⏳" : "🎯"}
+          {geolocalizando ? (
+            <Icono nombre="reloj" size={18} />
+          ) : (
+            <Icono nombre="objetivo" size={18} />
+          )}
           <span>{geolocalizando ? "Ubicando…" : "Ubicarme"}</span>
         </button>
       )}

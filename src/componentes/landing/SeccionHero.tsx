@@ -6,6 +6,7 @@ import { useModales } from "@/contexto/ContextoModales";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";
 import { MapaVistaHero } from "@/componentes/landing/MapaVistaHero";
+import { Icono } from "@/componentes/ui/Icono";
 
 type Props = {
   estadisticas?: EstadisticasLanding;
@@ -49,14 +50,16 @@ export function SeccionHero({ estadisticas, datosMapa }: Props) {
               className="btn-primary"
               onClick={() => abrirModal("report")}
             >
-              🚨 Perdí mi mascota
+              <Icono nombre="alerta" size={18} className="pp-icon--btn" />
+              Perdí mi mascota
             </button>
             <button
               type="button"
               className="btn-secondary"
               onClick={() => abrirModal("sighting")}
             >
-              👁️ Vi una mascota
+              <Icono nombre="ojo" size={18} className="pp-icon--btn" />
+              Vi una mascota
             </button>
           </div>
           <p className="hero-ayuda-foto">
@@ -66,7 +69,7 @@ export function SeccionHero({ estadisticas, datosMapa }: Props) {
               className="hero-enlace-buscar"
               onClick={abrirBusquedaPorFoto}
             >
-              Buscar por foto ↓
+              Buscar por foto
             </button>
           </p>
 
@@ -142,7 +145,8 @@ export function SeccionHero({ estadisticas, datosMapa }: Props) {
               </div>
               {perdidasEnMapa > 0 && (
                 <Link href={RUTAS_LANDING.comunidad} className="map-ir-completo">
-                  Ver mapa completo →
+                  Ver mapa completo
+                  <Icono nombre="derecha" size={16} className="pp-icon--btn" />
                 </Link>
               )}
             </div>

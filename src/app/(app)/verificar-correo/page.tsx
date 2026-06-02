@@ -1,4 +1,5 @@
 import { FormularioReenviarVerificacion } from "@/componentes/auth/FormularioReenviarVerificacion";
+import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
 type Props = {
   searchParams: Promise<{
@@ -19,7 +20,10 @@ export default async function PaginaVerificarCorreo({ searchParams }: Props) {
   return (
     <div className="auth-pagina">
       <div className="auth-card">
-        <h1>📧 Verificación de correo</h1>
+        <h1>
+          <Icono nombre="correo" size={22} className="pp-icon--btn" />
+          Verificación de correo
+        </h1>
 
         {ok && (
           <p className="auth-alerta auth-alerta--ok">

@@ -5,6 +5,7 @@ import {
   crearMascota,
 } from "@/actions/mascotas";
 import { SubirFotosMascota } from "@/componentes/mascotas/SubirFotosMascota";
+import { Icono } from "@/componentes/ui/Icono";
 import type { DatosFichaMascota, Mascota } from "@/lib/db/schema";
 import {
   componerContactoPublico,
@@ -138,8 +139,8 @@ export function FormularioFichaMascota({
     <form onSubmit={enviar} className="form-ficha">
       {modo === "crear" && (
         <p className="form-ficha-intro">
-          🐾 Empieza con lo básico. Los campos con <span className="form-ficha-req">*</span> son
-          obligatorios; el resto ayuda si la mascota se pierde.
+          <Icono nombre="huella" size={18} className="pp-icon--btn" /> Empieza con lo básico. Los campos con{" "}
+          <span className="form-ficha-req">*</span> son obligatorios; el resto ayuda si la mascota se pierde.
         </p>
       )}
 

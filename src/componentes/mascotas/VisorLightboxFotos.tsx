@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 
 type Foto = { id: string; url: string };
 
@@ -57,7 +58,7 @@ export function VisorLightboxFotos({
         aria-label="Cerrar vista ampliada"
         onClick={onCerrar}
       >
-        ✕
+        <Icono nombre="cerrar" size={18} />
       </button>
 
       {total > 1 && (
@@ -71,7 +72,7 @@ export function VisorLightboxFotos({
               onCambiarIndice((indice - 1 + total) % total);
             }}
           >
-            ‹
+            <Icono nombre="izquierda" size={22} />
           </button>
           <button
             type="button"
@@ -82,7 +83,7 @@ export function VisorLightboxFotos({
               onCambiarIndice((indice + 1) % total);
             }}
           >
-            ›
+            <Icono nombre="derecha" size={22} />
           </button>
           <span className="lightbox-ficha-contador">
             {indice + 1} / {total}

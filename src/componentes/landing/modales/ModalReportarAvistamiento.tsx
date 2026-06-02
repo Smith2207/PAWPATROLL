@@ -19,6 +19,7 @@ import {
   marcarAvistamientoPendienteAuth,
 } from "@/lib/avistamientos/borrador-cliente";
 import { OverlayPublicando } from "@/componentes/ui/OverlayPublicando";
+import { Icono } from "@/componentes/ui/Icono";
 import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 import {
@@ -376,8 +377,8 @@ export function ModalReportarAvistamiento({
         </div>
         <div className="modal-body pp-avistamiento-exito-panel">
           <div className="pp-avistamiento-exito" role="status">
-            <span className="pp-avistamiento-exito-icono" aria-hidden>
-              ✅
+            <span className="pp-avistamiento-exito-icono">
+              <Icono nombre="checkCirculo" size={28} />
             </span>
             <div>
               <strong>¡Publicado correctamente!</strong>
@@ -389,7 +390,7 @@ export function ModalReportarAvistamiento({
             className="submit-btn submit-btn-blue"
             onClick={verMapaYCerrar}
           >
-            🗺️ Ver en el mapa
+            <Icono nombre="mapa" size={18} className="pp-icon--btn" /> Ver en el mapa
           </button>
           <button
             type="button"
@@ -454,8 +455,8 @@ export function ModalReportarAvistamiento({
 
         {avistamientoDesdeFicha && mascotaFijada && (
           <div className="pp-avistamiento-ficha-fijada" role="status">
-            <span className="pp-avistamiento-ficha-fijada-icono" aria-hidden>
-              🐾
+            <span className="pp-avistamiento-ficha-fijada-icono">
+              <Icono nombre="huella" size={24} />
             </span>
             <div>
               <strong>Mascota: {mascotaFijada.nombre}</strong>
@@ -468,7 +469,9 @@ export function ModalReportarAvistamiento({
         {/* Paso 1 general: foto + IA */}
         {!avistamientoDesdeFicha && (
           <div className={paso === 1 ? "" : "pp-wizard-oculto"}>
-            <div className="section-divider">📷 Foto (recomendada)</div>
+            <div className="section-divider">
+              <Icono nombre="camara" size={16} className="pp-icon--btn" /> Foto (recomendada)
+            </div>
             <SubirFotoAvistamiento
               foto={fotoAvistamiento}
               onChange={setFotoAvistamiento}
@@ -488,8 +491,8 @@ export function ModalReportarAvistamiento({
             />
             {identificadaPorFoto && (
               <div className="foto-ia-seleccion-banner" role="status">
-                <span className="foto-ia-seleccion-banner-icono" aria-hidden>
-                  ✓
+                <span className="foto-ia-seleccion-banner-icono">
+                  <Icono nombre="check" size={18} />
                 </span>
                 <div>
                   <strong>{identificadaPorFoto.nombre}</strong> seleccionada
@@ -509,11 +512,13 @@ export function ModalReportarAvistamiento({
               : "pp-wizard-oculto"
           }
         >
-          <div className="section-divider">📍 Ubicación donde la viste</div>
+          <div className="section-divider">
+            <Icono nombre="ubicacion" size={16} className="pp-icon--btn" /> Ubicación donde la viste
+          </div>
           <SelectorUbicacionMapa
             etiqueta="¿Dónde la viste? *"
             idInput="sighting-location"
-            icono="👁️"
+            icono="ojo"
             placeholder={PLACEHOLDER_UBICACION}
             valor={ubicacion}
             onChange={setUbicacion}
@@ -672,7 +677,11 @@ export function ModalReportarAvistamiento({
               ? "Publicando..."
               : paso < pasoFinal
                 ? "Continuar"
-                : "👁️ Publicar avistamiento"}
+                : (
+                  <>
+                    <Icono nombre="ojo" size={18} className="pp-icon--btn" /> Publicar avistamiento
+                  </>
+                )}
           </button>
         </div>
       </form>

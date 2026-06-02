@@ -116,10 +116,6 @@ export function FormularioPerfil({
 
       <fieldset className="perfil-notificaciones">
         <legend>Notificaciones</legend>
-        <p className="perfil-campo-ayuda">
-          Solo recibirás avisos relevantes para ti (avistamientos, mensajes y
-          coincidencias de IA).
-        </p>
         <label className="perfil-check">
           <input
             type="checkbox"

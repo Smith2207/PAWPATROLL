@@ -2,6 +2,7 @@
 
 import { useCamaraReporte } from "@/hooks/useCamaraReporte";
 import { useRef } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 
 export type CamaraReporteApi = ReturnType<typeof useCamaraReporte>;
 
@@ -29,7 +30,7 @@ export function FormularioFotosMascota({ camara }: Props) {
 
       <p className="form-ficha-ayuda" style={{ marginBottom: "0.75rem" }}>
         Sube fotos claras de tu mascota (cara y cuerpo). En el móvil puedes
-        elegir galería o cámara. Si te equivocas, quita la foto con ✕ y añade
+        elegir galería o cámara. Si te equivocas, quita la foto con el botón de cerrar y añade
         otra.
       </p>
 
@@ -65,7 +66,7 @@ export function FormularioFotosMascota({ camara }: Props) {
                       padding: "2px 5px",
                     }}
                   >
-                    ★
+                    <Icono nombre="estrella" size={14} />
                   </button>
                 )}
                 <button
@@ -82,7 +83,7 @@ export function FormularioFotosMascota({ camara }: Props) {
                     cursor: "pointer",
                   }}
                 >
-                  ✕
+                  <Icono nombre="cerrar" size={14} />
                 </button>
               </div>
             </div>
@@ -107,7 +108,9 @@ export function FormularioFotosMascota({ camara }: Props) {
             hidden
             onChange={alElegirArchivos}
           />
-          <div style={{ fontSize: "1.5rem", marginBottom: 6 }}>📷</div>
+          <div style={{ marginBottom: 6 }}>
+            <Icono nombre="camara" size={28} />
+          </div>
           <div
             style={{
               fontWeight: 800,

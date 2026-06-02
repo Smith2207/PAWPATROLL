@@ -2,6 +2,7 @@
 
 import { completarBienvenida } from "@/actions/autenticacion";
 import { CampoCiudad } from "@/componentes/formulario/CampoCiudad";
+import { Icono } from "@/componentes/ui/Icono";
 import { PASOS_PRIMERA_VEZ } from "@/lib/landing/pasos-primera-vez";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";
@@ -62,14 +63,16 @@ export function ModalBienvenida({
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-bienvenida-emoji" aria-hidden>
-          🐾
+        <div className="modal-bienvenida-emoji">
+          <Icono nombre="huella" size={40} />
         </div>
         <h2 id="modal-bienvenida-titulo">¿Primera vez en PawPatrol?</h2>
         <ol className="modal-bienvenida-pasos" aria-label="Cómo usar PawPatrol">
           {PASOS_PRIMERA_VEZ.map((p) => (
             <li key={p.titulo}>
-              <span aria-hidden>{p.emoji}</span>
+              <span>
+                <Icono nombre={p.icono} size={20} />
+              </span>
               <div>
                 <strong>{p.titulo}</strong>
                 <p>{p.texto}</p>

@@ -1,4 +1,5 @@
 import L from "leaflet";
+import { svgIconoMapa, type TipoIconoMapaHtml } from "@/lib/geo/iconos-mapa-html";
 
 /** Diámetro del círculo con foto en todos los marcadores del mapa */
 export const TAMANO_MARCADOR_FOTO = 44;
@@ -18,16 +19,20 @@ export function configurarIconosLeaflet(): void {
   });
 }
 
-export function iconoHtml(emoji: string, clase = ""): L.DivIcon {
+export function iconoHtml(contenido: string, clase = ""): L.DivIcon {
   const tam = TAMANO_MARCADOR_FOTO;
   const mitad = tam / 2;
   return L.divIcon({
     className: `pp-marcador ${clase}`.trim(),
-    html: `<div class="pp-marcador-pin">${emoji}</div>`,
+    html: `<div class="pp-marcador-pin">${contenido}</div>`,
     iconSize: [tam, tam],
     iconAnchor: [mitad, tam],
     popupAnchor: [0, -tam + 6],
   });
+}
+
+export function iconoSvgMapa(tipo: TipoIconoMapaHtml, clase = ""): L.DivIcon {
+  return iconoHtml(svgIconoMapa(tipo, 22, "pp-svg-mapa pp-svg-mapa--pin"), clase);
 }
 
 function escaparHtml(texto: string): string {
@@ -49,6 +54,9 @@ function urlFotoValida(url: string | null | undefined): url is string {
 
 export type OpcionesIconoFoto = {
   clase?: string;
+  /** Texto o SVG cuando no hay foto */
+  fallbackContenido?: string;
+  /** @deprecated Usar fallbackContenido */
   fallbackEmoji?: string;
   /** Un solo número en el pin */
   badge?: string | number;
@@ -90,7 +98,10 @@ export function iconoFoto(
   const clase = opciones.clase ?? "";
   const familia = opciones.colorFamilia ? " pp-marcador--familia" : "";
   const estiloFamilia = estiloFamiliaAttr(opciones.colorFamilia);
-  const fallback = opciones.fallbackEmoji ?? "🐾";
+  const fallback =
+    opciones.fallbackContenido ??
+    opciones.fallbackEmoji ??
+    svgIconoMapa("huella", 20, "pp-svg-mapa pp-svg-mapa--pin");
   const badgesHtml = htmlBadgesPin(numerosPin(opciones));
 
   if (urlFotoValida(fotoUrl)) {
@@ -120,14 +131,14 @@ export function iconoFoto(
 export function iconoPuntoPerdida(
   fotoUrl: string | null | undefined,
   nombre: string,
-  fallbackEmoji = "🐾"
+  fallbackContenido = svgIconoMapa("huella", 20, "pp-svg-mapa pp-svg-mapa--pin")
 ): L.DivIcon {
   const tam = TAMANO_MARCADOR_FOTO;
   const ancho = 88;
   const altoPin = tam + 40;
   const img = urlFotoValida(fotoUrl)
     ? `<img src="${escaparSrc(fotoUrl)}" alt="" decoding="async" loading="lazy" />`
-    : `<span class="pp-marcador-perdida-emoji">${fallbackEmoji}</span>`;
+    : `<span class="pp-marcador-perdida-fallback">${fallbackContenido}</span>`;
 
   return L.divIcon({
     className: "pp-marcador pp-marcador--foto pp-marcador--punto-perdida",

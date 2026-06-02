@@ -134,8 +134,23 @@ export async function listarMisMascotas() {
     )
     .groupBy(avistamientos.mascotaId);
 
+  const totalAvistRows = await db
+    .select({
+      mascotaId: avistamientos.mascotaId,
+      total: count(),
+    })
+    .from(avistamientos)
+    .where(inArray(avistamientos.mascotaId, ids))
+    .groupBy(avistamientos.mascotaId);
+
   const pendientesPorMascota = new Map(
     pendientesRows
+      .filter((r): r is { mascotaId: string; total: number } => Boolean(r.mascotaId))
+      .map((r) => [r.mascotaId, Number(r.total)])
+  );
+
+  const totalAvistPorMascota = new Map(
+    totalAvistRows
       .filter((r): r is { mascotaId: string; total: number } => Boolean(r.mascotaId))
       .map((r) => [r.mascotaId, Number(r.total)])
   );
@@ -144,6 +159,7 @@ export async function listarMisMascotas() {
     ...m,
     fotoPrincipal: fotoPrincipal.get(m.id) ?? null,
     avistamientosPendientes: pendientesPorMascota.get(m.id) ?? 0,
+    totalAvistamientos: totalAvistPorMascota.get(m.id) ?? 0,
   }));
 }
 
@@ -276,7 +292,29 @@ export async function obtenerMascotaPropia(id: string) {
     .where(eq(mascotaFotos.mascotaId, id))
     .orderBy(mascotaFotos.orden);
 
-  return { mascota, fotos };
+  const [pendientesRow] = await db
+    .select({ total: count() })
+    .from(avistamientos)
+    .where(
+      and(
+        eq(avistamientos.mascotaId, id),
+        eq(avistamientos.estado, "PENDIENTE")
+      )
+    );
+
+  const [totalAvistRow] = await db
+    .select({ total: count() })
+    .from(avistamientos)
+    .where(eq(avistamientos.mascotaId, id));
+
+  return {
+    mascota: {
+      ...mascota,
+      avistamientosPendientes: Number(pendientesRow?.total ?? 0),
+      totalAvistamientos: Number(totalAvistRow?.total ?? 0),
+    },
+    fotos,
+  };
 }
 
 export async function obtenerMascotaPublica(slug: string) {

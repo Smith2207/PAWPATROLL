@@ -116,13 +116,13 @@ export function useGeolocalizacion(opciones: OpcionesUbicacion = {}) {
     ) => {
       if (!input || !boton) return;
       const textoInicial = boton.textContent;
-      boton.textContent = "⏳ Obteniendo...";
+      boton.textContent = "Obteniendo...";
       const resultado = await obtenerUbicacion();
       if (resultado.ok) {
         input.value = resultado.ubicacion.etiqueta ?? "Tu ubicación";
-        boton.textContent = "✅ Ubicación obtenida";
+        boton.textContent = "Ubicación obtenida";
       } else {
-        boton.textContent = textoInicial ?? "🎯 Usar mi ubicación GPS";
+        boton.textContent = textoInicial ?? "Usar mi ubicación GPS";
       }
     },
     [obtenerUbicacion]

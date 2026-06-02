@@ -10,15 +10,17 @@ import {
   marcarTodasNotificacionesLeidas,
   type NotificacionAgrupada,
 } from "@/actions/notificaciones";
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 
 function iconoTipo(tipo: string) {
-  if (tipo.includes("AVISTAMIENTO")) return "👁️";
-  if (tipo === "MENSAJE_NUEVO") return "💬";
-  if (tipo === "COINCIDENCIA_IA") return "📷";
-  if (tipo === "CASO_RECUPERADO") return "🎉";
-  if (tipo === "REPORTE_ABUSO_ADMIN") return "⚠️";
-  return "🔔";
+  let nombre: NombreIcono = "campana";
+  if (tipo.includes("AVISTAMIENTO")) nombre = "ojo";
+  else if (tipo === "MENSAJE_NUEVO") nombre = "mensaje";
+  else if (tipo === "COINCIDENCIA_IA") nombre = "camara";
+  else if (tipo === "CASO_RECUPERADO") nombre = "celebracion";
+  else if (tipo === "REPORTE_ABUSO_ADMIN") nombre = "alerta";
+  return <Icono nombre={nombre} size={18} />;
 }
 
 function tiempoRelativo(fecha: Date) {
@@ -40,7 +42,7 @@ export function CampanaNotificaciones() {
 
   const recargar = useCallback(async () => {
     const [items, n] = await Promise.all([
-      listarNotificacionesUsuario(12),
+      listarNotificacionesUsuario(50),
       contarNotificacionesNoLeidas(),
     ]);
     setLista(items);
@@ -80,7 +82,7 @@ export function CampanaNotificaciones() {
         aria-expanded={abierto}
         onClick={abrirPanel}
       >
-        🔔
+        <Icono nombre="campana" size={20} />
         {noLeidas > 0 && (
           <span className="pp-notif-badge">{noLeidas > 9 ? "9+" : noLeidas}</span>
         )}
@@ -148,14 +150,6 @@ export function CampanaNotificaciones() {
                 ))}
               </ul>
             )}
-
-            <Link
-              href="/notificaciones"
-              className="pp-notif-ver-todas"
-              onClick={() => setAbierto(false)}
-            >
-              Ver todas →
-            </Link>
           </div>
         </>
       )}

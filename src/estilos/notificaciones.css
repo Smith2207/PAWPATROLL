@@ -86,7 +86,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 320px;
+  max-height: min(420px, 60vh);
   overflow-y: auto;
 }
 
@@ -252,9 +252,46 @@
 
 /* Caso de búsqueda */
 .pp-caso-busqueda {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 1.5rem 1rem 3rem;
+}
+
+.pp-caso-nav {
+  margin-bottom: 1rem;
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  position: static;
+  height: auto;
+  padding: 0;
+  display: block;
+}
+
+.pp-caso-nav-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-decoration: none;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(var(--navy-rgb), 0.06);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pp-caso-nav-enlace:hover {
+  color: var(--blue);
+  border-color: rgba(var(--blue-rgb), 0.35);
+  background: #f8fbff;
 }
 
 .pp-caso-header {
@@ -276,14 +313,12 @@
 
 .pp-caso-header h1 {
   margin: 0 0 0.35rem;
+  font-family: var(--font-fredoka), "Fredoka", cursive;
   font-size: 1.75rem;
-}
-
-.pp-caso-sub {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-  max-width: 36rem;
+  font-weight: 400;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 
 .pp-caso-stats {
@@ -292,6 +327,14 @@
   gap: 0.35rem;
   font-size: 0.85rem;
   font-weight: 700;
+  color: var(--navy2);
+}
+
+.pp-caso-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  max-width: 36rem;
 }
 
 .pp-caso-stat-alerta {
@@ -309,6 +352,329 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.25rem;
+}
+
+.pp-caso-panel--unico {
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pp-caso-panel--chats {
+  padding: 0;
+}
+
+.pp-caso-whatsapp {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(300px, 1fr);
+  min-height: 560px;
+  max-height: min(78vh, 720px);
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
+}
+
+.pp-caso-chat-lista {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: #f8fafc;
+  min-height: 0;
+}
+
+.pp-caso-chat-lista-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: white;
+  font-size: 0.88rem;
+}
+
+.pp-caso-chat-lista-cabecera span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+.pp-caso-chat-lista-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.pp-caso-chat-fila {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem 0.75rem;
+  align-items: start;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+
+.pp-caso-chat-fila:hover {
+  background: #eef6ff;
+}
+
+.pp-caso-chat-fila--activa {
+  background: #e0f0ff;
+}
+
+.pp-caso-chat-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pp-caso-chat-avatar-img,
+.pp-caso-chat-avatar-iniciales {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+}
+
+.pp-caso-chat-avatar-iniciales {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.pp-caso-chat-avatar-alerta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--orange);
+  border: 2px solid white;
+}
+
+.pp-caso-chat-fila-texto {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.pp-caso-chat-fila-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.pp-caso-chat-fila-top strong {
+  font-size: 0.88rem;
+  color: var(--navy);
+}
+
+.pp-caso-chat-fila-top time {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pp-caso-chat-fila-reportante {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.pp-caso-chat-fila-preview {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-caso-chat-detalle {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: #fafafa;
+}
+
+.pp-caso-chat-vacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 2rem;
+}
+
+.pp-caso-chat-detalle-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "principal top"
+    "gestion gestion";
+  gap: 0.55rem 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.pp-caso-chat-volver {
+  grid-area: volver;
+  display: none;
+  border: none;
+  background: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: var(--navy);
+}
+
+.pp-caso-chat-detalle-principal {
+  grid-area: principal;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.pp-caso-chat-detalle-top {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.pp-caso-chat-detalle-gestion {
+  grid-area: gestion;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.pp-caso-chat-detalle-avatar .pp-caso-chat-avatar-img,
+.pp-caso-chat-detalle-avatar .pp-caso-chat-avatar-iniciales {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.pp-caso-chat-detalle-info {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pp-caso-chat-detalle-info strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--navy);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-caso-chat-detalle-meta,
+.pp-caso-chat-detalle-info time {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.12rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-caso-btn-reportar {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: white;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.pp-caso-btn-reportar:hover {
+  color: var(--orange);
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+
+.pp-caso-btn-reporte-enviar {
+  padding: 0.45rem 0.85rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--navy);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pp-caso-btn-verificar,
+.pp-caso-btn-descartar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+}
+
+.pp-caso-btn-verificar {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.pp-caso-btn-descartar {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: var(--border);
+}
+
+.pp-caso-btn-verificar:disabled,
+.pp-caso-btn-descartar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .pp-caso-panel h2 {
@@ -430,6 +796,30 @@
   background: #fafafa;
 }
 
+.pp-chat-privado--embed {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+}
+
+.pp-chat-privado-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.35rem 1rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-chat-privado--embed .pp-chat-privado-mensajes {
+  flex: 1;
+  max-height: none;
+  min-height: 180px;
+}
+
 .pp-chat-privado-header {
   display: flex;
   justify-content: space-between;
@@ -485,62 +875,165 @@
 .pp-chat-privado-mensajes {
   list-style: none;
   margin: 0;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 0.75rem;
   max-height: 280px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.35rem;
+  background-color: #e8ecf1;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(0, 0, 0, 0.04) 1px,
+    transparent 0
+  );
+  background-size: 18px 18px;
+}
+
+.pp-chat-fila {
+  display: flex;
+  width: 100%;
+}
+
+.pp-chat-fila--propio {
+  justify-content: flex-end;
+}
+
+.pp-chat-fila--ajeno {
+  justify-content: flex-start;
+}
+
+.pp-chat-burbuja {
+  max-width: min(78%, 420px);
+  padding: 0.35rem 0.55rem 0.3rem 0.65rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+  word-break: break-word;
+}
+
+.pp-chat-burbuja--propio {
+  background: #d9fdd3;
+  border-bottom-right-radius: 4px;
+}
+
+.pp-chat-burbuja--ajeno {
+  background: #ffffff;
+  border-bottom-left-radius: 4px;
+}
+
+.pp-chat-burbuja-autor {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--blue);
+  margin-bottom: 0.15rem;
+}
+
+.pp-chat-burbuja-cuerpo {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.pp-chat-burbuja-texto {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.pp-chat-burbuja-hora {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  color: rgba(0, 0, 0, 0.45);
+  line-height: 1;
+  padding-bottom: 0.1rem;
+  white-space: nowrap;
 }
 
 .pp-chat-privado-vacio {
   color: var(--muted);
   font-size: 0.82rem;
   text-align: center;
-  padding: 1rem 0;
-}
-
-.pp-chat-privado-msg {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.55rem 0.75rem;
-}
-
-.pp-chat-privado-msg strong {
-  font-size: 0.78rem;
-}
-
-.pp-chat-privado-msg p {
-  margin: 0.2rem 0;
-  font-size: 0.88rem;
-}
-
-.pp-chat-privado-msg time {
-  font-size: 0.68rem;
-  color: var(--muted);
+  padding: 1.5rem 0.75rem;
+  align-self: center;
+  max-width: 16rem;
 }
 
 .pp-chat-privado-input {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.75rem;
+  align-items: flex-end;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
   background: white;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .pp-chat-privado-input textarea {
   flex: 1;
-  border-radius: 10px;
+  min-width: 0;
+  height: 42px;
+  min-height: 42px;
+  max-height: 120px;
+  overflow-y: auto;
+  border-radius: 22px;
   border: 1px solid var(--border);
-  padding: 0.5rem 0.65rem;
+  padding: 0.6rem 0.9rem;
   font-family: inherit;
+  font-size: 0.88rem;
+  line-height: 1.4;
   resize: none;
+  background: #f8fafc;
+  box-sizing: border-box;
 }
 
-.pp-chat-privado-input .submit-btn {
-  align-self: flex-end;
-  white-space: nowrap;
+.pp-chat-privado-input textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  background: white;
+  box-shadow: 0 0 0 2px rgba(var(--blue-rgb), 0.12);
+}
+
+.pp-chat-enviar-btn {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue2) 100%);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(var(--blue-rgb), 0.25);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.pp-chat-enviar-btn .pp-icon {
+  color: white;
+}
+
+.pp-chat-enviar-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(var(--blue-rgb), 0.32);
+}
+
+.pp-chat-enviar-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.pp-chat-privado--embed .pp-chat-privado-input {
+  margin-top: auto;
 }
 
 .pp-chat-pagina .btn-mascota {
@@ -563,6 +1056,39 @@
 @media (max-width: 768px) {
   .pp-caso-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pp-caso-whatsapp {
+    grid-template-columns: 1fr;
+    max-height: min(85vh, 680px);
+    min-height: 480px;
+  }
+
+  .pp-caso-chat-detalle-header {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "volver principal top"
+      "gestion gestion gestion";
+  }
+
+  .pp-caso-whatsapp .pp-caso-chat-lista {
+    display: flex;
+  }
+
+  .pp-caso-whatsapp .pp-caso-chat-detalle {
+    display: none;
+  }
+
+  .pp-caso-whatsapp--chat-activo .pp-caso-chat-lista {
+    display: none;
+  }
+
+  .pp-caso-whatsapp--chat-activo .pp-caso-chat-detalle {
+    display: flex;
+  }
+
+  .pp-caso-chat-volver {
+    display: inline-flex;
   }
 
   .pp-notif-panel {

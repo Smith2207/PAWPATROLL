@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useModales } from "@/contexto/ContextoModales";
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import type { FiltrosBusquedaMascotasPublicas } from "@/actions/mascotas";
 import type { TipoMascota } from "@/lib/mascotas/tipos";
 
 const FILTROS_TIPO = [
-  { id: "perros", emoji: "🐕", texto: "Perros", tipo: "Perro" as const satisfies TipoMascota },
-  { id: "gatos", emoji: "🐱", texto: "Gatos", tipo: "Gato" as const satisfies TipoMascota },
-  { id: "24h", emoji: "🕐", texto: "Últimas 24h", dias: 1 },
+  { id: "perros", icono: "perro" as const satisfies NombreIcono, texto: "Perros", tipo: "Perro" as const satisfies TipoMascota },
+  { id: "gatos", icono: "gato" as const satisfies NombreIcono, texto: "Gatos", tipo: "Gato" as const satisfies TipoMascota },
+  { id: "24h", icono: "reloj" as const satisfies NombreIcono, texto: "Últimas 24h", dias: 1 },
 ] as const;
 
 type Props = {
@@ -80,7 +81,7 @@ export function BarraBusqueda({
       <div className="search-inner">
         <div className="search-box">
           <span className="search-icon" aria-hidden>
-            🔍
+            <Icono nombre="buscar" size={18} />
           </span>
           <input
             type="search"
@@ -110,7 +111,8 @@ export function BarraBusqueda({
             className="search-btn search-btn-foto"
             onClick={abrirBusquedaPorFoto}
           >
-            📷 Por foto
+            <Icono nombre="camara" size={16} className="pp-icon--btn" />
+            Por foto
           </button>
         </div>
         <div className="search-filtros" role="group" aria-label="Filtros rápidos">
@@ -122,7 +124,8 @@ export function BarraBusqueda({
               onClick={() => aplicarFiltro(f.id)}
               disabled={buscando}
             >
-              {f.emoji} {f.texto}
+              <Icono nombre={f.icono} size={16} className="pp-icon--btn" />
+              {f.texto}
             </button>
           ))}
           {busquedaActiva && onRestablecer && (
@@ -132,7 +135,8 @@ export function BarraBusqueda({
               onClick={onRestablecer}
               disabled={buscando}
             >
-              ✕ Ver todos
+              <Icono nombre="cerrar" size={14} className="pp-icon--btn" />
+              Ver todos
             </button>
           )}
         </div>

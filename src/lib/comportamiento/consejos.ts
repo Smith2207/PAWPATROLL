@@ -114,7 +114,7 @@ export function generarConsejosBusqueda(opciones: {
       );
     } else if (cerco.ultimoAvistamiento) {
       consejos.push(
-        "Concentra la búsqueda alrededor del último avistamiento y los refugios 🏠 marcados en el mapa.",
+        "Concentra la búsqueda alrededor del último avistamiento y los refugios marcados en el mapa.",
       );
     }
   } else if (opciones.totalAvistamientos > 0) {

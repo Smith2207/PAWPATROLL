@@ -4,6 +4,7 @@ import { restablecerContrasenaConToken } from "@/actions/autenticacion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 
 type Props = {
   email: string;
@@ -62,7 +63,10 @@ export function FormularioRestablecerContrasena({
           <Link href="/recuperar-contrasena">Solicitar un enlace nuevo</Link>
         </p>
         <p className="auth-enlace">
-          <Link href="/">← Volver al inicio</Link>
+          <Link href="/" className="pp-enlace-icono">
+            <Icono nombre="izquierda" size={14} />
+            Volver al inicio
+          </Link>
         </p>
       </>
     );

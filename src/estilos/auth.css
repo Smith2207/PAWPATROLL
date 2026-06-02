@@ -431,6 +431,38 @@
   white-space: nowrap;
 }
 
+.nav-admin-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--navy-rgb), 0.15);
+  background: rgba(var(--navy-rgb), 0.06);
+  color: var(--navy);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-admin-enlace:hover {
+  background: rgba(var(--navy-rgb), 0.1);
+  color: var(--navy2);
+}
+
+.nav-drawer-admin {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: rgba(var(--navy-rgb), 0.06);
+  color: var(--navy);
+  font-weight: 800;
+  text-decoration: none;
+}
+
 .btn-ghost--nav-salir {
   padding: 0.4rem 0.85rem;
   font-size: 0.82rem;
@@ -471,12 +503,58 @@
 }
 
 .nav-links--con-sesion {
-  gap: 1.35rem;
+  gap: 1.75rem;
 }
 
-.nav-links--con-sesion a,
-.nav-links--con-sesion .nav-link-externo {
-  font-size: 0.88rem;
+.nav-link-mascotas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  position: relative;
+  font-weight: 800;
+}
+
+.nav-link-mascotas-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nav-drawer-seccion {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.nav-drawer-seccion-titulo {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.nav-drawer-secundario {
+  font-size: 0.9rem !important;
+  color: var(--muted) !important;
+  font-weight: 700 !important;
+}
+
+.nav-drawer-secundario.nav-link--activo {
+  color: var(--navy) !important;
 }
 
 .nav-link-externo {

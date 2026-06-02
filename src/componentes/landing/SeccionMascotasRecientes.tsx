@@ -2,7 +2,8 @@
 
 import { useModales } from "@/contexto/ContextoModales";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
-import { emojiPorTipo, esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
+import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
+import { esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
 import type { EstadoMascota } from "@/lib/db/schema";
 
 export type MascotaPublicaTarjeta = {
@@ -82,11 +83,12 @@ export function SeccionMascotasRecientes({
         )}
         <button
           type="button"
-          className="see-all"
+          className="see-all pp-enlace-icono"
           style={{ background: "none", border: "none", font: "inherit" }}
           onClick={() => abrirModal("sighting")}
         >
-          Vi una mascota →
+          Vi una mascota
+          <Icono nombre="derecha" size={14} />
         </button>
       </div>
 
@@ -106,7 +108,7 @@ export function SeccionMascotasRecientes({
       ) : (
         <div className="pets-grid">
           {lista.map((m) => {
-            const emoji = emojiPorTipo(m.tipo);
+            const iconoTipo = iconoPorTipoMascota(m.tipo);
             return (
               <a
                 key={m.id}
@@ -134,7 +136,7 @@ export function SeccionMascotasRecientes({
                       }}
                     />
                   ) : (
-                    emoji
+                    <Icono nombre={iconoTipo} size={48} />
                   )}
                   <div className="time-pill">{tiempoRelativo(m.updatedAt)}</div>
                   <div
@@ -156,7 +158,10 @@ export function SeccionMascotasRecientes({
                     {m.edad ? ` · ${m.edad}` : ""}
                   </div>
                   {m.lugarPerdida && (
-                    <div className="pet-location">📍 {m.lugarPerdida}</div>
+                    <div className="pet-location">
+                      <Icono nombre="ubicacion" size={14} className="pp-icon--btn" />{" "}
+                      {m.lugarPerdida}
+                    </div>
                   )}
                 </div>
               </a>

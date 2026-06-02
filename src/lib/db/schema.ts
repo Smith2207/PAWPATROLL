@@ -74,6 +74,7 @@ export const users = pgTable("user", {
   ciudad: text("ciudad"),
   notificacionesEmail: boolean("notificaciones_email").default(true).notNull(),
   notificacionesInApp: boolean("notificaciones_in_app").default(true).notNull(),
+  activo: boolean("activo").default(true).notNull(),
 });
 
 export const accounts = pgTable(

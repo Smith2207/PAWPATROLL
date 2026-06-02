@@ -1,18 +1,19 @@
 "use client";
 
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
+import { Icono } from "@/componentes/ui/Icono";
 import { CampanaNotificaciones } from "@/componentes/notificaciones/CampanaNotificaciones";
-import { ENLACES_NAV, RUTAS_LANDING } from "@/lib/landing/rutas";
+import { EnlaceMisMascotasNav } from "@/componentes/layout/EnlaceMisMascotasNav";
+import {
+  ENLACES_NAV,
+  ENLACES_NAV_EXPLORAR,
+  ENLACES_NAV_SESION,
+  RUTAS_LANDING,
+} from "@/lib/landing/rutas";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-
-const ENLACES_CUENTA = [
-  { href: "/mis-mascotas", etiqueta: "Mis mascotas" },
-  { href: "/notificaciones", etiqueta: "Notificaciones" },
-  { href: "/perfil", etiqueta: "Mi perfil" },
-] as const;
 
 function enlaceActivo(pathname: string, href: string) {
   if (href === RUTAS_LANDING.inicio) return pathname === "/";
@@ -36,15 +37,14 @@ export function BarraNavegacionApp() {
     setMenuAbierto(false);
   }
 
-  const enlaces = [
-    ...ENLACES_NAV,
-    ...(sesionActiva ? ENLACES_CUENTA : []),
-  ];
+  const enlacesCentro = sesionActiva ? ENLACES_NAV_SESION : ENLACES_NAV;
 
   return (
     <nav className="nav-principal nav-principal--app">
       <Link className="logo" href="/" onClick={cerrar}>
-        <div className="logo-icon">🐾</div>
+        <div className="logo-icon">
+          <Icono nombre="huella" size={20} />
+        </div>
         <span className="logo-texto">PawPatrol</span>
       </Link>
 
@@ -52,7 +52,7 @@ export function BarraNavegacionApp() {
         <div
           className={`nav-links nav-links--app ${sesionActiva ? "nav-links--con-sesion" : ""}`}
         >
-          {enlaces.map((enlace) => (
+          {enlacesCentro.map((enlace) => (
             <Link
               key={enlace.href}
               href={enlace.href}
@@ -68,6 +68,7 @@ export function BarraNavegacionApp() {
               {enlace.etiqueta}
             </Link>
           ))}
+          {sesionActiva && <EnlaceMisMascotasNav pathname={pathname} />}
         </div>
       </div>
 
@@ -83,7 +84,11 @@ export function BarraNavegacionApp() {
         aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
         onClick={() => setMenuAbierto((v) => !v)}
       >
-        {menuAbierto ? "✕" : "☰"}
+        {menuAbierto ? (
+          <Icono nombre="cerrar" size={22} />
+        ) : (
+          <Icono nombre="menu" size={22} />
+        )}
       </button>
 
       {menuAbierto && (
@@ -97,7 +102,7 @@ export function BarraNavegacionApp() {
 
       <div className={`nav-drawer ${menuAbierto ? "nav-drawer--abierto" : ""}`}>
         <div className="nav-drawer-links">
-          {enlaces.map((enlace) => (
+          {enlacesCentro.map((enlace) => (
             <Link
               key={enlace.href}
               href={enlace.href}
@@ -111,6 +116,28 @@ export function BarraNavegacionApp() {
               {enlace.etiqueta}
             </Link>
           ))}
+          {sesionActiva && (
+            <EnlaceMisMascotasNav pathname={pathname} onNavigate={cerrar} />
+          )}
+          {sesionActiva && (
+            <div className="nav-drawer-seccion">
+              <span className="nav-drawer-seccion-titulo">Explorar</span>
+              {ENLACES_NAV_EXPLORAR.map((enlace) => (
+                <Link
+                  key={enlace.href}
+                  href={enlace.href}
+                  className={`nav-drawer-secundario ${
+                    enlaceActivo(pathname, enlace.href)
+                      ? "nav-link--activo"
+                      : ""
+                  }`.trim()}
+                  onClick={cerrar}
+                >
+                  {enlace.etiqueta}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
         <div className="nav-drawer-actions">
           <CampanaNotificaciones />

@@ -8,9 +8,11 @@ import {
 type Props = {
   filtros: FiltrosMapaPublico;
   onChange: (f: FiltrosMapaPublico) => void;
+  /** Mapa comunitario: solo pins de pérdida */
+  soloPerdidas?: boolean;
 };
 
-export function FiltrosMapa({ filtros, onChange }: Props) {
+export function FiltrosMapa({ filtros, onChange, soloPerdidas = false }: Props) {
   return (
     <div className="pp-mapa-filtros" role="group" aria-label="Filtros del mapa">
       <label className="pp-mapa-filtro">
@@ -25,8 +27,8 @@ export function FiltrosMapa({ filtros, onChange }: Props) {
           }
         >
           <option value="">Todos</option>
-          <option value="Perro">🐕 Perros</option>
-          <option value="Gato">🐱 Gatos</option>
+          <option value="Perro">Perros</option>
+          <option value="Gato">Gatos</option>
         </select>
       </label>
 
@@ -46,23 +48,25 @@ export function FiltrosMapa({ filtros, onChange }: Props) {
         </select>
       </label>
 
-      <label className="pp-mapa-filtro">
-        <span>Estado avist.</span>
-        <select
-          value={filtros.estadoAvistamiento ?? ""}
-          onChange={(e) =>
-            onChange({
-              ...filtros,
-              estadoAvistamiento: e.target
-                .value as FiltrosMapaPublico["estadoAvistamiento"],
-            })
-          }
-        >
-          <option value="">Todos (sin descartados)</option>
-          <option value="PENDIENTE">Pendientes</option>
-          <option value="VERIFICADO">Verificados</option>
-        </select>
-      </label>
+      {!soloPerdidas && (
+        <label className="pp-mapa-filtro">
+          <span>Estado avist.</span>
+          <select
+            value={filtros.estadoAvistamiento ?? ""}
+            onChange={(e) =>
+              onChange({
+                ...filtros,
+                estadoAvistamiento: e.target
+                  .value as FiltrosMapaPublico["estadoAvistamiento"],
+              })
+            }
+          >
+            <option value="">Todos (sin descartados)</option>
+            <option value="PENDIENTE">Pendientes</option>
+            <option value="VERIFICADO">Verificados</option>
+          </select>
+        </label>
+      )}
     </div>
   );
 }

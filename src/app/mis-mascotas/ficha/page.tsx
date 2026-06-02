@@ -2,6 +2,7 @@ import { obtenerContactoPerfil } from "@/actions/autenticacion";
 import { auth } from "@/auth";
 import { EncabezadoModuloMascotas } from "@/componentes/mascotas/EncabezadoModuloMascotas";
 import { FormularioFichaMascota } from "@/componentes/mascotas/FormularioFichaMascota";
+import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
@@ -29,7 +30,10 @@ export default async function PaginaNuevaFichaMascota() {
         </div>
 
         <p className="auth-enlace form-ficha-volver">
-          <Link href="/mis-mascotas">← Mis mascotas</Link>
+          <Link href="/mis-mascotas" className="pp-enlace-icono">
+            <Icono nombre="izquierda" size={14} />
+            Mis mascotas
+          </Link>
         </p>
       </div>
     </EnvolturaPaginasApp>

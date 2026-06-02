@@ -1,6 +1,8 @@
 "use client";
 
 import { useModales } from "@/contexto/ContextoModales";
+import { Icono } from "@/componentes/ui/Icono";
+import type { ReactNode } from "react";
 
 type Props = {
   mascotaId: string;
@@ -9,7 +11,7 @@ type Props = {
   color?: string | null;
   raza?: string | null;
   className?: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 export function BotonReportarAvistamiento({
@@ -19,7 +21,7 @@ export function BotonReportarAvistamiento({
   color,
   raza,
   className = "ficha-publica-cta",
-  children = "👁️ Reportar avistamiento",
+  children,
 }: Props) {
   const { abrirAvistamiento } = useModales();
 
@@ -37,7 +39,12 @@ export function BotonReportarAvistamiento({
         })
       }
     >
-      {children}
+      {children ?? (
+        <>
+          <Icono nombre="ojo" size={18} className="pp-icon--btn" />
+          Reportar avistamiento
+        </>
+      )}
     </button>
   );
 }

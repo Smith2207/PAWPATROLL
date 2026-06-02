@@ -16,6 +16,7 @@
     "db:migrate-acceso-exterior": "node scripts/aplicar-migracion-0008.mjs",
     "db:migrate-gemini-768": "node scripts/aplicar-migracion-0009.mjs",
     "db:migrate-notificaciones": "node scripts/aplicar-migracion-0010.mjs",
+    "db:migrate-usuario-activo": "node scripts/aplicar-migracion-0011.mjs",
     "db:reindexar-visual": "node scripts/reindexar-embeddings-visual.mjs",
     "db:studio": "drizzle-kit studio"
   },
@@ -28,6 +29,7 @@
     "drizzle-orm": "^0.45.2",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
+    "lucide-react": "^1.17.0",
     "next": "16.2.6",
     "next-auth": "5.0.0-beta.31",
     "nodemailer": "^8.0.7",

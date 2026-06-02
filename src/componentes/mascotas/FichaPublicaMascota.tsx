@@ -7,6 +7,7 @@ import Link from "next/link";
 import { BotonReportarAvistamiento } from "@/componentes/mascotas/BotonReportarAvistamiento";
 import { TimelineAvistamientos } from "@/componentes/mascotas/TimelineAvistamientos";
 import type { AvistamientoConMensajes } from "@/actions/avistamientos";
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 
 type DatosPublicos = NonNullable<Awaited<ReturnType<typeof obtenerMascotaPublica>>>;
 
@@ -39,18 +40,18 @@ export function FichaPublicaMascota({
   ].filter(Boolean) as string[];
 
   const datosInformacion = [
-    mascota.color && { label: "Color", valor: mascota.color, icono: "🎨" },
-    mascota.tamano && { label: "Tamaño", valor: mascota.tamano, icono: "📏" },
-    mascota.peso && { label: "Peso", valor: mascota.peso, icono: "⚖️" },
+    mascota.color && { label: "Color", valor: mascota.color, icono: "color" as const },
+    mascota.tamano && { label: "Tamaño", valor: mascota.tamano, icono: "tamano" as const },
+    mascota.peso && { label: "Peso", valor: mascota.peso, icono: "peso" as const },
     mascota.collar && {
       label: "Collar / placa",
       valor: mascota.collar,
-      icono: "🏷️",
+      icono: "etiqueta" as const,
     },
     mascota.microchip && {
       label: "Microchip",
       valor: mascota.microchip,
-      icono: "💉",
+      icono: "vacuna" as const,
     },
     mascota.fechaPerdida && {
       label: "Desde",
@@ -58,18 +59,18 @@ export function FichaPublicaMascota({
         dateStyle: "medium",
         timeStyle: "short",
       }),
-      icono: "🕐",
+      icono: "reloj" as const,
     },
     mascota.lugarPerdida && {
       label: "Último lugar visto",
       valor: mascota.lugarPerdida,
-      icono: "📍",
+      icono: "ubicacion" as const,
       ancho: true,
     },
     mascota.contactoPublico && {
       label: "Contacto",
       valor: mascota.contactoPublico,
-      icono: "📞",
+      icono: "telefono" as const,
       ancho: true,
       enlace: mascota.contactoPublico.includes("@")
         ? `mailto:${mascota.contactoPublico}`
@@ -78,7 +79,7 @@ export function FichaPublicaMascota({
   ].filter(Boolean) as {
     label: string;
     valor: string;
-    icono: string;
+    icono: NombreIcono;
     ancho?: boolean;
     enlace?: string;
   }[];
@@ -93,7 +94,8 @@ export function FichaPublicaMascota({
   return (
     <div className="ficha-publica">
       <Link href="/" className="ficha-publica-volver">
-        ← Volver a PawPatrol
+        <Icono nombre="izquierda" size={16} className="pp-icon--btn" />
+        Volver a PawPatrol
       </Link>
 
       <div
@@ -141,7 +143,7 @@ export function FichaPublicaMascota({
           {mascota.estado === "PERDIDA" && (
             <div className="ficha-publica-alerta-perdida" role="status">
               <span className="ficha-publica-alerta-icono" aria-hidden>
-                🚨
+                <Icono nombre="alerta" size={20} />
               </span>
               <p>
                 Esta mascota está <strong>perdida</strong>. Si la ves, usa el
@@ -161,7 +163,7 @@ export function FichaPublicaMascota({
                     className={`ficha-publica-dato ${d.ancho ? "ficha-publica-dato--ancho" : ""}`}
                   >
                     <span className="ficha-publica-dato-icono" aria-hidden>
-                      {d.icono}
+                      <Icono nombre={d.icono} size={18} />
                     </span>
                     <div className="ficha-publica-dato-texto">
                       <label>{d.label}</label>
@@ -209,7 +211,8 @@ export function FichaPublicaMascota({
               />
             ) : (
               <Link href="/comunidad" className="ficha-publica-cta">
-                🗺️ Ver mapa de avistamientos
+                <Icono nombre="mapa" size={18} className="pp-icon--btn" />
+                Ver mapa de avistamientos
               </Link>
             )}
           </footer>
@@ -227,7 +230,8 @@ export function FichaPublicaMascota({
             {esDueno && (
               <p className="ficha-publica-caso-dueno">
                 <Link href={`/mis-mascotas/${mascota.id}/caso`}>
-                  Gestionar caso →
+                  Chats y avistamientos
+                  <Icono nombre="derecha" size={14} className="pp-icon--btn" />
                 </Link>
               </p>
             )}

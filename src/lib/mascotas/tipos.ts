@@ -7,16 +7,25 @@ export function esTipoMascotaPermitido(tipo: string): tipo is TipoMascota {
   return (TIPOS_MASCOTA as readonly string[]).includes(tipo);
 }
 
-export const EMOJI_POR_TIPO: Record<TipoMascota, string> = {
-  Perro: "🐕",
-  Gato: "🐱",
+/** Texto corto en marcadores del mapa cuando no hay foto (no emoji). */
+export const FALLBACK_MARCADOR_TIPO: Record<TipoMascota, string> = {
+  Perro: "P",
+  Gato: "G",
 };
 
-export function emojiPorTipo(tipo: string): string {
-  return esTipoMascotaPermitido(tipo) ? EMOJI_POR_TIPO[tipo] : "";
+export function fallbackMarcadorPorTipo(tipo: string): string {
+  return esTipoMascotaPermitido(tipo) ? FALLBACK_MARCADOR_TIPO[tipo] : "•";
 }
 
-export const OPCIONES_TIPO_CON_EMOJI = [
-  { value: "Perro", label: "🐕 Perro" },
-  { value: "Gato", label: "🐱 Gato" },
+export const OPCIONES_TIPO = [
+  { value: "Perro", label: "Perro" },
+  { value: "Gato", label: "Gato" },
 ] as const;
+
+/** @deprecated Usar iconoPorTipoMascota en UI o fallbackMarcadorPorTipo en mapa */
+export function emojiPorTipo(tipo: string): string {
+  return fallbackMarcadorPorTipo(tipo);
+}
+
+/** @deprecated Usar OPCIONES_TIPO */
+export const OPCIONES_TIPO_CON_EMOJI = OPCIONES_TIPO;

@@ -1,0 +1,59 @@
+.pp-icon {
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+}
+
+.pp-enlace-icono {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pp-icon--btn {
+  margin-right: 0.15rem;
+}
+
+.logo-icon .pp-icon {
+  color: #fff;
+}
+
+.estado-badge .pp-icon {
+  margin-right: 0.25rem;
+}
+
+.pp-notif-campana-btn .pp-icon {
+  color: var(--navy);
+}
+
+.pp-home-paso-icono .pp-icon,
+.pp-home-confianza-icono .pp-icon,
+.pp-acceso-icono .pp-icon {
+  display: block;
+}
+
+.feature-icon .pp-icon {
+  color: inherit;
+}
+
+.step-icon .pp-icon {
+  display: block;
+  margin: 0 auto;
+}
+
+.ficha-publica-dato-icono .pp-icon {
+  display: block;
+}
+
+.pp-timeline-icono .pp-icon {
+  display: block;
+}
+
+.carrusel-ficha-placeholder .pp-icon {
+  color: var(--muted);
+}
+
+.search-icon .pp-icon,
+.search-btn-foto .pp-icon {
+  display: block;
+}

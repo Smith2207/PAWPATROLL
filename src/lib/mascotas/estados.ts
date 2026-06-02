@@ -1,4 +1,5 @@
 import type { EstadoMascota } from "@/lib/db/schema";
+import type { NombreIcono } from "@/componentes/ui/Icono";
 
 export const ETIQUETAS_ESTADO: Record<EstadoMascota, string> = {
   EN_CASA: "En casa",
@@ -9,12 +10,12 @@ export const ETIQUETAS_ESTADO: Record<EstadoMascota, string> = {
 
 export const BADGE_ESTADO: Record<
   EstadoMascota,
-  { clase: string; emoji: string }
+  { clase: string; icono: NombreIcono }
 > = {
-  EN_CASA: { clase: "estado-badge--casa", emoji: "🏠" },
-  PERDIDA: { clase: "estado-badge--perdida", emoji: "🔴" },
-  ENCONTRADA: { clase: "estado-badge--encontrada", emoji: "🟡" },
-  REUNIDA: { clase: "estado-badge--reunida", emoji: "🟢" },
+  EN_CASA: { clase: "estado-badge--casa", icono: "casa" },
+  PERDIDA: { clase: "estado-badge--perdida", icono: "alertaCirculo" },
+  ENCONTRADA: { clase: "estado-badge--encontrada", icono: "alerta" },
+  REUNIDA: { clase: "estado-badge--reunida", icono: "checkCirculo" },
 };
 
 /** Visible en la ficha pública de la comunidad */

@@ -1,5 +1,6 @@
 import { obtenerDatosPerfil } from "@/actions/autenticacion";
 import { FormularioCambiarContrasena } from "@/componentes/auth/FormularioCambiarContrasena";
+import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -14,7 +15,10 @@ export default async function PaginaCambiarContrasena() {
   return (
     <div className="panel-cuenta perfil-pagina">
       <p className="perfil-volver">
-        <Link href="/perfil">← Mi perfil</Link>
+        <Link href="/perfil" className="pp-enlace-icono">
+          <Icono nombre="izquierda" size={14} />
+          Mi perfil
+        </Link>
       </p>
 
       <section className="tarjeta-panel perfil-tarjeta perfil-tarjeta--ancho">

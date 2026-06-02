@@ -5,6 +5,7 @@ import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 
 type Props = {
   email: string;
@@ -104,8 +105,9 @@ export function FormularioCambiarContrasena({ email }: Props) {
         <button type="submit" disabled={cargando} className="submit-btn">
           {cargando ? "Guardando..." : "Guardar nueva contraseña"}
         </button>
-        <Link href="/perfil" className="perfil-enlace">
-          ← Volver a mi perfil
+        <Link href="/perfil" className="perfil-enlace pp-enlace-icono">
+          <Icono nombre="izquierda" size={14} />
+          Volver a mi perfil
         </Link>
       </div>
     </form>

@@ -14,7 +14,7 @@ export async function enviarCorreoBienvenida(
   const transporte = obtenerTransporte();
 
   if (!transporte) {
-    console.info("\n📧 [PawPatrol] Bienvenida (SMTP no configurado):", email, "\n");
+    console.info("\n[PawPatrol] Bienvenida (SMTP no configurado):", email, "\n");
     return { enviado: false };
   }
 
@@ -22,7 +22,7 @@ export async function enviarCorreoBienvenida(
     await transporte.sendMail({
       from: remitentePorDefecto(),
       to: email,
-      subject: "¡Bienvenido a PawPatrol! 🐾",
+      subject: "¡Bienvenido a PawPatroll!",
       html: plantillaBienvenida(nombre, ETIQUETAS_ROL[rol]),
     });
     return { enviado: true };

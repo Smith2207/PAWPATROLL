@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 
 const MAX_FOTOS = 5;
 
@@ -77,7 +78,7 @@ export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
                       padding: "2px 5px",
                     }}
                   >
-                    ★
+                    <Icono nombre="estrella" size={14} />
                   </button>
                 )}
                 <button
@@ -93,7 +94,7 @@ export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
                     cursor: "pointer",
                   }}
                 >
-                  ✕
+                  <Icono nombre="cerrar" size={14} />
                 </button>
               </div>
             </div>
@@ -117,7 +118,9 @@ export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
             hidden
             onChange={agregarArchivos}
           />
-          <div style={{ fontSize: "1.5rem", marginBottom: 6 }}>📷</div>
+          <div style={{ marginBottom: 6 }}>
+            <Icono nombre="camara" size={28} />
+          </div>
           <div style={{ fontWeight: 800, color: "var(--navy)", fontSize: "0.85rem" }}>
             Subir fotos ({fotos.length}/{MAX_FOTOS})
           </div>

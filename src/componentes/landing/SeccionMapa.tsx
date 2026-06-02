@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { listarDatosMapaPublico, type DatosMapaPublico } from "@/actions/mapa";
 import { FiltrosMapa } from "@/componentes/mapa/FiltrosMapa";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
@@ -76,7 +76,16 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
     void actualizar();
   }, wsConectado);
 
-  const totalActivos = datos.perdidas.length + datos.avistamientos.length;
+  const datosMapa = useMemo(
+    (): DatosMapaPublico => ({
+      perdidas: datos.perdidas,
+      avistamientos: [],
+      puntosCalor: [],
+    }),
+    [datos.perdidas]
+  );
+
+  const totalPerdidas = datosMapa.perdidas.length;
 
   return (
     <section className="seccion-mapa-wrap" id="mapa">
@@ -84,37 +93,33 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
         <div className="seccion-mapa-header">
           <h2>Mapa de la comunidad</h2>
           <p>
-            Cada mascota perdida tiene su <strong>zona de búsqueda</strong> (círculo
-            de color) centrada donde se perdió, más los{" "}
-            <strong>avistamientos</strong> reportados por la comunidad. Los refugios
-            probables y el análisis detallado están en la{" "}
+            Cada icono marca <strong>dónde se perdió</strong> una mascota. Las
+            zonas de búsqueda, avistamientos y refugios probables están en la{" "}
             <strong>ficha de cada mascota</strong>.
           </p>
         </div>
       )}
 
-      <FiltrosMapa filtros={filtros} onChange={aplicarFiltros} />
+      <FiltrosMapa filtros={filtros} onChange={aplicarFiltros} soloPerdidas />
 
       <div className="pp-mapa-controles">
         <LeyendaMapaColapsable
           items={[
-            { color: "var(--orange)", texto: "🟠 Donde se perdió (zona de búsqueda)" },
-            { color: "#2563eb", texto: "🔵 Avistamiento de otra mascota" },
-            { color: "var(--mint)", texto: "🟢 Mismo color = misma mascota" },
+            { color: "var(--orange)", texto: "Donde se perdió la mascota" },
           ]}
         />
         <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--muted)" }}>
-          {totalActivos} punto{totalActivos === 1 ? "" : "s"} en el mapa
+          {totalPerdidas} mascota{totalPerdidas === 1 ? "" : "s"} en el mapa
         </span>
       </div>
 
       <MapaPawPatrol
-        datos={datos}
+        datos={datosMapa}
         altura="seccion"
+        vista="solo-perdidas"
         mostrarCalor={false}
-        mostrarCercos
+        mostrarCercos={false}
         mostrarRefugios={false}
-        cercoColorPorPerdida
         marcadorUsuario={miUbicacion}
         centrarEnUsuario={miUbicacion ?? undefined}
         mostrarBotonGeolocalizar

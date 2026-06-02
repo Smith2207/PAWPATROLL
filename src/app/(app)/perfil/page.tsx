@@ -1,6 +1,9 @@
 import { obtenerDatosPerfil } from "@/actions/autenticacion";
+import { listarMisMascotas } from "@/actions/mascotas";
 import { EditorFotoPerfil } from "@/componentes/auth/EditorFotoPerfil";
 import { FormularioPerfil } from "@/componentes/auth/FormularioPerfil";
+import { ResumenCasosDueno } from "@/componentes/mascotas/ResumenCasosDueno";
+import { Icono } from "@/componentes/ui/Icono";
 import { etiquetaRol } from "@/lib/auth/roles";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -13,6 +16,8 @@ function inicialUsuario(nombre: string | null, correo: string) {
 export default async function PaginaPerfil() {
   const perfil = await obtenerDatosPerfil();
   if (!perfil) redirect("/");
+
+  const mascotas = perfil.mascotasPerdidas > 0 ? await listarMisMascotas() : [];
 
   const iniciales = inicialUsuario(perfil.nombre, perfil.email);
   const nombreVisible = perfil.nombre?.trim() || "Usuario";
@@ -39,7 +44,8 @@ export default async function PaginaPerfil() {
                 <span className="badge-rol">{etiquetaRol(perfil.rol)}</span>
                 {perfil.emailVerificado ? (
                   <span className="perfil-badge perfil-badge--ok">
-                    ✓ Correo verificado
+                    <Icono nombre="checkCirculo" size={14} className="pp-icon--btn" />
+                    Correo verificado
                   </span>
                 ) : (
                   <span className="perfil-badge perfil-badge--pendiente">
@@ -88,9 +94,36 @@ export default async function PaginaPerfil() {
               </div>
             )}
           </section>
+
+          {perfil.tieneContrasena && (
+            <section className="tarjeta-panel perfil-tarjeta perfil-tarjeta--seguridad-cta">
+              <div className="perfil-seguridad-cta perfil-seguridad-cta--fila">
+                <div className="perfil-seguridad-cta-cuerpo">
+                  <span className="perfil-seguridad-cta-icono" aria-hidden>
+                    <Icono nombre="candado" size={22} />
+                  </span>
+                  <p className="perfil-seguridad-cta-desc">
+                    Cambia tu contraseña de vez en cuando para mantener tu cuenta
+                    segura.
+                  </p>
+                </div>
+                <Link
+                  href="/perfil/cambiar-contrasena"
+                  className="perfil-btn-seguridad perfil-btn-seguridad--compacto pp-enlace-icono"
+                >
+                  Cambiar contraseña
+                  <Icono nombre="derecha" size={14} />
+                </Link>
+              </div>
+            </section>
+          )}
         </div>
 
         <aside className="perfil-layout-lateral">
+          {perfil.mascotasPerdidas > 0 && (
+            <ResumenCasosDueno mascotas={mascotas} />
+          )}
+
           <section className="tarjeta-panel perfil-tarjeta perfil-resumen">
             <h2 className="perfil-resumen-titulo">Tus mascotas</h2>
             <ul className="perfil-stats">
@@ -110,31 +143,6 @@ export default async function PaginaPerfil() {
               </li>
             </ul>
           </section>
-
-          {perfil.tieneContrasena && (
-            <section className="tarjeta-panel perfil-tarjeta perfil-tarjeta--seguridad-cta">
-              <div className="perfil-seguridad-cta">
-                <span className="perfil-seguridad-cta-icono" aria-hidden>
-                  🔒
-                </span>
-                <div className="perfil-seguridad-cta-texto">
-                  <p className="perfil-seguridad-cta-etiqueta">Seguridad</p>
-                  <h2>Protege tu cuenta</h2>
-                  <p className="perfil-seguridad-cta-desc">
-                    Cambia tu contraseña de vez en cuando para mantener tu cuenta
-                    segura.
-                  </p>
-                  <Link
-                    href="/perfil/cambiar-contrasena"
-                    className="perfil-btn-seguridad"
-                  >
-                    Cambiar contraseña
-                    <span aria-hidden>→</span>
-                  </Link>
-                </div>
-              </div>
-            </section>
-          )}
         </aside>
       </div>
     </div>

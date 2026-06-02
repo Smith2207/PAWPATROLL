@@ -2,6 +2,7 @@
 
 import { registrarUsuario } from "@/actions/autenticacion";
 import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
+import { Icono } from "@/componentes/ui/Icono";
 import { useModales } from "@/contexto/ContextoModales";
 import { esCorreoValido, mensajeCorreoInvalido } from "@/lib/auth/validacion-correo";
 import Link from "next/link";
@@ -132,7 +133,9 @@ export function FormularioRegistro({ enModal = false }: Props) {
     <>
       {!enModal && (
         <>
-          <h1>🐾 Crear cuenta</h1>
+          <h1>
+            <Icono nombre="huella" size={24} className="pp-icon--btn" /> Crear cuenta
+          </h1>
           <p className="auth-sub">
             Reporta mascotas perdidas, guarda el perfil de tus mascotas y ayuda a
             la comunidad. Con correo y contraseña debes verificar tu email antes de
@@ -228,7 +231,9 @@ export function FormularioRegistro({ enModal = false }: Props) {
               </p>
             )}
             {email && esCorreoValido(email) && (
-              <p className="auth-campo-ok">✓ Correo con formato válido</p>
+              <p className="auth-campo-ok">
+                <Icono nombre="check" size={14} className="pp-icon--btn" /> Correo con formato válido
+              </p>
             )}
           </div>
         )}

@@ -44,6 +44,7 @@ export default async function PaginaChatAvistamiento({ params }: Props) {
           mensajesIniciales={chat.mensajes}
           esDueno={chat.esDueno}
           nombreMascota={chat.nombreMascota ?? "Mascota"}
+          nombreReportante={chat.reportanteNombre}
         />
 
         {chat.slug && (

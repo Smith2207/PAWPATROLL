@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 
 type Props = {
   id?: string;
@@ -55,7 +56,7 @@ export function CampoContrasena({
           aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
           tabIndex={-1}
         >
-          {visible ? "🙈" : "👁️"}
+          <Icono nombre={visible ? "ojoOff" : "ojo"} size={18} />
         </button>
       </div>
     </div>

@@ -73,7 +73,7 @@ export async function listarActividadComunidad(
     actividades.push({
       id: `reunion-${m.id}`,
       tipo: "reunion",
-      titulo: `🎉 ${m.nombre} volvió a casa`,
+      titulo: `${m.nombre} volvió a casa`,
       subtitulo: "Caso marcado como reunido",
       fecha: m.updatedAt,
       slug: m.slug,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useModales } from "@/contexto/ContextoModales";
+import { Icono } from "@/componentes/ui/Icono";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";
 
@@ -21,14 +22,16 @@ export function SeccionCtaFinal() {
             className="btn-primary"
             onClick={() => abrirModal("report")}
           >
-            🚨 Perdí mi mascota
+            <Icono nombre="alerta" size={18} className="pp-icon--btn" />
+            Perdí mi mascota
           </button>
           <button
             type="button"
             className="btn-secondary pp-home-cta-final-secundario"
             onClick={() => abrirModal("sighting")}
           >
-            👁️ Vi una mascota
+            <Icono nombre="ojo" size={18} className="pp-icon--btn" />
+            Vi una mascota
           </button>
         </div>
         <p className="pp-home-cta-final-links">

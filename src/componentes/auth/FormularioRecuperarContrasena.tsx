@@ -3,6 +3,7 @@
 import { solicitarRecuperacionContrasena } from "@/actions/autenticacion";
 import Link from "next/link";
 import { useState } from "react";
+import { Icono } from "@/componentes/ui/Icono";
 
 export function FormularioRecuperarContrasena() {
   const [email, setEmail] = useState("");
@@ -67,7 +68,10 @@ export function FormularioRecuperarContrasena() {
       ) : null}
 
       <p className="auth-enlace" style={{ marginTop: "1.5rem" }}>
-        <Link href="/">← Volver al inicio</Link>
+        <Link href="/" className="pp-enlace-icono">
+          <Icono nombre="izquierda" size={14} />
+          Volver al inicio
+        </Link>
       </p>
     </>
   );

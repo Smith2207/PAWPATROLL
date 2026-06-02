@@ -6,6 +6,7 @@ import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { buscarLugaresPorTexto } from "@/lib/geo/geocodificar";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
+import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { etiquetaVisibleUbicacion, ubicacionConEtiqueta } from "@/lib/geo/etiqueta-ubicacion";
 
 const MapaPawPatrol = dynamic(
@@ -19,7 +20,7 @@ const MapaPawPatrol = dynamic(
 type Props = {
   etiqueta: string;
   idInput: string;
-  icono: string;
+  icono: NombreIcono;
   placeholder: string;
   valor?: UbicacionSeleccionada | null;
   onChange?: (ubicacion: UbicacionSeleccionada) => void;
@@ -110,7 +111,9 @@ export function SelectorUbicacionMapa({
       <label>{etiqueta}</label>
       <div className="location-picker">
         <div className="location-picker-top pp-busqueda-direccion">
-          <span className="loc-icon">{icono}</span>
+          <span className="loc-icon">
+          <Icono nombre={icono} size={18} />
+        </span>
           <input
             id={idInput}
             name={idInput}
@@ -132,7 +135,11 @@ export function SelectorUbicacionMapa({
             disabled={buscandoDireccion || direccionTexto.trim().length < 3}
             onClick={() => void buscarEnMapa()}
           >
-            {buscandoDireccion ? "…" : "🔍"}
+            {buscandoDireccion ? (
+              "…"
+            ) : (
+              <Icono nombre="buscar" size={16} />
+            )}
           </button>
         </div>
 
@@ -146,7 +153,8 @@ export function SelectorUbicacionMapa({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => aplicarLugar(s)}
                 >
-                  📍 {s.etiqueta}
+                  <Icono nombre="ubicacion" size={14} className="pp-icon--btn" />{" "}
+                  {s.etiqueta}
                 </button>
               </li>
             ))}
@@ -158,12 +166,12 @@ export function SelectorUbicacionMapa({
         >
           {geo.cargando ? (
             <>
-              <span aria-hidden>⏳</span>
+              <Icono nombre="reloj" size={16} />
               Ubicándote en el mapa…
             </>
           ) : ubicacionLista ? (
             <>
-              <span aria-hidden>✅</span>
+              <Icono nombre="checkCirculo" size={16} />
               <strong>{etiquetaVisibleUbicacion(ubicacionActiva)}</strong>
               <span className="pp-ubicacion-estado-hint">
                 — el mapa y la dirección van juntos
@@ -171,9 +179,10 @@ export function SelectorUbicacionMapa({
             </>
           ) : (
             <>
-              <span aria-hidden>📍</span>
-              Escribe una dirección y pulsa 🔍, <strong>Ubicarme</strong> o toca el
-              mapa
+              <Icono nombre="ubicacion" size={16} />
+              Escribe una dirección y pulsa{" "}
+              <Icono nombre="buscar" size={14} className="pp-icon--btn" />
+              , <strong>Ubicarme</strong> o toca el mapa
             </>
           )}
         </div>

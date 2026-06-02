@@ -37,7 +37,7 @@ function layout(titulo: string, cuerpo: string) {
 <head><meta charset="utf-8"><title>${escaparHtml(titulo)}</title></head>
 <body style="font-family:Nunito,Arial,sans-serif;background:#F5F7FA;padding:24px;color:#1A3C6E;">
   <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:28px;border:1px solid #E2EAF8;">
-    <div style="font-size:1.5rem;font-weight:800;margin-bottom:8px;">🐾 PawPatrol</div>
+    <div style="font-size:1.5rem;font-weight:800;margin-bottom:8px;">PawPatrol</div>
     ${cuerpo}
     <p style="margin-top:24px;font-size:0.75rem;color:#4A5568;">
       Soporte: <a href="mailto:paw.patrol.soporte@gmail.com" style="color:#2E6DB4;text-decoration:none;font-weight:700;">paw.patrol.soporte@gmail.com</a>
