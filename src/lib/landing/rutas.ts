@@ -6,6 +6,8 @@ export const RUTAS_LANDING = {
   casosActivos: "/casos-activos",
   comunidad: "/comunidad",
   comoFunciona: "/como-funciona",
+  /** Hub de chats privados (dueño y testigo) */
+  chats: "/chats",
 } as const;
 
 /** Redirección de anclas y rutas antiguas */

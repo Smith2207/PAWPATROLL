@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
+import { EnlaceChatsNav } from "@/componentes/layout/EnlaceChatsNav";
 import { EnlaceMisMascotasNav } from "@/componentes/layout/EnlaceMisMascotasNav";
 import { Icono } from "@/componentes/ui/Icono";
 import {
@@ -56,7 +57,12 @@ export function BarraNavegacion() {
               {enlace.etiqueta}
             </Link>
           ))}
-          {sesionActiva && <EnlaceMisMascotasNav pathname={pathname} />}
+          {sesionActiva && (
+            <>
+              <EnlaceChatsNav pathname={pathname} />
+              <EnlaceMisMascotasNav pathname={pathname} />
+            </>
+          )}
         </div>
       </div>
 
@@ -100,10 +106,16 @@ export function BarraNavegacion() {
             </Link>
           ))}
           {sesionActiva && (
-            <EnlaceMisMascotasNav
-              pathname={pathname}
-              onNavigate={() => setMenuAbierto(false)}
-            />
+            <>
+              <EnlaceChatsNav
+                pathname={pathname}
+                onNavigate={() => setMenuAbierto(false)}
+              />
+              <EnlaceMisMascotasNav
+                pathname={pathname}
+                onNavigate={() => setMenuAbierto(false)}
+              />
+            </>
           )}
           {sesionActiva && (
             <div className="nav-drawer-seccion">

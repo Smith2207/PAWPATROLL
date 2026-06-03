@@ -29,7 +29,8 @@ export function CabeceraCoordinacion({
   marcando,
 }: Props) {
   const emoji = emojiMascotaConversacion(mascota.tipo);
-  const urlMapa = `/casos-activos?q=${encodeURIComponent(mascota.nombre)}`;
+  /** Mapa con cerco y avistamientos de esta mascota (sección en ficha pública). */
+  const urlMapa = `/mascota/${mascota.slug}#mapa-mascota`;
 
   function compartir() {
     const enlace = `${window.location.origin}/mascota/${mascota.slug}`;

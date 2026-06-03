@@ -1,0 +1,70 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { contarChatsNoLeidos } from "@/actions/casos";
+import { RUTAS_LANDING } from "@/lib/landing/rutas";
+import { Icono } from "@/componentes/ui/Icono";
+import { useTiempoReal } from "@/hooks/useTiempoReal";
+
+function rutaChatsActiva(pathname: string) {
+  if (
+    pathname === RUTAS_LANDING.chats ||
+    pathname.startsWith(`${RUTAS_LANDING.chats}/`)
+  ) {
+    return true;
+  }
+  return pathname.includes("/caso");
+}
+
+type Props = {
+  pathname: string;
+  onNavigate?: () => void;
+};
+
+export function EnlaceChatsNav({ pathname, onNavigate }: Props) {
+  const { data: sesion, status } = useSession();
+  const [noLeidos, setNoLeidos] = useState(0);
+
+  const recargar = useCallback(async () => {
+    const n = await contarChatsNoLeidos();
+    setNoLeidos(n);
+  }, []);
+
+  useEffect(() => {
+    if (status === "authenticated") void recargar();
+  }, [status, recargar]);
+
+  const userId = sesion?.user?.id;
+  useTiempoReal(userId ? [`usuario:${userId}`] : [], (ev) => {
+    if (ev.tipo === "mensaje:nuevo" || ev.tipo === "notificacion:nueva") {
+      void recargar();
+    }
+  });
+
+  if (status !== "authenticated") return null;
+
+  const activo = rutaChatsActiva(pathname);
+  const badge = noLeidos > 0 ? (noLeidos > 9 ? "9+" : noLeidos) : null;
+
+  return (
+    <Link
+      href={RUTAS_LANDING.chats}
+      className={`nav-link-chats ${activo ? "nav-link--activo" : ""}`}
+      aria-current={activo ? "page" : undefined}
+      aria-label={badge ? `Chats, ${badge} sin leer` : "Chats"}
+      onClick={onNavigate}
+      title={badge ? `${badge} mensaje${badge === "1" ? "" : "s"} sin leer` : undefined}
+    >
+      <Icono nombre="mensaje" size={16} className="nav-link-chats-icono" />
+      Chats
+      {badge != null && (
+        <span className="nav-link-mascotas-badge" aria-hidden>
+          {badge}
+        </span>
+      )}
+    </Link>
+  );
+}

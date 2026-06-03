@@ -1,9 +1,26 @@
 import type { MensajeAvistamiento } from "@/lib/db/schema";
 
 export function esImagenAdjunta(url: string | null | undefined): boolean {
-  return Boolean(
-    url?.startsWith("data:image/") || url?.startsWith("http")
-  );
+  return urlParaMostrarAdjunto(url) != null;
+}
+
+/** URL usable en `<img>`; descarta data URLs truncadas o inválidas. */
+export function urlParaMostrarAdjunto(
+  url: string | null | undefined
+): string | null {
+  if (!url?.trim()) return null;
+  const u = url.trim();
+  if (u.startsWith("http://") || u.startsWith("https://")) return u;
+  const match = /^data:image\/([\w+.-]+);base64,([A-Za-z0-9+/=]+)$/i.exec(u);
+  if (!match) return null;
+  const b64 = match[2];
+  if (b64.length < 80) return null;
+  try {
+    atob(b64.slice(0, 24));
+  } catch {
+    return null;
+  }
+  return u;
 }
 
 /** Texto visible en lista de conversaciones */

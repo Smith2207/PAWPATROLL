@@ -506,12 +506,22 @@
   gap: 1.75rem;
 }
 
-.nav-link-mascotas {
+.nav-link-mascotas,
+.nav-link-chats {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   position: relative;
   font-weight: 800;
+}
+
+.nav-link-chats-icono {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.nav-link-chats.nav-link--activo .nav-link-chats-icono {
+  opacity: 1;
 }
 
 .nav-link-mascotas-badge {

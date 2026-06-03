@@ -1097,6 +1097,12 @@
   border-radius: 8px;
 }
 
+.pp-chat-adjunto-roto {
+  margin: 0 0 0.25rem;
+  font-size: 0.78rem;
+  color: rgba(0, 0, 0, 0.55);
+}
+
 .pp-chat-adjunto-preview {
   position: relative;
   margin: 0 0.75rem 0.35rem;

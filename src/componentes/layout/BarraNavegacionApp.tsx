@@ -2,6 +2,7 @@
 
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
 import { Icono } from "@/componentes/ui/Icono";
+import { EnlaceChatsNav } from "@/componentes/layout/EnlaceChatsNav";
 import { CampanaNotificaciones } from "@/componentes/notificaciones/CampanaNotificaciones";
 import { EnlaceMisMascotasNav } from "@/componentes/layout/EnlaceMisMascotasNav";
 import {
@@ -68,7 +69,12 @@ export function BarraNavegacionApp() {
               {enlace.etiqueta}
             </Link>
           ))}
-          {sesionActiva && <EnlaceMisMascotasNav pathname={pathname} />}
+          {sesionActiva && (
+            <>
+              <EnlaceChatsNav pathname={pathname} />
+              <EnlaceMisMascotasNav pathname={pathname} />
+            </>
+          )}
         </div>
       </div>
 
@@ -117,7 +123,10 @@ export function BarraNavegacionApp() {
             </Link>
           ))}
           {sesionActiva && (
-            <EnlaceMisMascotasNav pathname={pathname} onNavigate={cerrar} />
+            <>
+              <EnlaceChatsNav pathname={pathname} onNavigate={cerrar} />
+              <EnlaceMisMascotasNav pathname={pathname} onNavigate={cerrar} />
+            </>
           )}
           {sesionActiva && (
             <div className="nav-drawer-seccion">

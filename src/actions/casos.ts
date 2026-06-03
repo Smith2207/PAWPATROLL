@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   avistamientos,
@@ -380,4 +380,87 @@ export async function listarMisCasosComoTestigo() {
     .limit(20);
 
   return filas;
+}
+
+/** Mensajes de otros participantes no leídos en chats a los que tienes acceso. */
+export async function contarChatsNoLeidos(): Promise<number> {
+  const userId = await sesionUsuario();
+  if (!userId) return 0;
+
+  const [fila] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(mensajesAvistamiento)
+    .innerJoin(
+      avistamientos,
+      eq(mensajesAvistamiento.avistamientoId, avistamientos.id)
+    )
+    .leftJoin(mascotas, eq(avistamientos.mascotaId, mascotas.id))
+    .leftJoin(
+      lecturasChat,
+      and(
+        eq(lecturasChat.avistamientoId, avistamientos.id),
+        eq(lecturasChat.userId, userId)
+      )
+    )
+    .where(
+      and(
+        eq(mascotas.userId, userId),
+        ne(mensajesAvistamiento.userId, userId),
+        sql`${mensajesAvistamiento.createdAt} > COALESCE(${lecturasChat.ultimoLeidoAt}, '1970-01-01'::timestamp)`
+      )
+    );
+
+  return fila?.n ?? 0;
+}
+
+export type CasoChatHub = {
+  mascotaId: string;
+  nombreMascota: string;
+  tipo: string;
+  fotoPrincipal: string | null;
+  totalAvistamientos: number;
+  enlace: string;
+};
+
+export async function listarHubChats(): Promise<{
+  casosDueno: CasoChatHub[];
+}> {
+  const userId = await sesionUsuario();
+  if (!userId) return { casosDueno: [] };
+
+  const mascotasPerdidas = await db
+    .select({
+      id: mascotas.id,
+      nombre: mascotas.nombre,
+      tipo: mascotas.tipo,
+    })
+    .from(mascotas)
+    .where(and(eq(mascotas.userId, userId), eq(mascotas.estado, "PERDIDA")))
+    .orderBy(desc(mascotas.updatedAt));
+
+  const casosDueno: CasoChatHub[] = [];
+  for (const m of mascotasPerdidas) {
+    const [foto] = await db
+      .select({ url: mascotaFotos.url })
+      .from(mascotaFotos)
+      .where(eq(mascotaFotos.mascotaId, m.id))
+      .orderBy(mascotaFotos.orden)
+      .limit(1);
+
+    const [conteo] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(avistamientos)
+      .where(eq(avistamientos.mascotaId, m.id));
+
+    casosDueno.push({
+      mascotaId: m.id,
+      nombreMascota: m.nombre,
+      tipo: m.tipo,
+      fotoPrincipal: foto?.url ?? null,
+      totalAvistamientos: conteo?.n ?? 0,
+      enlace: `/mis-mascotas/${m.id}/caso`,
+    });
+  }
+
+  return { casosDueno };
 }

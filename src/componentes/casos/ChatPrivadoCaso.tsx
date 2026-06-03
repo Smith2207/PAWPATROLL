@@ -6,12 +6,13 @@ import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
 import { marcarChatLeido, reportarComportamientoSospechoso } from "@/actions/casos";
 import type { MensajeAvistamiento } from "@/lib/db/schema";
 import {
-  esImagenAdjunta,
   esMensajePropio,
   etiquetaFechaChat,
   formatearHoraMensaje,
   mostrarSeparadorFecha,
+  urlParaMostrarAdjunto,
 } from "@/lib/chat/mensaje";
+import { VisorLightboxFotos } from "@/componentes/mascotas/VisorLightboxFotos";
 import {
   combinarTimelineChat,
   iconoEventoTimeline,
@@ -73,6 +74,7 @@ export function ChatPrivadoCaso({
   const [mensajes, setMensajes] = useState(mensajesIniciales);
   const [texto, setTexto] = useState("");
   const [adjuntoPreview, setAdjuntoPreview] = useState<string | null>(null);
+  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mostrarReporte, setMostrarReporte] = useState(false);
   const [motivoReporte, setMotivoReporte] = useState("");
@@ -139,8 +141,8 @@ export function ChatPrivadoCaso({
       if (!raw?.startsWith("data:image/")) return;
       try {
         const comprimida = await preprocesarImagenCliente(raw, {
-          ladoMax: 960,
-          calidad: 0.82,
+          ladoMax: 800,
+          calidad: 0.78,
         });
         if (comprimida.length > MAX_ADJUNTO_BYTES) {
           setError("La imagen sigue siendo muy pesada.");
@@ -177,11 +179,21 @@ export function ChatPrivadoCaso({
 
     iniciar(async () => {
       setError(null);
-      const res = await enviarMensajeAvistamiento(
-        avistamientoId,
-        cuerpo,
-        adjuntoEnviar
-      );
+      let res: { ok: boolean; error?: string };
+      if (adjuntoEnviar) {
+        const blob = await fetch(adjuntoEnviar).then((r) => r.blob());
+        const fd = new FormData();
+        fd.append("avistamientoId", avistamientoId);
+        fd.append("contenido", cuerpo);
+        fd.append("imagen", blob, "chat.jpg");
+        const http = await fetch("/api/avistamiento/mensaje", {
+          method: "POST",
+          body: fd,
+        });
+        res = (await http.json()) as { ok: boolean; error?: string };
+      } else {
+        res = await enviarMensajeAvistamiento(avistamientoId, cuerpo, null);
+      }
       if (!res.ok) {
         setMensajes((prev) => prev.filter((m) => m.id !== tempId));
         setError(res.error ?? "No se pudo enviar.");
@@ -307,7 +319,8 @@ export function ChatPrivadoCaso({
           const m = item.data;
           const esPropio = esMensajePropio(m, miUserId);
           const cuerpo = textoVisible(m.contenido, m.adjuntoUrl);
-          const tieneImagen = esImagenAdjunta(m.adjuntoUrl);
+          const urlImagen = urlParaMostrarAdjunto(m.adjuntoUrl);
+          const adjuntoRoto = Boolean(m.adjuntoUrl?.trim()) && !urlImagen;
           const enviando = esPropio && m.id.startsWith("temp-");
 
           return (
@@ -324,14 +337,20 @@ export function ChatPrivadoCaso({
                   className={`pp-chat-burbuja pp-chat-burbuja--coord${esPropio ? " pp-chat-burbuja--propio" : " pp-chat-burbuja--ajeno"}`}
                 >
                   <div className="pp-chat-burbuja-cuerpo">
-                    {tieneImagen && m.adjuntoUrl && (
+                    {adjuntoRoto && (
+                      <p className="pp-chat-adjunto-roto" role="status">
+                        📷 No se pudo cargar la imagen
+                      </p>
+                    )}
+                    {urlImagen && (
                       <button
                         type="button"
                         className="pp-chat-adjunto-btn"
-                        onClick={() => window.open(m.adjuntoUrl!, "_blank", "noopener")}
+                        aria-label="Ver imagen ampliada"
+                        onClick={() => setImagenAmpliada(urlImagen)}
                       >
                         <img
-                          src={m.adjuntoUrl}
+                          src={urlImagen}
                           alt="Imagen adjunta"
                           className="pp-chat-adjunto-img"
                         />
@@ -456,6 +475,19 @@ export function ChatPrivadoCaso({
           <Icono nombre="enviar" size={18} />
         </button>
       </div>
+
+      <VisorLightboxFotos
+        fotos={
+          imagenAmpliada
+            ? [{ id: "chat-adjunto", url: imagenAmpliada }]
+            : []
+        }
+        indice={0}
+        nombre="Imagen del chat"
+        abierto={Boolean(imagenAmpliada)}
+        onCerrar={() => setImagenAmpliada(null)}
+        onCambiarIndice={() => {}}
+      />
     </section>
   );
 }
