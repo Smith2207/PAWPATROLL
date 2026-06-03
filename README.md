@@ -86,7 +86,7 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 - **Local:** `npm run dev` (WebSocket en `:3001`).
 - **Vercel sin complemento:** no uses `https://pawpatroll.vercel.app` como `NEXT_PUBLIC_WS_URL`. Chat ~8 s, mapa ~90 s.
-- **Vercel + tiempo real instantáneo:** despliega el servidor WS en **Railway** (`node scripts/servidor-ws-produccion.mjs`) y configura las 3 variables en Vercel. Guía: **[docs/TIEMPO-REAL-VERCEL.md](docs/TIEMPO-REAL-VERCEL.md)**.
+- **Vercel + tiempo real instantáneo:** despliega solo **`services/pawpatroll-ws`** en Railway (Root Directory de esa carpeta, `npm start`). Guía: **[docs/TIEMPO-REAL-VERCEL.md](docs/TIEMPO-REAL-VERCEL.md)**.
 
 ### Despliegue en Vercel
 

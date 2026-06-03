@@ -31,15 +31,21 @@ Sin el servidor WS: el chat y el mapa siguen funcionando con refresco automátic
 
 ---
 
-## Paso 2 — Crear el complemento WebSocket (Railway)
+## Paso 2 — Servicio WS independiente (Railway)
 
-[Railway](https://railway.app) tiene plan gratuito con créditos; sirve para un proceso Node 24/7.
+**No despliegues el proyecto Next completo en Railway.** Solo la carpeta:
+
+`services/pawpatroll-ws/`
+
+(Ver [services/pawpatroll-ws/README.md](../services/pawpatroll-ws/README.md))
+
+[Railway](https://railway.app) tiene plan gratuito con créditos.
 
 1. Cuenta en Railway → **New Project** → **Deploy from GitHub repo**.
-2. Elige el repo **PAWPATROLL** (mismo que Vercel).
+2. Elige el repo **PAWPATROLL** (el mismo que Vercel; **no** hace falta otro repositorio).
 3. En el servicio, **Settings**:
-   - **Start Command:** `node scripts/servidor-ws-produccion.mjs`
-   - **Root Directory:** `/` (raíz del repo)
+   - **Root Directory:** `services/pawpatroll-ws` ← importante
+   - **Start Command:** `npm start` (Railway hace `npm install` en esa carpeta)
 4. **Variables** en Railway:
 
    | Nombre | Valor |
@@ -85,9 +91,20 @@ Importante:
 ## Alternativa: Render
 
 1. [render.com](https://render.com) → **New** → **Web Service** → repo GitHub.
-2. **Start Command:** `node scripts/servidor-ws-produccion.mjs`
-3. Mismas variables: `WS_PUBLISH_SECRET`, `PORT` (Render lo define).
-4. Usa la URL pública de Render en `NEXT_PUBLIC_WS_URL` y `WS_PUBLISH_URL` en Vercel.
+2. **Root Directory:** `services/pawpatroll-ws`
+3. **Start Command:** `npm start`
+4. Mismas variables: `WS_PUBLISH_SECRET`, `PORT` (Render lo define).
+
+## ¿Otro repositorio GitHub?
+
+No es obligatorio. Un solo repo con dos despliegues:
+
+| Plataforma | Carpeta |
+|------------|---------|
+| Vercel | `/` (app Next) |
+| Railway / Render | `services/pawpatroll-ws` |
+
+Opcional: copiar solo `services/pawpatroll-ws` a un repo nuevo si quieres aislarlo por completo.
 
 ---
 
@@ -97,11 +114,11 @@ Importante:
 # Terminal 1
 npm run dev
 
-# Terminal 2 (opcional, probar el mismo flujo que producción)
+# Terminal 2 — servicio independiente (services/pawpatroll-ws)
 npm run ws:prod
 ```
 
-En `.env.local` (solo para probar el puente):
+En `.env.local` (solo para probar el puente con `ws:prod`):
 
 ```env
 WS_PUBLISH_URL=http://localhost:3001/publish
@@ -109,7 +126,7 @@ WS_PUBLISH_SECRET=dev-secreto-local
 NEXT_PUBLIC_WS_URL=ws://localhost:3001
 ```
 
-Con `npm run dev`, el WS integrado en el puerto 3001 ya suele bastar; el script `ws:prod` simula Railway.
+Con solo `npm run dev`, el WS integrado en `:3001` suele bastar en local; `ws:prod` replica Railway.
 
 ---
 

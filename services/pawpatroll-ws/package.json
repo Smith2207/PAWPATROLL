@@ -1,0 +1,17 @@
+{
+  "name": "pawpatroll-ws",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor WebSocket independiente para PawPatrol (Railway / Render). No incluye Next.js.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

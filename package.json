@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "ws:prod": "node scripts/servidor-ws-produccion.mjs",
+    "ws:prod": "npm install --prefix services/pawpatroll-ws && npm start --prefix services/pawpatroll-ws",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
