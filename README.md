@@ -4,6 +4,8 @@ Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** 
 
 **Demo:** [pawpatroll.vercel.app](https://pawpatroll.vercel.app)
 
+> **Documentación de módulos:** ver [README-MODULOS.md](./README-MODULOS.md) — referencia completa **M1 a M7** (métodos, rutas, APIs y librerías).
+
 ## Stack
 
 - **Next.js 16** (App Router)

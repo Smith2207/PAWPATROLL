@@ -22,6 +22,7 @@ import {
   registrarEventoCaso,
   usuarioAceptaNotificacionesEmail,
 } from "@/lib/casos/servicio-caso";
+import { tituloNotificacionMensaje } from "@/lib/chat/conversacion";
 
 export type DatosAvistamiento = {
   mascotaId?: string;
@@ -439,14 +440,22 @@ export async function gestionarEstadoAvistamiento(
 export async function enviarMensajeAvistamiento(
   avistamientoId: string,
   contenido: string,
-  _autorNombre?: string
+  adjuntoUrl?: string | null
 ): Promise<ResultadoAuth & { id?: string }> {
   const texto = contenido.trim();
-  if (texto.length < 1) {
-    return { ok: false, error: "Escribe un mensaje." };
+  const adjunto = adjuntoUrl?.trim() || null;
+
+  if (texto.length < 1 && !adjunto) {
+    return { ok: false, error: "Escribe un mensaje o adjunta una imagen." };
   }
   if (texto.length > 2000) {
     return { ok: false, error: "Mensaje demasiado largo." };
+  }
+  if (adjunto && !adjunto.startsWith("data:image/")) {
+    return { ok: false, error: "Solo se permiten imágenes como adjunto." };
+  }
+  if (adjunto && adjunto.length > 900_000) {
+    return { ok: false, error: "La imagen es demasiado pesada." };
   }
 
   const userId = await sesionUsuario();
@@ -459,6 +468,7 @@ export async function enviarMensajeAvistamiento(
       av: avistamientos,
       mascotaUserId: mascotas.userId,
       nombreMascota: mascotas.nombre,
+      tipoMascota: mascotas.tipo,
       slug: mascotas.slug,
       emailDueno: users.email,
       nombreDueno: users.name,
@@ -483,13 +493,27 @@ export async function enviarMensajeAvistamiento(
     };
   }
 
+  const [usuarioActual] = await db
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  const nombreAutor =
+    usuarioActual?.name?.trim() ||
+    (esDueno ? av.nombreDueno : av.av.nombreReportante) ||
+    "Participante";
+
+  const cuerpoMensaje = texto || (adjunto ? "📷 Foto" : " ");
+
   const [insertado] = await db
     .insert(mensajesAvistamiento)
     .values({
       avistamientoId,
       userId,
-      autorNombre: null,
-      contenido: texto,
+      autorNombre: nombreAutor,
+      contenido: cuerpoMensaje,
+      adjuntoUrl: adjunto,
     })
     .returning({ id: mensajesAvistamiento.id });
 
@@ -499,8 +523,7 @@ export async function enviarMensajeAvistamiento(
     mascotaId: av.av.mascotaId,
   });
 
-  const nombreAutor =
-    (esDueno ? av.nombreDueno : av.av.nombreReportante) || "Participante";
+  const extractoNotif = adjunto && !texto ? "📷 Te enviaron una foto" : texto.slice(0, 160);
 
   if (av.av.mascotaId) {
     await registrarEventoCaso({
@@ -508,7 +531,7 @@ export async function enviarMensajeAvistamiento(
       avistamientoId,
       tipo: "MENSAJE_ENVIADO",
       titulo: `Nuevo mensaje en avistamiento #${av.av.numeroReporte}`,
-      detalle: texto.slice(0, 120),
+      detalle: (texto || "Foto adjunta").slice(0, 120),
       actorUserId: userId ?? undefined,
     });
   }
@@ -523,8 +546,12 @@ export async function enviarMensajeAvistamiento(
       userId: av.av.userId,
       tipo: "MENSAJE_NUEVO",
       prioridad: "NORMAL",
-      titulo: `Respuesta sobre ${av.nombreMascota ?? "tu avistamiento"}`,
-      cuerpo: texto.slice(0, 160),
+      titulo: tituloNotificacionMensaje(
+        nombreAutor,
+        av.nombreMascota,
+        av.tipoMascota
+      ),
+      cuerpo: extractoNotif,
       enlace: enlaceChat,
       mascotaId: av.av.mascotaId ?? undefined,
       avistamientoId,
@@ -548,7 +575,7 @@ export async function enviarMensajeAvistamiento(
           nombreMascota: av.nombreMascota ?? "Mascota",
           slugMascota: av.slug ?? "",
           autorMensaje: nombreAutor ?? "Dueño",
-          extracto: texto.slice(0, 200),
+          extracto: (adjunto && !texto ? "📷 Foto" : texto).slice(0, 200),
           enlacePrivado: enlaceChat,
         });
       }
@@ -558,8 +585,12 @@ export async function enviarMensajeAvistamiento(
       userId: av.mascotaUserId,
       tipo: "MENSAJE_NUEVO",
       prioridad: "NORMAL",
-      titulo: `Mensaje sobre ${av.nombreMascota ?? "tu mascota"}`,
-      cuerpo: texto.slice(0, 160),
+      titulo: tituloNotificacionMensaje(
+        nombreAutor,
+        av.nombreMascota,
+        av.tipoMascota
+      ),
+      cuerpo: extractoNotif,
       enlace: enlaceCaso,
       mascotaId: av.av.mascotaId ?? undefined,
       avistamientoId,
@@ -576,7 +607,7 @@ export async function enviarMensajeAvistamiento(
         nombreMascota: av.nombreMascota ?? "Mascota",
         slugMascota: av.slug ?? "",
         autorMensaje: nombreAutor ?? "Alguien",
-        extracto: texto.slice(0, 200),
+        extracto: (adjunto && !texto ? "📷 Foto" : texto).slice(0, 200),
         enlacePrivado: enlaceCaso,
       });
     }

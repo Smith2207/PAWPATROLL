@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 type Props = { params: Promise<{ id: string }> };
 
 export const metadata: Metadata = {
-  title: "Caso de búsqueda — PawPatrol",
+  title: "Centro de coordinación — PawPatrol",
 };
 
 export default async function PaginaCasoBusqueda({ params }: Props) {
@@ -24,6 +24,8 @@ export default async function PaginaCasoBusqueda({ params }: Props) {
       <VistaCasoBusqueda
         mascota={caso.mascota}
         avistamientos={caso.avistamientos}
+        resumen={caso.resumen}
+        miUserId={sesion.user.id!}
       />
     </EnvolturaPaginasApp>
   );

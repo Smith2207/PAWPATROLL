@@ -17,6 +17,7 @@
     "db:migrate-gemini-768": "node scripts/aplicar-migracion-0009.mjs",
     "db:migrate-notificaciones": "node scripts/aplicar-migracion-0010.mjs",
     "db:migrate-usuario-activo": "node scripts/aplicar-migracion-0011.mjs",
+    "db:migrate-chat-adjunto": "node scripts/aplicar-migracion-0012.mjs",
     "db:reindexar-visual": "node scripts/reindexar-embeddings-visual.mjs",
     "db:studio": "drizzle-kit studio"
   },

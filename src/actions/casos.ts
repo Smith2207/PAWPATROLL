@@ -4,7 +4,9 @@ import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   avistamientos,
+  eventosCaso,
   lecturasChat,
+  mascotaFotos,
   mascotas,
   mensajesAvistamiento,
   reportesAbuso,
@@ -73,14 +75,32 @@ export async function obtenerCasoBusqueda(mascotaId: string) {
   const dueno = await esDuenoMascota(mascotaId, userId);
   if (!dueno && !esAdmin) return null;
 
-  const [mascota] = await db
-    .select()
+  const [mascotaRow] = await db
+    .select({
+      mascota: mascotas,
+      duenoNombre: users.name,
+      duenoImagen: users.image,
+    })
     .from(mascotas)
+    .leftJoin(users, eq(mascotas.userId, users.id))
     .where(eq(mascotas.id, mascotaId))
     .limit(1);
 
-  if (!mascota) return null;
+  if (!mascotaRow) return null;
+  const mascota = mascotaRow.mascota;
   if (!esAdmin && mascota.estado !== "PERDIDA") return null;
+
+  const [fotoRow] = await db
+    .select({ url: mascotaFotos.url })
+    .from(mascotaFotos)
+    .where(eq(mascotaFotos.mascotaId, mascotaId))
+    .orderBy(mascotaFotos.orden)
+    .limit(1);
+
+  const mascotaConFoto = {
+    ...mascota,
+    fotoPrincipal: fotoRow?.url ?? null,
+  };
 
   const avistamientosLista = await db
     .select()
@@ -121,17 +141,63 @@ export async function obtenerCasoBusqueda(mascotaId: string) {
     mensajesPorAv.set(m.avistamientoId, arr);
   }
 
+  const duenoNombre =
+    mascotaRow.duenoNombre?.trim() || "Usuario";
+  const duenoImagen = mascotaRow.duenoImagen ?? null;
+
+  const eventos = await db
+    .select()
+    .from(eventosCaso)
+    .where(eq(eventosCaso.mascotaId, mascotaId))
+    .orderBy(asc(eventosCaso.createdAt));
+
+  const eventosPorAv = new Map<string, typeof eventos>();
+  const eventosMascota: typeof eventos = [];
+  for (const ev of eventos) {
+    if (ev.avistamientoId) {
+      const arr = eventosPorAv.get(ev.avistamientoId) ?? [];
+      arr.push(ev);
+      eventosPorAv.set(ev.avistamientoId, arr);
+    } else {
+      eventosMascota.push(ev);
+    }
+  }
+
+  const coincidenciasIa = eventos.filter((e) => e.tipo === "COINCIDENCIA_IA").length;
+  const ultimoAvistamiento = avistamientosLista[0] ?? null;
+
   return {
-    mascota,
+    mascota: mascotaConFoto,
+    duenoUserId: mascota.userId,
+    duenoNombre,
+    duenoImagen,
+    esAdmin,
+    resumen: {
+      totalAvistamientos: avistamientosLista.length,
+      pendientes: avistamientosLista.filter((a) => a.estado === "PENDIENTE").length,
+      coincidenciasIa,
+      ultimoAvistamientoDireccion: ultimoAvistamiento?.direccion?.trim() || null,
+      ultimoAvistamientoLat: ultimoAvistamiento?.lat ?? null,
+      ultimoAvistamientoLng: ultimoAvistamiento?.lng ?? null,
+    },
+    eventosMascota,
     avistamientos: avistamientosLista.map((av) => {
       const reportante = av.userId ? usuariosPorId.get(av.userId) : null;
       return {
         ...av,
         mensajes: mensajesPorAv.get(av.id) ?? [],
+        eventos: [
+          ...eventosMascota,
+          ...(eventosPorAv.get(av.id) ?? []),
+        ],
+        duenoUserId: mascota.userId,
+        duenoNombre,
+        duenoImagen,
+        reportanteUserId: av.userId ?? null,
         reportanteNombre:
           reportante?.name?.trim() ||
           av.nombreReportante?.trim() ||
-          "Participante",
+          "Usuario",
         reportanteImagen: reportante?.image ?? null,
       };
     }),
@@ -148,11 +214,16 @@ export async function obtenerChatPrivadoAvistamiento(avistamientoId: string) {
     .select({
       av: avistamientos,
       nombreMascota: mascotas.nombre,
+      tipoMascota: mascotas.tipo,
       slug: mascotas.slug,
       mascotaId: mascotas.id,
+      duenoUserId: mascotas.userId,
+      duenoNombre: users.name,
+      duenoImagen: users.image,
     })
     .from(avistamientos)
     .leftJoin(mascotas, eq(avistamientos.mascotaId, mascotas.id))
+    .leftJoin(users, eq(mascotas.userId, users.id))
     .where(eq(avistamientos.id, avistamientoId))
     .limit(1);
 
@@ -169,25 +240,47 @@ export async function obtenerChatPrivadoAvistamiento(avistamientoId: string) {
     : false;
 
   let reportanteNombre =
-    av.av.nombreReportante?.trim() || "Participante";
+    av.av.nombreReportante?.trim() || "Usuario";
+  let reportanteImagen: string | null = null;
   if (av.av.userId) {
     const [reportante] = await db
-      .select({ name: users.name })
+      .select({ name: users.name, image: users.image })
       .from(users)
       .where(eq(users.id, av.av.userId))
       .limit(1);
     if (reportante?.name?.trim()) {
       reportanteNombre = reportante.name.trim();
     }
+    reportanteImagen = reportante?.image ?? null;
   }
+
+  const eventosGlobales =
+    av.mascotaId
+      ? await db
+          .select()
+          .from(eventosCaso)
+          .where(eq(eventosCaso.mascotaId, av.mascotaId))
+          .orderBy(asc(eventosCaso.createdAt))
+      : [];
+
+  const eventosFiltrados = eventosGlobales.filter(
+    (e) => !e.avistamientoId || e.avistamientoId === avistamientoId
+  );
 
   return {
     avistamiento: av.av,
     nombreMascota: av.nombreMascota,
+    tipoMascota: av.tipoMascota,
     slug: av.slug,
     mensajes,
+    eventos: eventosFiltrados,
     esDueno,
+    duenoUserId: av.duenoUserId ?? "",
+    duenoNombre: av.duenoNombre?.trim() || "Usuario",
+    duenoImagen: av.duenoImagen ?? null,
+    reportanteUserId: av.av.userId ?? null,
     reportanteNombre,
+    reportanteImagen,
   };
 }
 

@@ -5,31 +5,34 @@ import { useRouter } from "next/navigation";
 import { gestionarEstadoAvistamiento } from "@/actions/avistamientos";
 import { reportarComportamientoSospechoso } from "@/actions/casos";
 import { ChatPrivadoCaso } from "@/componentes/casos/ChatPrivadoCaso";
+import { EtiquetaRolParticipante } from "@/componentes/casos/EtiquetaRolParticipante";
 import { Icono } from "@/componentes/ui/Icono";
-import type { Avistamiento, MensajeAvistamiento, Mascota } from "@/lib/db/schema";
+import { emojiMascotaConversacion, resolverConversacionAvistamiento } from "@/lib/chat/conversacion";
+import { previewMensajeChat } from "@/lib/chat/mensaje";
+import { rolParticipante } from "@/lib/chat/roles";
+import { horaRelativaChat } from "@/lib/chat/tiempo";
+import type { EventoCasoTimeline } from "@/lib/chat/timeline";
+import type { Avistamiento, EventoCaso, MensajeAvistamiento, Mascota } from "@/lib/db/schema";
+
+export type MascotaCaso = Mascota & { fotoPrincipal: string | null };
 
 export type AvistamientoCaso = Avistamiento & {
   mensajes: MensajeAvistamiento[];
+  eventos: EventoCaso[];
+  duenoUserId: string;
+  duenoNombre: string;
+  duenoImagen: string | null;
+  reportanteUserId: string | null;
   reportanteNombre: string;
   reportanteImagen: string | null;
 };
 
 type Props = {
-  mascota: Mascota;
+  mascota: MascotaCaso;
   avistamientos: AvistamientoCaso[];
+  miUserId: string;
+  onAbrirContexto?: () => void;
 };
-
-function iniciales(nombre: string) {
-  return (
-    nombre
-      .split(/\s+/)
-      .map((p) => p[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() || "?"
-  );
-}
 
 function ultimaActividad(av: AvistamientoCaso) {
   const ultimo = av.mensajes.at(-1);
@@ -38,54 +41,35 @@ function ultimaActividad(av: AvistamientoCaso) {
     : new Date(av.createdAt).getTime();
 }
 
-function previewChat(av: AvistamientoCaso) {
+function previewLista(av: AvistamientoCaso) {
   const ultimo = av.mensajes.at(-1);
-  if (ultimo) return ultimo.contenido;
-  if (av.direccion) return av.direccion;
-  return "Sin mensajes — toca para chatear";
-}
-
-function etiquetaEstado(estado: Avistamiento["estado"]) {
-  if (estado === "VERIFICADO") return "Verificado";
-  if (estado === "DESCARTADO") return "Descartado";
-  return "Pendiente";
-}
-
-function truncar(texto: string, max = 72) {
-  const limpio = texto.trim();
-  if (limpio.length <= max) return limpio;
-  return `${limpio.slice(0, max - 1)}…`;
-}
-
-function AvatarReportante({
-  nombre,
-  imagen,
-}: {
-  nombre: string;
-  imagen: string | null;
-}) {
-  if (imagen) {
-    return (
-      <img
-        src={imagen}
-        alt=""
-        className="pp-caso-chat-avatar-img"
-        width={48}
-        height={48}
-      />
-    );
+  if (ultimo) {
+    const t = previewMensajeChat(ultimo);
+    return t.length > 42 ? `"${t.slice(0, 41)}…"` : `"${t}"`;
   }
-  return (
-    <span className="pp-caso-chat-avatar-iniciales" aria-hidden>
-      {iniciales(nombre)}
-    </span>
-  );
+  return "Sin mensajes aún";
 }
 
-export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales }: Props) {
+function mapEventos(eventos: EventoCaso[]): EventoCasoTimeline[] {
+  return eventos.map((e) => ({
+    id: e.id,
+    tipo: e.tipo,
+    titulo: e.titulo,
+    detalle: e.detalle,
+    createdAt: e.createdAt,
+  }));
+}
+
+export function PanelChatsCaso({
+  mascota,
+  avistamientos: avistamientosIniciales,
+  miUserId,
+  onAbrirContexto,
+}: Props) {
   const router = useRouter();
   const [lista, setLista] = useState(avistamientosIniciales);
   const [pendiente, iniciar] = useTransition();
+  const emoji = emojiMascotaConversacion(mascota.tipo);
 
   const ordenados = useMemo(
     () => [...lista].sort((a, b) => ultimaActividad(b) - ultimaActividad(a)),
@@ -112,6 +96,24 @@ export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales 
 
   const activo = ordenados.find((a) => a.id === seleccionadoId) ?? null;
 
+  const convActiva = useMemo(() => {
+    if (!activo) return null;
+    return resolverConversacionAvistamiento(miUserId, {
+      duenoUserId: activo.duenoUserId,
+      duenoNombre: activo.duenoNombre,
+      duenoImagen: activo.duenoImagen,
+      reportanteUserId: activo.reportanteUserId,
+      reportanteNombre: activo.reportanteNombre,
+      reportanteImagen: activo.reportanteImagen,
+      nombreMascota: mascota.nombre,
+      tipoMascota: mascota.tipo,
+    });
+  }, [activo, miUserId, mascota.nombre, mascota.tipo]);
+
+  const rolOtro = convActiva
+    ? rolParticipante(convActiva.otro.userId, activo!.duenoUserId)
+    : null;
+
   function seleccionar(id: string) {
     setSeleccionadoId(id);
     setVistaMovil("chat");
@@ -124,10 +126,7 @@ export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales 
     if (!activo) return;
     iniciar(async () => {
       setErrorReporte(null);
-      const res = await reportarComportamientoSospechoso(
-        activo.id,
-        motivoReporte
-      );
+      const res = await reportarComportamientoSospechoso(activo.id, motivoReporte);
       if (!res.ok) {
         setErrorReporte(res.error ?? "No se pudo reportar.");
         return;
@@ -138,12 +137,8 @@ export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales 
   }
 
   function gestionar(id: string, estado: "VERIFICADO" | "DESCARTADO") {
-    const motivo =
-      estado === "DESCARTADO"
-        ? window.prompt("Motivo del descarte (opcional)") ?? undefined
-        : undefined;
     iniciar(async () => {
-      const res = await gestionarEstadoAvistamiento(id, estado, motivo);
+      const res = await gestionarEstadoAvistamiento(id, estado);
       if (res.ok) router.refresh();
       else alert(res.error ?? "Error");
     });
@@ -151,68 +146,63 @@ export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales 
 
   if (ordenados.length === 0) {
     return (
-      <p className="pp-caso-timeline-vacio">
-        Cuando alguien reporte un avistamiento, aparecerá aquí con su chat
-        privado.
+      <p className="pp-coord-vacio">
+        Cuando alguien reporte un avistamiento, aparecerá aquí como caso activo.
       </p>
     );
   }
 
   return (
     <div
-      className={`pp-caso-whatsapp${vistaMovil === "chat" ? " pp-caso-whatsapp--chat-activo" : ""}`}
+      className={`pp-coord-chat-grid${vistaMovil === "chat" ? " pp-coord-chat-grid--chat-activo" : ""}`}
     >
-      <aside className="pp-caso-chat-lista" aria-label="Conversaciones">
-        <div className="pp-caso-chat-lista-cabecera">
-          <strong>Conversaciones</strong>
+      <aside className="pp-coord-lista" aria-label="Casos activos">
+        <div className="pp-coord-lista-cabecera">
+          <strong>Casos activos</strong>
           <span>{ordenados.length}</span>
         </div>
-        <ul className="pp-caso-chat-lista-items">
+        <ul className="pp-coord-lista-items">
           {ordenados.map((av) => {
             const activa = av.id === seleccionadoId;
             const fechaRef = av.mensajes.at(-1)?.createdAt ?? av.createdAt;
+            const conv = resolverConversacionAvistamiento(miUserId, {
+              duenoUserId: av.duenoUserId,
+              duenoNombre: av.duenoNombre,
+              duenoImagen: av.duenoImagen,
+              reportanteUserId: av.reportanteUserId,
+              reportanteNombre: av.reportanteNombre,
+              reportanteImagen: av.reportanteImagen,
+              nombreMascota: mascota.nombre,
+              tipoMascota: mascota.tipo,
+            });
             return (
               <li key={av.id}>
                 <button
                   type="button"
-                  className={`pp-caso-chat-fila${activa ? " pp-caso-chat-fila--activa" : ""}`}
+                  className={`pp-coord-lista-fila${activa ? " pp-coord-lista-fila--activa" : ""}`}
                   onClick={() => seleccionar(av.id)}
                   aria-current={activa ? "true" : undefined}
                 >
-                  <span className="pp-caso-chat-avatar">
-                    <AvatarReportante
-                      nombre={av.reportanteNombre}
-                      imagen={av.reportanteImagen}
-                    />
-                    {av.estado === "PENDIENTE" && (
-                      <span className="pp-caso-chat-avatar-alerta" aria-hidden />
+                  <span className="pp-coord-lista-foto">
+                    {mascota.fotoPrincipal ? (
+                      <img src={mascota.fotoPrincipal} alt="" width={44} height={44} />
+                    ) : (
+                      <span className="pp-coord-lista-foto-emoji" aria-hidden>
+                        {emoji}
+                      </span>
                     )}
                   </span>
-                  <span className="pp-caso-chat-fila-texto">
-                    <span className="pp-caso-chat-fila-top">
+                  <span className="pp-coord-lista-texto">
+                    <span className="pp-coord-lista-top">
                       <strong>
-                        Avistamiento #{av.numeroReporte}
+                        {emoji} {mascota.nombre}
                       </strong>
-                      <time>
-                        {new Date(fechaRef).toLocaleString("es-PE", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </time>
+                      <time>{horaRelativaChat(fechaRef)}</time>
                     </span>
-                    <span className="pp-caso-chat-fila-reportante">
-                      {av.reportanteNombre}
+                    <span className="pp-coord-lista-participante">
+                      {conv.otro.nombre}
                     </span>
-                    <span className="pp-caso-chat-fila-preview">
-                      {previewChat(av)}
-                    </span>
-                  </span>
-                  <span
-                    className={`pp-caso-avist-estado pp-caso-avist-estado--${av.estado.toLowerCase()}`}
-                  >
-                    {etiquetaEstado(av.estado)}
+                    <span className="pp-coord-lista-preview">{previewLista(av)}</span>
                   </span>
                 </button>
               </li>
@@ -221,101 +211,98 @@ export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales 
         </ul>
       </aside>
 
-      <div className="pp-caso-chat-detalle">
-        {!activo ? (
-          <div className="pp-caso-chat-vacio">
-            Elige una conversación de la lista
+      <div className="pp-coord-conversacion">
+        {!activo || !convActiva ? (
+          <div className="pp-coord-conversacion-vacio">
+            Elige un caso activo de la lista
           </div>
         ) : (
           <>
-            <header className="pp-caso-chat-detalle-header">
+            <header className="pp-coord-chat-header">
               <button
                 type="button"
-                className="pp-caso-chat-volver pp-enlace-icono"
+                className="pp-coord-chat-volver"
                 onClick={() => setVistaMovil("lista")}
-                aria-label="Volver a conversaciones"
+                aria-label="Volver a casos activos"
               >
                 <Icono nombre="izquierda" size={18} />
               </button>
 
-              <div className="pp-caso-chat-detalle-principal">
-                <span className="pp-caso-chat-detalle-avatar">
-                  <AvatarReportante
-                    nombre={activo.reportanteNombre}
-                    imagen={activo.reportanteImagen}
+              <div className="pp-coord-chat-header-principal">
+                {convActiva.otro.imagen ? (
+                  <img
+                    src={convActiva.otro.imagen}
+                    alt=""
+                    className="pp-coord-chat-header-avatar"
+                    width={32}
+                    height={32}
                   />
-                </span>
-                <div className="pp-caso-chat-detalle-info">
-                  <strong>
-                    Avistamiento #{activo.numeroReporte} ·{" "}
-                    {activo.reportanteNombre}
-                  </strong>
-                  <span className="pp-caso-chat-detalle-meta">
-                    Reportó sobre {mascota.nombre}
-                    {activo.direccion
-                      ? ` · ${truncar(activo.direccion)}`
-                      : ""}
+                ) : (
+                  <span className="pp-coord-chat-header-iniciales" aria-hidden>
+                    {convActiva.otro.nombre.slice(0, 1).toUpperCase()}
                   </span>
-                  <time>
-                    {new Date(activo.createdAt).toLocaleString("es-PE", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </time>
+                )}
+                <div>
+                  <strong>{convActiva.otro.nombre}</strong>
+                  {rolOtro && <EtiquetaRolParticipante rol={rolOtro} />}
                 </div>
               </div>
 
-              <div className="pp-caso-chat-detalle-top">
-                <span
-                  className={`pp-caso-avist-estado pp-caso-avist-estado--${activo.estado.toLowerCase()}`}
-                >
-                  {etiquetaEstado(activo.estado)}
-                </span>
+              <div className="pp-coord-chat-header-acciones">
+                {onAbrirContexto && (
+                  <button
+                    type="button"
+                    className="pp-coord-chat-icono"
+                    onClick={onAbrirContexto}
+                    aria-label="Contexto del caso"
+                  >
+                    <Icono nombre="info" size={16} />
+                  </button>
+                )}
+                {activo.estado === "PENDIENTE" && (
+                  <>
+                    <button
+                      type="button"
+                      className="pp-coord-chat-icono pp-coord-chat-icono--ok"
+                      disabled={pendiente}
+                      onClick={() => gestionar(activo.id, "VERIFICADO")}
+                      aria-label="Verificar avistamiento"
+                      title="Verificar"
+                    >
+                      <Icono nombre="check" size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="pp-coord-chat-icono"
+                      disabled={pendiente}
+                      onClick={() => gestionar(activo.id, "DESCARTADO")}
+                      aria-label="Descartar avistamiento"
+                      title="Descartar"
+                    >
+                      <Icono nombre="cerrar" size={16} />
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
-                  className="pp-caso-btn-reportar"
+                  className="pp-coord-chat-icono"
                   onClick={() => setReporteAbierto((v) => !v)}
-                  aria-label="Reportar conversación"
-                  title="Reportar conversación"
+                  aria-label="Reportar"
+                  title="Reportar"
                 >
                   <Icono nombre="alerta" size={16} />
                 </button>
               </div>
-
-              {activo.estado === "PENDIENTE" && (
-                <div className="pp-caso-chat-detalle-gestion">
-                  <button
-                    type="button"
-                    className="pp-caso-btn-verificar"
-                    disabled={pendiente}
-                    onClick={() => gestionar(activo.id, "VERIFICADO")}
-                  >
-                    <Icono nombre="check" size={14} />
-                    Verificar
-                  </button>
-                  <button
-                    type="button"
-                    className="pp-caso-btn-descartar"
-                    disabled={pendiente}
-                    onClick={() => gestionar(activo.id, "DESCARTADO")}
-                  >
-                    Descartar
-                  </button>
-                </div>
-              )}
             </header>
 
             {reporteAbierto && (
-              <div className="pp-chat-reporte-panel">
-                <label htmlFor={`reporte-caso-${activo.id}`}>
-                  Comportamiento sospechoso o contenido inapropiado
-                </label>
+              <div className="pp-chat-reporte-panel pp-chat-reporte-panel--compacto">
                 <textarea
-                  id={`reporte-caso-${activo.id}`}
-                  rows={3}
+                  rows={2}
                   value={motivoReporte}
                   onChange={(e) => setMotivoReporte(e.target.value)}
-                  placeholder="Describe qué ocurrió…"
+                  placeholder="Describe el problema…"
+                  aria-label="Motivo del reporte"
                 />
                 {errorReporte && (
                   <p className="auth-alerta auth-alerta--error" role="alert">
@@ -324,7 +311,7 @@ export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales 
                 )}
                 <button
                   type="button"
-                  className="pp-caso-btn-reporte-enviar"
+                  className="pp-coord-btn pp-coord-btn--primario"
                   disabled={pendiente}
                   onClick={enviarReporte}
                 >
@@ -339,9 +326,18 @@ export function PanelChatsCaso({ mascota, avistamientos: avistamientosIniciales 
               mascotaId={mascota.id}
               numeroReporte={activo.numeroReporte}
               mensajesIniciales={activo.mensajes}
+              eventosIniciales={mapEventos(activo.eventos)}
               esDueno
               nombreMascota={mascota.nombre}
-              nombreReportante={activo.reportanteNombre}
+              tipoMascota={mascota.tipo}
+              duenoUserId={activo.duenoUserId}
+              duenoNombre={activo.duenoNombre}
+              reportanteUserId={activo.reportanteUserId}
+              reportanteNombre={activo.reportanteNombre}
+              miUserId={miUserId}
+              direccionAvistamiento={activo.direccion}
+              latAvistamiento={activo.lat}
+              lngAvistamiento={activo.lng}
               embed
               ocultarReporte
             />

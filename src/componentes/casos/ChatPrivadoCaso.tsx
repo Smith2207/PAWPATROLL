@@ -1,56 +1,89 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  enviarMensajeAvistamiento,
-} from "@/actions/avistamientos";
-import {
-  marcarChatLeido,
-  reportarComportamientoSospechoso,
-} from "@/actions/casos";
+import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
+import { marcarChatLeido, reportarComportamientoSospechoso } from "@/actions/casos";
 import type { MensajeAvistamiento } from "@/lib/db/schema";
+import {
+  esImagenAdjunta,
+  esMensajePropio,
+  etiquetaFechaChat,
+  formatearHoraMensaje,
+  mostrarSeparadorFecha,
+} from "@/lib/chat/mensaje";
+import {
+  combinarTimelineChat,
+  iconoEventoTimeline,
+  tituloEventoTimeline,
+  type EventoCasoTimeline,
+} from "@/lib/chat/timeline";
 import type { CanalTiempoReal } from "@/lib/tiempo-real/tipos";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
+import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
 import { Icono } from "@/componentes/ui/Icono";
-import { useSession } from "next-auth/react";
 
-const ALTURA_MAX_TEXTO = 120;
+const ALTURA_MAX_TEXTO = 100;
+const MAX_ADJUNTO_BYTES = 900_000;
 
 type Props = {
   avistamientoId: string;
   mascotaId: string | null;
   numeroReporte: number;
   mensajesIniciales: MensajeAvistamiento[];
+  eventosIniciales?: EventoCasoTimeline[];
   esDueno: boolean;
   nombreMascota: string;
-  nombreReportante?: string;
+  tipoMascota?: string | null;
+  duenoUserId: string;
+  duenoNombre: string;
+  reportanteUserId: string | null;
+  reportanteNombre?: string;
+  miUserId?: string;
+  direccionAvistamiento?: string | null;
+  latAvistamiento?: string | null;
+  lngAvistamiento?: string | null;
   embed?: boolean;
   ocultarReporte?: boolean;
 };
+
+function textoVisible(contenido: string, adjuntoUrl: string | null | undefined) {
+  const t = contenido.trim();
+  if (t && t !== "📷 Foto") return t;
+  return null;
+}
 
 export function ChatPrivadoCaso({
   avistamientoId,
   mascotaId,
   numeroReporte,
   mensajesIniciales,
+  eventosIniciales = [],
   esDueno,
   nombreMascota,
-  nombreReportante,
+  miUserId,
+  direccionAvistamiento,
+  latAvistamiento,
+  lngAvistamiento,
   embed = false,
   ocultarReporte = false,
 }: Props) {
   const router = useRouter();
-  const { data: sesion } = useSession();
-  const miUserId = sesion?.user?.id;
   const [mensajes, setMensajes] = useState(mensajesIniciales);
   const [texto, setTexto] = useState("");
+  const [adjuntoPreview, setAdjuntoPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mostrarReporte, setMostrarReporte] = useState(false);
   const [motivoReporte, setMotivoReporte] = useState("");
   const [pendiente, iniciar] = useTransition();
   const finRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputArchivoRef = useRef<HTMLInputElement>(null);
+
+  const timeline = useMemo(
+    () => combinarTimelineChat(mensajes, eventosIniciales),
+    [mensajes, eventosIniciales]
+  );
 
   function ajustarAlturaTexto(el: HTMLTextAreaElement | null) {
     if (!el) return;
@@ -69,15 +102,12 @@ export function ChatPrivadoCaso({
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensajes]);
+  }, [mensajes, adjuntoPreview, timeline.length]);
 
   const canales: CanalTiempoReal[] = [`avistamiento:${avistamientoId}`];
   if (mascotaId) canales.push(`mascota:${mascotaId}`);
   useTiempoReal(canales, (ev) => {
-    if (
-      ev.tipo === "mensaje:nuevo" &&
-      ev.avistamientoId === avistamientoId
-    ) {
+    if (ev.tipo === "mensaje:nuevo" && ev.avistamientoId === avistamientoId) {
       router.refresh();
     }
   });
@@ -86,16 +116,75 @@ export function ChatPrivadoCaso({
     setMensajes(mensajesIniciales);
   }, [mensajesIniciales]);
 
+  async function onSeleccionarArchivo(e: React.ChangeEvent<HTMLInputElement>) {
+    setError(null);
+    const archivo = e.target.files?.[0];
+    e.target.value = "";
+    if (!archivo) return;
+    if (!archivo.type.startsWith("image/")) {
+      setError("Solo puedes adjuntar imágenes.");
+      return;
+    }
+    if (archivo.size > 4 * 1024 * 1024) {
+      setError("La imagen no puede superar 4 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const raw = reader.result?.toString();
+      if (!raw?.startsWith("data:image/")) return;
+      try {
+        const comprimida = await preprocesarImagenCliente(raw, {
+          ladoMax: 960,
+          calidad: 0.82,
+        });
+        if (comprimida.length > MAX_ADJUNTO_BYTES) {
+          setError("La imagen sigue siendo muy pesada.");
+          return;
+        }
+        setAdjuntoPreview(comprimida);
+      } catch {
+        setError("No se pudo procesar la imagen.");
+      }
+    };
+    reader.readAsDataURL(archivo);
+  }
+
   function enviar() {
+    const cuerpo = texto.trim();
+    const adjuntoEnviar = adjuntoPreview;
+    if (!cuerpo && !adjuntoEnviar) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const optimista: MensajeAvistamiento = {
+      id: tempId,
+      avistamientoId,
+      userId: miUserId ?? null,
+      autorNombre: null,
+      contenido: cuerpo || "📷 Foto",
+      adjuntoUrl: adjuntoEnviar,
+      createdAt: new Date(),
+    };
+
+    setMensajes((prev) => [...prev, optimista]);
+    setTexto("");
+    setAdjuntoPreview(null);
+    ajustarAlturaTexto(textareaRef.current);
+
     iniciar(async () => {
       setError(null);
-      const res = await enviarMensajeAvistamiento(avistamientoId, texto);
+      const res = await enviarMensajeAvistamiento(
+        avistamientoId,
+        cuerpo,
+        adjuntoEnviar
+      );
       if (!res.ok) {
+        setMensajes((prev) => prev.filter((m) => m.id !== tempId));
         setError(res.error ?? "No se pudo enviar.");
+        if (cuerpo) setTexto(cuerpo);
+        if (adjuntoEnviar) setAdjuntoPreview(adjuntoEnviar);
         return;
       }
-      setTexto("");
-      ajustarAlturaTexto(textareaRef.current);
       router.refresh();
     });
   }
@@ -115,25 +204,37 @@ export function ChatPrivadoCaso({
     });
   }
 
-  const contraparte =
-    nombreReportante ??
-    (esDueno ? "quien reportó" : "el dueño");
+  function insertarUbicacion() {
+    if (direccionAvistamiento?.trim()) {
+      setTexto((t) =>
+        t ? `${t}\n📍 ${direccionAvistamiento}` : `📍 ${direccionAvistamiento}`
+      );
+      return;
+    }
+    if (latAvistamiento && lngAvistamiento) {
+      const url = `https://maps.google.com/?q=${latAvistamiento},${lngAvistamiento}`;
+      setTexto((t) => (t ? `${t}\n📍 ${url}` : `📍 ${url}`));
+      return;
+    }
+    setError("No hay ubicación registrada para este avistamiento.");
+  }
+
+  function accionEmergencia() {
+    setMostrarReporte(true);
+  }
+
+  const puedeEnviar = Boolean(texto.trim() || adjuntoPreview) && !pendiente;
+
+  let fechaAnteriorTimeline: Date | undefined;
 
   return (
     <section
-      className={`pp-chat-privado${embed ? " pp-chat-privado--embed" : ""}`}
-      aria-label={`Chat avistamiento #${numeroReporte}`}
+      className={`pp-chat-privado pp-chat-privado--coord${embed ? " pp-chat-privado--embed" : ""}`}
+      aria-label={`Coordinación avistamiento #${numeroReporte}`}
     >
-      {!embed && (
-        <header className="pp-chat-privado-header">
-          <div>
-            <strong>Chat privado · Avistamiento #{numeroReporte}</strong>
-            <span>
-              {esDueno
-                ? `Con ${contraparte} sobre ${nombreMascota}`
-                : `Con el dueño de ${nombreMascota}`}
-            </span>
-          </div>
+      {!embed && !ocultarReporte && (
+        <header className="pp-chat-privado-header pp-chat-privado-header--compacto">
+          <strong>Avistamiento #{numeroReporte}</strong>
           <button
             type="button"
             className="pp-chat-reportar-btn"
@@ -144,77 +245,113 @@ export function ChatPrivadoCaso({
         </header>
       )}
 
-      {embed && !ocultarReporte && (
-        <div className="pp-chat-privado-toolbar">
-          <button
-            type="button"
-            className="pp-chat-reportar-btn"
-            onClick={() => setMostrarReporte((v) => !v)}
-          >
-            Reportar conversación
-          </button>
-        </div>
-      )}
-
       {mostrarReporte && !ocultarReporte && (
-        <div className="pp-chat-reporte-panel">
-          <label htmlFor={`reporte-${avistamientoId}`}>
-            Comportamiento sospechoso o contenido inapropiado
-          </label>
+        <div className="pp-chat-reporte-panel pp-chat-reporte-panel--compacto">
           <textarea
-            id={`reporte-${avistamientoId}`}
-            rows={3}
+            rows={2}
             value={motivoReporte}
             onChange={(e) => setMotivoReporte(e.target.value)}
             placeholder="Describe qué ocurrió…"
           />
           <button
             type="button"
-            className="submit-btn"
+            className="pp-coord-btn pp-coord-btn--primario"
             disabled={pendiente}
             onClick={enviarReporte}
           >
-            Enviar reporte a moderación
+            Enviar reporte
           </button>
         </div>
       )}
 
-      <ul className="pp-chat-privado-mensajes">
-        {mensajes.length === 0 && (
+      <ul className="pp-chat-privado-mensajes pp-chat-privado-mensajes--coord">
+        {timeline.length === 0 && (
           <li className="pp-chat-privado-vacio">
-            Inicia la conversación. Solo tú y la otra parte ven estos mensajes.
+            Coordina la búsqueda de {nombreMascota} desde aquí.
           </li>
         )}
-        {mensajes.map((m, i) => {
-          const esPropio = Boolean(miUserId && m.userId === miUserId);
-          const anterior = mensajes[i - 1];
-          const mismoAutor =
-            anterior &&
-            ((anterior.userId && anterior.userId === m.userId) ||
-              (!anterior.userId && !m.userId));
-          const mostrarNombre = !esPropio && !mismoAutor;
-          const nombreVisible =
-            m.autorNombre ?? nombreReportante ?? "Participante";
+        {timeline.map((item) => {
+          const fechaActual = item.fecha;
+          const mostrarFecha = mostrarSeparadorFecha(fechaActual, fechaAnteriorTimeline);
+          fechaAnteriorTimeline = fechaActual;
+
+          if (item.tipo === "evento") {
+            const ev = item.data;
+            return (
+              <li key={`ev-${ev.id}`}>
+                {mostrarFecha && (
+                  <div className="pp-chat-fecha-linea" role="separator">
+                    <span>{etiquetaFechaChat(fechaActual)}</span>
+                  </div>
+                )}
+                <div className="pp-coord-evento">
+                  <span className="pp-coord-evento-icono" aria-hidden>
+                    {iconoEventoTimeline(ev.tipo)}
+                  </span>
+                  <div className="pp-coord-evento-cuerpo">
+                    <strong>{tituloEventoTimeline(ev)}</strong>
+                    {ev.detalle && <p>{ev.detalle}</p>}
+                    <time dateTime={fechaActual.toISOString()}>
+                      {formatearHoraMensaje(fechaActual)}
+                    </time>
+                  </div>
+                </div>
+              </li>
+            );
+          }
+
+          const m = item.data;
+          const esPropio = esMensajePropio(m, miUserId);
+          const cuerpo = textoVisible(m.contenido, m.adjuntoUrl);
+          const tieneImagen = esImagenAdjunta(m.adjuntoUrl);
+          const enviando = esPropio && m.id.startsWith("temp-");
 
           return (
-            <li
-              key={m.id}
-              className={`pp-chat-fila${esPropio ? " pp-chat-fila--propio" : " pp-chat-fila--ajeno"}`}
-            >
+            <li key={m.id}>
+              {mostrarFecha && (
+                <div className="pp-chat-fecha-linea" role="separator">
+                  <span>{etiquetaFechaChat(fechaActual)}</span>
+                </div>
+              )}
               <div
-                className={`pp-chat-burbuja${esPropio ? " pp-chat-burbuja--propio" : " pp-chat-burbuja--ajeno"}`}
+                className={`pp-chat-fila${esPropio ? " pp-chat-fila--propio" : " pp-chat-fila--ajeno"}`}
               >
-                {mostrarNombre && (
-                  <strong className="pp-chat-burbuja-autor">{nombreVisible}</strong>
-                )}
-                <div className="pp-chat-burbuja-cuerpo">
-                  <p className="pp-chat-burbuja-texto">{m.contenido}</p>
-                  <time className="pp-chat-burbuja-hora">
-                    {new Date(m.createdAt).toLocaleTimeString("es-PE", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </time>
+                <div
+                  className={`pp-chat-burbuja pp-chat-burbuja--coord${esPropio ? " pp-chat-burbuja--propio" : " pp-chat-burbuja--ajeno"}`}
+                >
+                  <div className="pp-chat-burbuja-cuerpo">
+                    {tieneImagen && m.adjuntoUrl && (
+                      <button
+                        type="button"
+                        className="pp-chat-adjunto-btn"
+                        onClick={() => window.open(m.adjuntoUrl!, "_blank", "noopener")}
+                      >
+                        <img
+                          src={m.adjuntoUrl}
+                          alt="Imagen adjunta"
+                          className="pp-chat-adjunto-img"
+                        />
+                      </button>
+                    )}
+                    <div className="pp-chat-burbuja-inner">
+                      {cuerpo && (
+                        <span className="pp-chat-burbuja-texto">{cuerpo}</span>
+                      )}
+                      <span className="pp-chat-burbuja-meta">
+                        <time dateTime={fechaActual.toISOString()}>
+                          {formatearHoraMensaje(fechaActual)}
+                        </time>
+                        {esPropio && (
+                          <span
+                            className="pp-chat-leido"
+                            aria-label={enviando ? "Enviando" : "Enviado"}
+                          >
+                            {enviando ? "…" : "✓"}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </li>
@@ -224,29 +361,91 @@ export function ChatPrivadoCaso({
       </ul>
 
       {error && (
-        <p className="auth-alerta auth-alerta--error" role="alert">
+        <p className="auth-alerta auth-alerta--error pp-chat-error" role="alert">
           {error}
         </p>
       )}
 
-      <div className="pp-chat-privado-input">
+      {adjuntoPreview && (
+        <div className="pp-chat-adjunto-preview">
+          <img src={adjuntoPreview} alt="Vista previa" />
+          <button
+            type="button"
+            className="pp-chat-adjunto-quitar"
+            onClick={() => setAdjuntoPreview(null)}
+            aria-label="Quitar imagen"
+          >
+            <Icono nombre="cerrar" size={14} />
+          </button>
+        </div>
+      )}
+
+      <div className="pp-coord-acciones-rapidas" role="toolbar" aria-label="Acciones rápidas">
+        <button
+          type="button"
+          title="Foto"
+          onClick={() => inputArchivoRef.current?.click()}
+          disabled={pendiente}
+        >
+          📷
+        </button>
+        <button type="button" title="Ubicación" onClick={insertarUbicacion}>
+          📍
+        </button>
+        <button
+          type="button"
+          title="Avistamiento"
+          onClick={() =>
+            setTexto((t) =>
+              t
+                ? `${t}\n👀 Avistamiento #${numeroReporte}`
+                : `👀 Avistamiento #${numeroReporte} sobre ${nombreMascota}`
+            )
+          }
+        >
+          👀
+        </button>
+        <button
+          type="button"
+          title="Contacto"
+          onClick={() =>
+            setTexto((t) => (t ? `${t}\n☎ ¿Podemos hablar por teléfono?` : "☎ ¿Podemos hablar por teléfono?"))
+          }
+        >
+          ☎
+        </button>
+        <button type="button" title="Emergencia" onClick={accionEmergencia}>
+          🚨
+        </button>
+      </div>
+
+      <div className="pp-chat-privado-input pp-chat-privado-input--coord">
+        <input
+          ref={inputArchivoRef}
+          type="file"
+          accept="image/*"
+          className="pp-chat-input-archivo"
+          onChange={onSeleccionarArchivo}
+          aria-hidden
+          tabIndex={-1}
+        />
         <textarea
           ref={textareaRef}
           rows={1}
           value={texto}
           onChange={onCambioTexto}
-          placeholder="Escribe un mensaje…"
+          placeholder="Coordina la búsqueda…"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              if (texto.trim()) enviar();
+              if (puedeEnviar) enviar();
             }
           }}
         />
         <button
           type="button"
-          className="pp-chat-enviar-btn"
-          disabled={pendiente || !texto.trim()}
+          className="pp-chat-enviar-btn pp-chat-enviar-btn--coord"
+          disabled={!puedeEnviar}
           onClick={enviar}
           aria-label="Enviar mensaje"
         >

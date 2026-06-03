@@ -241,6 +241,7 @@ export const mensajesAvistamiento = pgTable("mensaje_avistamiento", {
   userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
   autorNombre: text("autor_nombre"),
   contenido: text("contenido").notNull(),
+  adjuntoUrl: text("adjunto_url"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
