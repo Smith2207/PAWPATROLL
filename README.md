@@ -82,10 +82,11 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 
 **Avistamientos:** el reporte siempre se guarda en la base de datos. Si `SMTP_PASS` falla (p. ej. error 535 de Gmail), revisa que sea contraseña de aplicación sin espacios extra. Sin SMTP, el dueño verá un aviso en **Mis mascotas** y debe revisar la ficha en la web.
 
-### Tiempo real (mapa)
+### Tiempo real (mapa y chat)
 
-- **Local (`npm run dev`):** WebSocket en el puerto `3001` (ver `instrumentation.ts`).
-- **Vercel/producción:** define `NEXT_PUBLIC_WS_URL` con un proxy `wss://…` o el mapa se actualiza solo cada ~90 s (respaldo automático).
+- **Local:** `npm run dev` (WebSocket en `:3001`).
+- **Vercel sin complemento:** no uses `https://pawpatroll.vercel.app` como `NEXT_PUBLIC_WS_URL`. Chat ~8 s, mapa ~90 s.
+- **Vercel + tiempo real instantáneo:** despliega el servidor WS en **Railway** (`node scripts/servidor-ws-produccion.mjs`) y configura las 3 variables en Vercel. Guía: **[docs/TIEMPO-REAL-VERCEL.md](docs/TIEMPO-REAL-VERCEL.md)**.
 
 ### Despliegue en Vercel
 

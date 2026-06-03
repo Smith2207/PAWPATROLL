@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "ws:prod": "node scripts/servidor-ws-produccion.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

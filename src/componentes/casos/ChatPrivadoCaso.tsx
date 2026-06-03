@@ -19,6 +19,7 @@ import {
   type EventoCasoTimeline,
 } from "@/lib/chat/timeline";
 import type { CanalTiempoReal } from "@/lib/tiempo-real/tipos";
+import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
 import { Icono } from "@/componentes/ui/Icono";
@@ -106,11 +107,14 @@ export function ChatPrivadoCaso({
 
   const canales: CanalTiempoReal[] = [`avistamiento:${avistamientoId}`];
   if (mascotaId) canales.push(`mascota:${mascotaId}`);
-  useTiempoReal(canales, (ev) => {
+  const { conectado: wsConectado } = useTiempoReal(canales, (ev) => {
     if (ev.tipo === "mensaje:nuevo" && ev.avistamientoId === avistamientoId) {
       router.refresh();
     }
   });
+
+  /** En Vercel no hay WS embebido: refresco cada pocos segundos si no hay WebSocket. */
+  useRespaldoActualizacion(() => router.refresh(), wsConectado, 8_000);
 
   useEffect(() => {
     setMensajes(mensajesIniciales);

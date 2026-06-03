@@ -36,6 +36,25 @@ export function registrarEmisorWs(
   hub().wsEmit = emit;
 }
 
+function publicarEnServidorWsRemoto(evento: EventoTiempoReal) {
+  const url = process.env.WS_PUBLISH_URL?.trim();
+  const secret = process.env.WS_PUBLISH_SECRET?.trim();
+  if (!url || !secret) return;
+
+  void fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${secret}`,
+    },
+    body: JSON.stringify({ evento }),
+  }).catch((err) => {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[PawPatrol] WS publish falló:", err);
+    }
+  });
+}
+
 export function emitirTiempoReal(evento: EventoTiempoReal) {
   const canales = canalesParaEvento(evento);
   const h = hub();
@@ -48,6 +67,11 @@ export function emitirTiempoReal(evento: EventoTiempoReal) {
   }
 
   h.wsEmit?.(canales, evento);
+
+  /** Vercel/serverless: el WS vive en otro proceso (Railway, etc.). */
+  if (!h.wsEmit) {
+    publicarEnServidorWsRemoto(evento);
+  }
 }
 
 export function suscribirCanal(canal: CanalTiempoReal, fn: Suscriptor) {
