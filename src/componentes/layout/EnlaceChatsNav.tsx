@@ -56,7 +56,11 @@ export function EnlaceChatsNav({ pathname, onNavigate }: Props) {
       aria-current={activo ? "page" : undefined}
       aria-label={badge ? `Chats, ${badge} sin leer` : "Chats"}
       onClick={onNavigate}
-      title={badge ? `${badge} mensaje${badge === "1" ? "" : "s"} sin leer` : undefined}
+      title={
+        noLeidos > 0
+          ? `${badge} mensaje${noLeidos === 1 ? "" : "s"} sin leer`
+          : undefined
+      }
     >
       <Icono nombre="mensaje" size={16} className="nav-link-chats-icono" />
       Chats
