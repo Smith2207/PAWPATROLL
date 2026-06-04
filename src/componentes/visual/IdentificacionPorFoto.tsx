@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Icono } from "@/componentes/ui/Icono";
+import { useCamaraReporte } from "@/hooks/useCamaraReporte";
 import { useModales } from "@/contexto/ContextoModales";
 import type {
   CoincidenciaVisual,
@@ -34,7 +35,18 @@ export function IdentificacionPorFoto({
   onCaracteristicas,
 }: Props) {
   const { abrirModal } = useModales();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputGaleriaRef = useRef<HTMLInputElement>(null);
+  const ultimaProcesadaRef = useRef<string | null>(null);
+  const {
+    abrirCamara,
+    capturarFoto,
+    cerrarCamara,
+    camaraVisible,
+    fotosPreview,
+    limpiarFotos,
+    ids,
+  } = useCamaraReporte({ idPrefijo: "busqueda-foto", maxFotos: 1 });
+
   const [preview, setPreview] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,17 +54,59 @@ export function IdentificacionPorFoto({
   const [indiceVacio, setIndiceVacio] = useState(false);
   const [busquedaLista, setBusquedaLista] = useState(false);
 
-  function elegirArchivo() {
-    if (!cargando) inputRef.current?.click();
-  }
-
   function reiniciar() {
     setPreview(null);
     setCoincidencias([]);
     setError(null);
     setIndiceVacio(false);
     setBusquedaLista(false);
-    if (inputRef.current) inputRef.current.value = "";
+    limpiarFotos();
+    ultimaProcesadaRef.current = null;
+    if (inputGaleriaRef.current) inputGaleriaRef.current.value = "";
+  }
+
+  async function procesarImagen(dataUrl: string) {
+    ultimaProcesadaRef.current = dataUrl;
+    setPreview(dataUrl);
+    setCargando(true);
+    setError(null);
+    setCoincidencias([]);
+    setIndiceVacio(false);
+    setBusquedaLista(false);
+
+    try {
+      const attrs = await extraerCaracteristicasDesdeDataUrl(dataUrl);
+      onCaracteristicas?.(attrs);
+    } catch {
+      /* autocompletado opcional */
+    }
+
+    try {
+      const res = await fetch("/api/ia/buscar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagen: dataUrl, ...filtros }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        setError(data.error ?? "No se pudo analizar la foto.");
+        return;
+      }
+      setIndiceVacio(Boolean(data.indiceVacio));
+      setCoincidencias(data.coincidencias ?? []);
+      setBusquedaLista(true);
+      if (data.error && data.indiceVacio) {
+        setError(data.error);
+      } else if (!data.coincidencias?.length && !data.indiceVacio) {
+        setError(
+          "No encontramos coincidencias claras. Prueba otra foto o un ángulo más cercano."
+        );
+      }
+    } catch {
+      setError("Error de red. Comprueba que el servidor esté en marcha.");
+    } finally {
+      setCargando(false);
+    }
   }
 
   async function onArchivo(file: File | undefined) {
@@ -65,68 +119,26 @@ export function IdentificacionPorFoto({
       return;
     }
 
-    setError(null);
-    setCoincidencias([]);
-    setIndiceVacio(false);
-    setBusquedaLista(false);
-
     const reader = new FileReader();
-    reader.onload = async () => {
+    reader.onload = () => {
       const dataUrl = reader.result as string;
-      setPreview(dataUrl);
-      setCargando(true);
-
-      try {
-        const attrs = await extraerCaracteristicasDesdeDataUrl(dataUrl);
-        onCaracteristicas?.(attrs);
-      } catch {
-        /* solo autocompletado interno del formulario */
-      }
-
-      try {
-        const res = await fetch("/api/ia/buscar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imagen: dataUrl, ...filtros }),
-        });
-        const data = await res.json();
-        if (!data.ok) {
-          setError(data.error ?? "No se pudo analizar la foto.");
-          return;
-        }
-        setIndiceVacio(Boolean(data.indiceVacio));
-        setCoincidencias(data.coincidencias ?? []);
-        setBusquedaLista(true);
-        if (data.error && data.indiceVacio) {
-          setError(data.error);
-        } else if (!data.coincidencias?.length && !data.indiceVacio) {
-          setError(
-            "No encontramos coincidencias claras. Prueba otra foto o un ángulo más cercano."
-          );
-        }
-      } catch {
-        setError("Error de red. Comprueba que el servidor esté en marcha.");
-      } finally {
-        setCargando(false);
-      }
+      void procesarImagen(dataUrl);
     };
     reader.readAsDataURL(file);
   }
+
+  useEffect(() => {
+    const foto = fotosPreview[0];
+    if (!foto || foto === ultimaProcesadaRef.current || cargando) return;
+    ultimaProcesadaRef.current = foto;
+    void procesarImagen(foto);
+  }, [fotosPreview, cargando]);
 
   return (
     <div
       className={`foto-ia${compacto ? " foto-ia--compacto" : ""}`}
       aria-busy={cargando}
     >
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="foto-ia-input-oculto"
-        onChange={(e) => onArchivo(e.target.files?.[0])}
-      />
-
       {!compacto && (
         <p className="foto-ia-intro">
           Subí una foto y buscamos mascotas <strong>perdidas</strong> que se
@@ -135,22 +147,73 @@ export function IdentificacionPorFoto({
       )}
 
       {!preview ? (
-        <button
-          type="button"
-          className="foto-ia-zona"
-          onClick={elegirArchivo}
-          disabled={cargando}
-        >
-          <span className="foto-ia-zona-icono">
-            <Icono nombre="camara" size={32} />
-          </span>
-          <span className="foto-ia-zona-titulo">Subir o tomar foto</span>
-          <span className="foto-ia-zona-sub">
-            {compacto
-              ? "Buscamos la mascota perdida más parecida"
-              : "JPG, PNG o WebP · máximo 4 MB"}
-          </span>
-        </button>
+        <>
+          <input
+            ref={inputGaleriaRef}
+            type="file"
+            accept="image/*"
+            className="foto-ia-input-oculto"
+            onChange={(e) => onArchivo(e.target.files?.[0])}
+          />
+          <div className="pp-foto-avistamiento-grid foto-ia-grid">
+            <div
+              className="photo-upload foto-ia-zona"
+              role="button"
+              tabIndex={0}
+              onClick={() => !cargando && inputGaleriaRef.current?.click()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !cargando && inputGaleriaRef.current?.click()
+              }
+            >
+              <span className="foto-ia-zona-icono">
+                <Icono nombre="imagen" size={32} />
+              </span>
+              <span className="foto-ia-zona-titulo">Elegir de galería</span>
+              <span className="foto-ia-zona-sub">JPG, PNG o WebP · máx. 4 MB</span>
+            </div>
+
+            <div
+              className="photo-upload pp-foto-avistamiento-camara foto-ia-zona"
+              role="button"
+              tabIndex={0}
+              onClick={() => !cargando && void abrirCamara()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !cargando && void abrirCamara()
+              }
+            >
+              <span className="foto-ia-zona-icono">
+                <Icono nombre="camara" size={32} />
+              </span>
+              <span className="foto-ia-zona-titulo">Tomar foto</span>
+              <span className="foto-ia-zona-sub">
+                {compacto
+                  ? "Buscamos la mascota más parecida"
+                  : "Usa la cámara del celular"}
+              </span>
+            </div>
+          </div>
+
+          {camaraVisible && (
+            <div className="pp-camara-avistamiento">
+              <video
+                id={ids.video}
+                autoPlay
+                playsInline
+                className="pp-camara-video"
+              />
+              <canvas id={ids.canvas} style={{ display: "none" }} />
+              <div className="pp-camara-acciones">
+                <button type="button" onClick={capturarFoto}>
+                  <Icono nombre="camara" size={16} className="pp-icon--btn" />{" "}
+                  Capturar y buscar
+                </button>
+                <button type="button" onClick={cerrarCamara}>
+                  <Icono nombre="cerrar" size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <div className="foto-ia-preview">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -171,7 +234,7 @@ export function IdentificacionPorFoto({
               <button
                 type="button"
                 className="foto-ia-btn-secundario"
-                onClick={elegirArchivo}
+                onClick={() => inputGaleriaRef.current?.click()}
               >
                 Cambiar foto
               </button>
@@ -276,7 +339,8 @@ export function IdentificacionPorFoto({
                         >
                           {seleccionada ? (
                             <>
-                              <Icono nombre="check" size={14} className="pp-icon--btn" /> Seleccionada
+                              <Icono nombre="check" size={14} className="pp-icon--btn" />{" "}
+                              Seleccionada
                             </>
                           ) : (
                             "Usar en avistamiento"

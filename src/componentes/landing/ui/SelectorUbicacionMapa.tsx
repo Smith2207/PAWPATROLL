@@ -134,11 +134,27 @@ export function SelectorUbicacionMapa({
             className="pp-btn-buscar-direccion"
             disabled={buscandoDireccion || direccionTexto.trim().length < 3}
             onClick={() => void buscarEnMapa()}
+            title="Buscar dirección"
           >
             {buscandoDireccion ? (
               "…"
             ) : (
               <Icono nombre="buscar" size={16} />
+            )}
+          </button>
+          <button
+            type="button"
+            className="pp-btn-ubicarme"
+            disabled={geo.cargando}
+            onClick={() => void geo.obtenerUbicacion()}
+            title="Usar mi ubicación GPS"
+          >
+            {geo.cargando ? (
+              "…"
+            ) : (
+              <>
+                <Icono nombre="objetivo" size={16} /> Ubicarme
+              </>
             )}
           </button>
         </div>
@@ -199,7 +215,9 @@ export function SelectorUbicacionMapa({
             marcadorUsuario={ubicacionLista ? ubicacionActiva : null}
             centrarEnUsuario={ubicacionLista ? ubicacionActiva : undefined}
             onClickMapa={(c) => {
-              void geo.marcarEnMapa(c);
+              void geo.marcarEnMapa(c).then((u) => {
+                onChange?.(u);
+              });
             }}
             mostrarCalor={false}
             mostrarCercos={false}

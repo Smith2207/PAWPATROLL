@@ -49,7 +49,6 @@ export function SubirFotoAvistamiento({ foto, onChange }: Props) {
             ref={inputRef}
             type="file"
             accept="image/*"
-            capture="environment"
             style={{ display: "none" }}
             onChange={(e) => previewFotos(e.target)}
           />

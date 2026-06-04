@@ -147,3 +147,5 @@ export function useCamaraReporte(opciones: Opciones = {}) {
     maxFotos,
   };
 }
+
+export type CamaraReporteApi = ReturnType<typeof useCamaraReporte>;
