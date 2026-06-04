@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Icono } from "@/componentes/ui/Icono";
 import type { CamaraReporteApi } from "@/hooks/useCamaraReporte";
+import { ACCEPT_INPUT_IMAGEN } from "@/lib/imagen/validar-archivo";
 
 type Props = {
   camara: CamaraReporteApi;
@@ -22,6 +23,7 @@ export function FormularioFotosMascota({
     quitarFoto,
     marcarPrincipal,
     maxFotos,
+    errorArchivo,
   } = camara;
 
   return (
@@ -31,6 +33,16 @@ export function FormularioFotosMascota({
       <p className="form-ficha-ayuda" style={{ marginBottom: "0.75rem" }}>
         {ayuda}
       </p>
+
+      {errorArchivo && (
+        <p
+          className="auth-alerta auth-alerta--error"
+          style={{ marginBottom: "0.75rem" }}
+          role="alert"
+        >
+          {errorArchivo}
+        </p>
+      )}
 
       {fotosPreview.length > 0 && (
         <div className="galeria-fotos" style={{ marginBottom: "1rem" }}>
@@ -103,7 +115,7 @@ export function FormularioFotosMascota({
             <input
               ref={inputGaleriaRef}
               type="file"
-              accept="image/*"
+              accept={ACCEPT_INPUT_IMAGEN}
               multiple={maxFotos > 1}
               hidden
               onChange={(e) => previewFotos(e.target)}

@@ -23,10 +23,17 @@ import type { CanalTiempoReal } from "@/lib/tiempo-real/tipos";
 import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
+import {
+  ACCEPT_INPUT_IMAGEN,
+  MENSAJE_IMAGEN_ILEGIBLE,
+  validarArchivoImagen,
+  validarDataUrlImagen,
+} from "@/lib/imagen/validar-archivo";
 import { Icono } from "@/componentes/ui/Icono";
 
 const ALTURA_MAX_TEXTO = 100;
 const MAX_ADJUNTO_BYTES = 900_000;
+const MAX_BYTES_ADJUNTO = 4 * 1024 * 1024;
 
 type Props = {
   avistamientoId: string;
@@ -127,18 +134,25 @@ export function ChatPrivadoCaso({
     const archivo = e.target.files?.[0];
     e.target.value = "";
     if (!archivo) return;
-    if (!archivo.type.startsWith("image/")) {
-      setError("Solo puedes adjuntar imágenes.");
-      return;
-    }
-    if (archivo.size > 4 * 1024 * 1024) {
-      setError("La imagen no puede superar 4 MB.");
+    const validacion = validarArchivoImagen(archivo, {
+      maxBytes: MAX_BYTES_ADJUNTO,
+    });
+    if (!validacion.ok) {
+      setError(validacion.error);
       return;
     }
     const reader = new FileReader();
     reader.onload = async () => {
       const raw = reader.result?.toString();
-      if (!raw?.startsWith("data:image/")) return;
+      if (!raw) {
+        setError(MENSAJE_IMAGEN_ILEGIBLE);
+        return;
+      }
+      const okData = validarDataUrlImagen(raw);
+      if (!okData.ok) {
+        setError(okData.error);
+        return;
+      }
       try {
         const comprimida = await preprocesarImagenCliente(raw, {
           ladoMax: 800,
@@ -150,9 +164,10 @@ export function ChatPrivadoCaso({
         }
         setAdjuntoPreview(comprimida);
       } catch {
-        setError("No se pudo procesar la imagen.");
+        setError(MENSAJE_IMAGEN_ILEGIBLE);
       }
     };
+    reader.onerror = () => setError(MENSAJE_IMAGEN_ILEGIBLE);
     reader.readAsDataURL(archivo);
   }
 
@@ -446,7 +461,7 @@ export function ChatPrivadoCaso({
         <input
           ref={inputArchivoRef}
           type="file"
-          accept="image/*"
+          accept={ACCEPT_INPUT_IMAGEN}
           className="pp-chat-input-archivo"
           onChange={onSeleccionarArchivo}
           aria-hidden

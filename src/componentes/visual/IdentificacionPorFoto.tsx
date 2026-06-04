@@ -16,6 +16,13 @@ import {
   nivelParecido,
   textoParecido,
 } from "@/lib/visual/etiquetas-parecido";
+import {
+  ACCEPT_INPUT_IMAGEN,
+  MENSAJE_IMAGEN_ILEGIBLE,
+  validarArchivoImagen,
+} from "@/lib/imagen/validar-archivo";
+
+const MAX_BYTES_BUSQUEDA = 4 * 1024 * 1024;
 
 type Props = {
   onElegir?: (c: CoincidenciaVisual) => void;
@@ -96,16 +103,19 @@ export function IdentificacionPorFoto({
   }
 
   async function onArchivo(file: File | undefined) {
-    if (!file || !file.type.startsWith("image/")) {
-      setError("Selecciona una imagen (JPG, PNG o WebP).");
-      return;
-    }
-    if (file.size > 4 * 1024 * 1024) {
-      setError("Máximo 4 MB por foto.");
+    if (inputGaleriaRef.current) inputGaleriaRef.current.value = "";
+    if (!file) return;
+
+    const validacion = validarArchivoImagen(file, {
+      maxBytes: MAX_BYTES_BUSQUEDA,
+    });
+    if (!validacion.ok) {
+      setError(validacion.error);
       return;
     }
 
     const reader = new FileReader();
+    reader.onerror = () => setError(MENSAJE_IMAGEN_ILEGIBLE);
     reader.onload = () => {
       const dataUrl = reader.result as string;
       void procesarImagen(dataUrl);
@@ -130,7 +140,7 @@ export function IdentificacionPorFoto({
           <input
             ref={inputGaleriaRef}
             type="file"
-            accept="image/*"
+            accept={ACCEPT_INPUT_IMAGEN}
             className="foto-ia-input-oculto"
             onChange={(e) => onArchivo(e.target.files?.[0])}
           />

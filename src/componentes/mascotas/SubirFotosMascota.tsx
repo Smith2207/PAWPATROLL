@@ -1,9 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Icono } from "@/componentes/ui/Icono";
+import {
+  ACCEPT_INPUT_IMAGEN,
+  MENSAJE_IMAGEN_ILEGIBLE,
+  validarArchivoImagen,
+} from "@/lib/imagen/validar-archivo";
 
 const MAX_FOTOS = 5;
+const MAX_BYTES_FOTO = 8 * 1024 * 1024;
 
 function leerArchivo(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -21,6 +27,7 @@ type Props = {
 
 export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function agregarArchivos() {
     if (!inputRef.current?.files?.length) return;
@@ -28,9 +35,25 @@ export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
     if (restantes <= 0) return;
 
     const archivos = Array.from(inputRef.current.files).slice(0, restantes);
-    const nuevas = await Promise.all(archivos.map(leerArchivo));
-    onFotosChange([...fotos, ...nuevas].slice(0, MAX_FOTOS));
     inputRef.current.value = "";
+
+    for (const archivo of archivos) {
+      const validacion = validarArchivoImagen(archivo, {
+        maxBytes: MAX_BYTES_FOTO,
+      });
+      if (!validacion.ok) {
+        setError(validacion.error);
+        return;
+      }
+    }
+
+    try {
+      const nuevas = await Promise.all(archivos.map(leerArchivo));
+      setError(null);
+      onFotosChange([...fotos, ...nuevas].slice(0, MAX_FOTOS));
+    } catch {
+      setError(MENSAJE_IMAGEN_ILEGIBLE);
+    }
   }
 
   function quitar(indice: number) {
@@ -113,7 +136,7 @@ export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept={ACCEPT_INPUT_IMAGEN}
             multiple
             hidden
             onChange={agregarArchivos}
@@ -125,9 +148,15 @@ export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
             Subir fotos ({fotos.length}/{MAX_FOTOS})
           </div>
           <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: 4 }}>
-            JPG o PNG. La primera foto es la principal.
+            JPG, PNG o WebP. La primera foto es la principal.
           </div>
         </div>
+      )}
+
+      {error && (
+        <p className="auth-alerta auth-alerta--error" role="alert">
+          {error}
+        </p>
       )}
     </div>
   );

@@ -1,6 +1,11 @@
 "use client";
 
 import { actualizarImagenPerfil } from "@/actions/autenticacion";
+import {
+  ACCEPT_INPUT_IMAGEN,
+  MENSAJE_IMAGEN_ILEGIBLE,
+  validarArchivoImagen,
+} from "@/lib/imagen/validar-archivo";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -79,8 +84,11 @@ export function EditorFotoPerfil({ imagenInicial, iniciales, nombre }: Props) {
     const archivo = inputRef.current?.files?.[0];
     if (!archivo) return;
 
-    if (!archivo.type.startsWith("image/")) {
-      setError("El archivo debe ser una imagen.");
+    const validacion = validarArchivoImagen(archivo, {
+      maxBytes: 4 * 1024 * 1024,
+    });
+    if (!validacion.ok) {
+      setError(validacion.error);
       inputRef.current!.value = "";
       return;
     }
@@ -89,7 +97,7 @@ export function EditorFotoPerfil({ imagenInicial, iniciales, nombre }: Props) {
       const dataUrl = await leerArchivo(archivo);
       await guardarImagen(dataUrl);
     } catch {
-      setError("No se pudo leer la imagen. Intenta con otra.");
+      setError(MENSAJE_IMAGEN_ILEGIBLE);
     } finally {
       if (inputRef.current) inputRef.current.value = "";
     }
@@ -105,7 +113,7 @@ export function EditorFotoPerfil({ imagenInicial, iniciales, nombre }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={ACCEPT_INPUT_IMAGEN}
         hidden
         onChange={elegirArchivo}
         aria-label="Elegir foto de perfil"

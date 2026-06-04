@@ -1,4 +1,8 @@
 import type { FiltrosBusquedaVisual } from "@/lib/visual/rerank";
+import {
+  validarArchivoImagen,
+  validarDataUrlImagen,
+} from "@/lib/imagen/validar-archivo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,11 +44,9 @@ export async function POST(req: Request) {
       const fd = await req.formData();
       const archivo = fd.get("imagen") ?? fd.get("foto");
       if (archivo instanceof File) {
-        if (archivo.size > MAX_BYTES) {
-          return Response.json(
-            { ok: false, error: "La imagen supera 4 MB." },
-            { status: 400 }
-          );
+        const validacion = validarArchivoImagen(archivo, { maxBytes: MAX_BYTES });
+        if (!validacion.ok) {
+          return Response.json({ ok: false, error: validacion.error }, { status: 400 });
         }
         const buf = Buffer.from(await archivo.arrayBuffer());
         const mime = archivo.type || "image/jpeg";
@@ -55,7 +57,7 @@ export async function POST(req: Request) {
       }
     }
 
-    if (!dataUrl?.startsWith("data:image/")) {
+    if (!dataUrl) {
       return Response.json(
         {
           ok: false,
@@ -63,6 +65,11 @@ export async function POST(req: Request) {
         },
         { status: 400 }
       );
+    }
+
+    const okData = validarDataUrlImagen(dataUrl);
+    if (!okData.ok) {
+      return Response.json({ ok: false, error: okData.error }, { status: 400 });
     }
 
     const { buscarSimilaresPorFoto } = await import("@/lib/visual/indice-visual");

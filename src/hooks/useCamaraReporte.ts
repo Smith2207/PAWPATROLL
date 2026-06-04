@@ -2,16 +2,25 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { preprocesarImagenesCliente } from "@/lib/imagen/preprocesar-cliente";
+import {
+  MENSAJE_IMAGEN_ILEGIBLE,
+  validarArchivoImagen,
+  validarDataUrlImagen,
+} from "@/lib/imagen/validar-archivo";
+
+const MAX_BYTES_POR_DEFECTO = 8 * 1024 * 1024;
 
 type Opciones = {
   /** Prefijo para ids de video/canvas (evita colisiones entre modales) */
   idPrefijo?: string;
   maxFotos?: number;
+  maxBytesArchivo?: number;
 };
 
 export function useCamaraReporte(opciones: Opciones = {}) {
   const idPrefijo = opciones.idPrefijo ?? "reporte";
   const maxFotos = opciones.maxFotos ?? 5;
+  const maxBytesArchivo = opciones.maxBytesArchivo ?? MAX_BYTES_POR_DEFECTO;
   const ids = useMemo(
     () => ({
       video: `camara-video-${idPrefijo}`,
@@ -25,6 +34,7 @@ export function useCamaraReporte(opciones: Opciones = {}) {
   const fotosPreviewRef = useRef<string[]>([]);
   fotosPreviewRef.current = fotosPreview;
   const [camaraVisible, setCamaraVisible] = useState(false);
+  const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
 
   const previewFotos = useCallback(
     (input: HTMLInputElement) => {
@@ -39,28 +49,55 @@ export function useCamaraReporte(opciones: Opciones = {}) {
 
       const archivos = files.slice(0, cupo);
 
-      void (async () => {
-        const urls = await Promise.all(
-          archivos.map(
-            (file) =>
-              new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target?.result as string);
-                reader.readAsDataURL(file);
-              })
-          )
-        );
-        const procesadas = await preprocesarImagenesCliente(urls);
-        if (maxFotos <= 1) {
-          setFotosPreview(procesadas.slice(0, 1));
+      for (const archivo of archivos) {
+        const validacion = validarArchivoImagen(archivo, {
+          maxBytes: maxBytesArchivo,
+        });
+        if (!validacion.ok) {
+          setErrorArchivo(validacion.error);
           return;
         }
-        setFotosPreview((actual) =>
-          [...actual, ...procesadas].slice(0, maxFotos)
-        );
+      }
+
+      void (async () => {
+        try {
+          const urls = await Promise.all(
+            archivos.map(
+              (file) =>
+                new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = (e) => {
+                    const dataUrl = e.target?.result as string;
+                    const okData = validarDataUrlImagen(dataUrl);
+                    if (!okData.ok) {
+                      reject(new Error(okData.error));
+                      return;
+                    }
+                    resolve(dataUrl);
+                  };
+                  reader.onerror = () =>
+                    reject(new Error(MENSAJE_IMAGEN_ILEGIBLE));
+                  reader.readAsDataURL(file);
+                })
+            )
+          );
+          const procesadas = await preprocesarImagenesCliente(urls);
+          setErrorArchivo(null);
+          if (maxFotos <= 1) {
+            setFotosPreview(procesadas.slice(0, 1));
+            return;
+          }
+          setFotosPreview((actual) =>
+            [...actual, ...procesadas].slice(0, maxFotos)
+          );
+        } catch (err) {
+          setErrorArchivo(
+            err instanceof Error ? err.message : MENSAJE_IMAGEN_ILEGIBLE
+          );
+        }
       })();
     },
-    [maxFotos]
+    [maxBytesArchivo, maxFotos]
   );
 
   const cerrarStream = useCallback(() => {
@@ -108,7 +145,12 @@ export function useCamaraReporte(opciones: Opciones = {}) {
     setCamaraVisible(false);
   }, [cerrarStream]);
 
-  const limpiarFotos = useCallback(() => setFotosPreview([]), []);
+  const limpiarFotos = useCallback(() => {
+    setFotosPreview([]);
+    setErrorArchivo(null);
+  }, []);
+
+  const limpiarErrorArchivo = useCallback(() => setErrorArchivo(null), []);
 
   const quitarFoto = useCallback((indice: number) => {
     setFotosPreview((prev) => prev.filter((_, i) => i !== indice));
@@ -135,11 +177,13 @@ export function useCamaraReporte(opciones: Opciones = {}) {
   return {
     fotosPreview,
     camaraVisible,
+    errorArchivo,
     previewFotos,
     abrirCamara,
     capturarFoto,
     cerrarCamara,
     limpiarFotos,
+    limpiarErrorArchivo,
     quitarFoto,
     marcarPrincipal,
     establecerFotos,

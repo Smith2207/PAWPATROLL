@@ -1,4 +1,5 @@
 import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
+import { validarArchivoImagen } from "@/lib/imagen/validar-archivo";
 
 const MAX_ARCHIVO = 4 * 1024 * 1024;
 const MAX_DATA_URL = 900_000;
@@ -19,17 +20,9 @@ export async function POST(req: Request) {
 
     let adjuntoUrl: string | null = null;
     if (archivo instanceof File && archivo.size > 0) {
-      if (!archivo.type.startsWith("image/")) {
-        return Response.json(
-          { ok: false, error: "Solo se permiten imágenes." },
-          { status: 400 }
-        );
-      }
-      if (archivo.size > MAX_ARCHIVO) {
-        return Response.json(
-          { ok: false, error: "La imagen no puede superar 4 MB." },
-          { status: 400 }
-        );
+      const validacion = validarArchivoImagen(archivo, { maxBytes: MAX_ARCHIVO });
+      if (!validacion.ok) {
+        return Response.json({ ok: false, error: validacion.error }, { status: 400 });
       }
       const buf = Buffer.from(await archivo.arrayBuffer());
       const mime = archivo.type || "image/jpeg";

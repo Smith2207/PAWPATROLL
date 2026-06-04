@@ -1,8 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import {
+  MENSAJE_IMAGEN_ILEGIBLE,
+  validarArchivoImagen,
+} from "@/lib/imagen/validar-archivo";
 
 const MAX_FOTOS = 5;
+const MAX_BYTES_FOTO = 8 * 1024 * 1024;
 
 function leerArchivo(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -15,6 +20,7 @@ function leerArchivo(file: File): Promise<string> {
 
 export function useFotosMascota(fotosIniciales: string[] = []) {
   const [fotos, setFotos] = useState<string[]>(fotosIniciales);
+  const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
 
   const agregarDesdeInput = useCallback(
     async (input: HTMLInputElement | null) => {
@@ -24,9 +30,25 @@ export function useFotosMascota(fotosIniciales: string[] = []) {
       if (restantes <= 0) return;
 
       const archivos = Array.from(input.files).slice(0, restantes);
-      const nuevas = await Promise.all(archivos.map(leerArchivo));
-      setFotos((prev) => [...prev, ...nuevas].slice(0, MAX_FOTOS));
       input.value = "";
+
+      for (const archivo of archivos) {
+        const validacion = validarArchivoImagen(archivo, {
+          maxBytes: MAX_BYTES_FOTO,
+        });
+        if (!validacion.ok) {
+          setErrorArchivo(validacion.error);
+          return;
+        }
+      }
+
+      try {
+        const nuevas = await Promise.all(archivos.map(leerArchivo));
+        setErrorArchivo(null);
+        setFotos((prev) => [...prev, ...nuevas].slice(0, MAX_FOTOS));
+      } catch {
+        setErrorArchivo(MENSAJE_IMAGEN_ILEGIBLE);
+      }
     },
     [fotos.length]
   );
@@ -56,5 +78,7 @@ export function useFotosMascota(fotosIniciales: string[] = []) {
     marcarPrincipal,
     maxFotos: MAX_FOTOS,
     puedeAgregar: fotos.length < MAX_FOTOS,
+    errorArchivo,
+    limpiarErrorArchivo: () => setErrorArchivo(null),
   };
 }
