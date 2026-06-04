@@ -11,16 +11,10 @@ type Props = {
 
 export function SubirFotoAvistamiento({ foto, onChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const {
-    fotosPreview,
-    camaraVisible,
-    previewFotos,
-    abrirCamara,
-    capturarFoto,
-    cerrarCamara,
-    limpiarFotos,
-    ids,
-  } = useCamaraReporte({ idPrefijo: "avistamiento", maxFotos: 1 });
+  const { fotosPreview, previewFotos, limpiarFotos } = useCamaraReporte({
+    idPrefijo: "avistamiento",
+    maxFotos: 1,
+  });
 
   useEffect(() => {
     if (fotosPreview[0] && fotosPreview[0] !== foto) {
@@ -37,55 +31,25 @@ export function SubirFotoAvistamiento({ foto, onChange }: Props) {
         Se adjunta al reporte como evidencia para el dueño.
       </p>
 
-      <div className="pp-foto-avistamiento-grid">
-        <div
-          className="photo-upload"
-          role="button"
-          tabIndex={0}
-          onClick={() => inputRef.current?.click()}
-          onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={(e) => previewFotos(e.target)}
-          />
-          <div className="photo-upload-icon">
-            <Icono nombre="imagen" size={28} />
-          </div>
-          <div className="photo-upload-text">Subir imagen</div>
+      <div
+        className="photo-upload"
+        role="button"
+        tabIndex={0}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => previewFotos(e.target)}
+        />
+        <div className="photo-upload-icon">
+          <Icono nombre="imagen" size={28} />
         </div>
-
-        <div
-          className="photo-upload pp-foto-avistamiento-camara"
-          role="button"
-          tabIndex={0}
-          onClick={() => void abrirCamara()}
-          onKeyDown={(e) => e.key === "Enter" && void abrirCamara()}
-        >
-          <div className="photo-upload-icon">
-            <Icono nombre="camara" size={28} />
-          </div>
-          <div className="photo-upload-text">Tomar foto</div>
-        </div>
+        <div className="photo-upload-text">Elegir de galería</div>
       </div>
-
-      {camaraVisible && (
-        <div className="pp-camara-avistamiento">
-          <video id={ids.video} autoPlay playsInline className="pp-camara-video" />
-          <canvas id={ids.canvas} style={{ display: "none" }} />
-          <div className="pp-camara-acciones">
-            <button type="button" onClick={capturarFoto}>
-              <Icono nombre="camara" size={16} className="pp-icon--btn" /> Capturar
-            </button>
-            <button type="button" onClick={cerrarCamara}>
-              <Icono nombre="cerrar" size={16} />
-            </button>
-          </div>
-        </div>
-      )}
 
       {preview && (
         <div className="pp-foto-avistamiento-preview">

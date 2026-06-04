@@ -13,7 +13,7 @@ type Props = {
 export function FormularioFotosMascota({
   camara,
   titulo = "Fotos de la mascota *",
-  ayuda = "Elige desde tu galería o toma una foto nueva. La primera será la principal.",
+  ayuda = "Toca para elegir foto (galería o cámara). La primera será la principal.",
 }: Props) {
   const inputGaleriaRef = useRef<HTMLInputElement>(null);
   const {
@@ -22,11 +22,6 @@ export function FormularioFotosMascota({
     quitarFoto,
     marcarPrincipal,
     maxFotos,
-    abrirCamara,
-    capturarFoto,
-    cerrarCamara,
-    camaraVisible,
-    ids,
   } = camara;
 
   return (
@@ -96,68 +91,32 @@ export function FormularioFotosMascota({
 
       {fotosPreview.length < maxFotos && (
         <>
-          <div className="pp-foto-avistamiento-grid">
-            <div
-              className="photo-upload"
-              role="button"
-              tabIndex={0}
-              onClick={() => inputGaleriaRef.current?.click()}
-              onKeyDown={(e) =>
-                e.key === "Enter" && inputGaleriaRef.current?.click()
-              }
-            >
-              <input
-                ref={inputGaleriaRef}
-                type="file"
-                accept="image/*"
-                multiple={maxFotos > 1}
-                hidden
-                onChange={(e) => previewFotos(e.target)}
-              />
-              <div className="photo-upload-icon">
-                <Icono nombre="imagen" size={28} />
-              </div>
-              <div className="photo-upload-text">Elegir de galería</div>
+          <div
+            className="photo-upload"
+            role="button"
+            tabIndex={0}
+            onClick={() => inputGaleriaRef.current?.click()}
+            onKeyDown={(e) =>
+              e.key === "Enter" && inputGaleriaRef.current?.click()
+            }
+          >
+            <input
+              ref={inputGaleriaRef}
+              type="file"
+              accept="image/*"
+              multiple={maxFotos > 1}
+              hidden
+              onChange={(e) => previewFotos(e.target)}
+            />
+            <div className="photo-upload-icon">
+              <Icono nombre="imagen" size={28} />
             </div>
-
-            <div
-              className="photo-upload pp-foto-avistamiento-camara"
-              role="button"
-              tabIndex={0}
-              onClick={() => void abrirCamara()}
-              onKeyDown={(e) => e.key === "Enter" && void abrirCamara()}
-            >
-              <div className="photo-upload-icon">
-                <Icono nombre="camara" size={28} />
-              </div>
-              <div className="photo-upload-text">Tomar foto</div>
-            </div>
+            <div className="photo-upload-text">Elegir de galería</div>
           </div>
 
           <p className="form-ficha-ayuda" style={{ marginTop: "0.5rem" }}>
             {fotosPreview.length}/{maxFotos} fotos · JPG, PNG o WebP
           </p>
-
-          {camaraVisible && (
-            <div className="pp-camara-avistamiento">
-              <video
-                id={ids.video}
-                autoPlay
-                playsInline
-                className="pp-camara-video"
-              />
-              <canvas id={ids.canvas} style={{ display: "none" }} />
-              <div className="pp-camara-acciones">
-                <button type="button" onClick={capturarFoto}>
-                  <Icono nombre="camara" size={16} className="pp-icon--btn" />{" "}
-                  Capturar
-                </button>
-                <button type="button" onClick={cerrarCamara}>
-                  <Icono nombre="cerrar" size={16} />
-                </button>
-              </div>
-            </div>
-          )}
         </>
       )}
     </>

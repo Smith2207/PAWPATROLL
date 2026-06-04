@@ -72,7 +72,7 @@
 
 .pp-busqueda-direccion {
   display: grid !important;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   gap: 0.35rem;
   align-items: center;
 }
@@ -99,40 +99,6 @@
 .pp-btn-buscar-direccion:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.pp-btn-ubicarme {
-  flex-shrink: 0;
-  height: 2.5rem;
-  padding: 0 0.6rem;
-  border: none;
-  border-radius: 10px;
-  background: #059669;
-  color: white;
-  font-size: 0.72rem;
-  font-weight: 800;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  white-space: nowrap;
-}
-
-.pp-btn-ubicarme:disabled {
-  opacity: 0.55;
-  cursor: wait;
-}
-
-@media (max-width: 480px) {
-  .pp-busqueda-direccion {
-    grid-template-columns: auto 1fr auto;
-  }
-
-  .pp-btn-ubicarme {
-    grid-column: 1 / -1;
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 .pp-sugerencias-direccion {

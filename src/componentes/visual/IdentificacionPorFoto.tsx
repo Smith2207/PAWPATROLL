@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Icono } from "@/componentes/ui/Icono";
-import { useCamaraReporte } from "@/hooks/useCamaraReporte";
 import { useModales } from "@/contexto/ContextoModales";
 import type {
   CoincidenciaVisual,
@@ -36,16 +35,6 @@ export function IdentificacionPorFoto({
 }: Props) {
   const { abrirModal } = useModales();
   const inputGaleriaRef = useRef<HTMLInputElement>(null);
-  const ultimaProcesadaRef = useRef<string | null>(null);
-  const {
-    abrirCamara,
-    capturarFoto,
-    cerrarCamara,
-    camaraVisible,
-    fotosPreview,
-    limpiarFotos,
-    ids,
-  } = useCamaraReporte({ idPrefijo: "busqueda-foto", maxFotos: 1 });
 
   const [preview, setPreview] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -60,13 +49,10 @@ export function IdentificacionPorFoto({
     setError(null);
     setIndiceVacio(false);
     setBusquedaLista(false);
-    limpiarFotos();
-    ultimaProcesadaRef.current = null;
     if (inputGaleriaRef.current) inputGaleriaRef.current.value = "";
   }
 
   async function procesarImagen(dataUrl: string) {
-    ultimaProcesadaRef.current = dataUrl;
     setPreview(dataUrl);
     setCargando(true);
     setError(null);
@@ -127,13 +113,6 @@ export function IdentificacionPorFoto({
     reader.readAsDataURL(file);
   }
 
-  useEffect(() => {
-    const foto = fotosPreview[0];
-    if (!foto || foto === ultimaProcesadaRef.current || cargando) return;
-    ultimaProcesadaRef.current = foto;
-    void procesarImagen(foto);
-  }, [fotosPreview, cargando]);
-
   return (
     <div
       className={`foto-ia${compacto ? " foto-ia--compacto" : ""}`}
@@ -155,64 +134,22 @@ export function IdentificacionPorFoto({
             className="foto-ia-input-oculto"
             onChange={(e) => onArchivo(e.target.files?.[0])}
           />
-          <div className="pp-foto-avistamiento-grid foto-ia-grid">
-            <div
-              className="photo-upload foto-ia-zona"
-              role="button"
-              tabIndex={0}
-              onClick={() => !cargando && inputGaleriaRef.current?.click()}
-              onKeyDown={(e) =>
-                e.key === "Enter" && !cargando && inputGaleriaRef.current?.click()
-              }
-            >
-              <span className="foto-ia-zona-icono">
-                <Icono nombre="imagen" size={32} />
-              </span>
-              <span className="foto-ia-zona-titulo">Elegir de galería</span>
-              <span className="foto-ia-zona-sub">JPG, PNG o WebP · máx. 4 MB</span>
-            </div>
-
-            <div
-              className="photo-upload pp-foto-avistamiento-camara foto-ia-zona"
-              role="button"
-              tabIndex={0}
-              onClick={() => !cargando && void abrirCamara()}
-              onKeyDown={(e) =>
-                e.key === "Enter" && !cargando && void abrirCamara()
-              }
-            >
-              <span className="foto-ia-zona-icono">
-                <Icono nombre="camara" size={32} />
-              </span>
-              <span className="foto-ia-zona-titulo">Tomar foto</span>
-              <span className="foto-ia-zona-sub">
-                {compacto
-                  ? "Buscamos la mascota más parecida"
-                  : "Usa la cámara del celular"}
-              </span>
-            </div>
-          </div>
-
-          {camaraVisible && (
-            <div className="pp-camara-avistamiento">
-              <video
-                id={ids.video}
-                autoPlay
-                playsInline
-                className="pp-camara-video"
-              />
-              <canvas id={ids.canvas} style={{ display: "none" }} />
-              <div className="pp-camara-acciones">
-                <button type="button" onClick={capturarFoto}>
-                  <Icono nombre="camara" size={16} className="pp-icon--btn" />{" "}
-                  Capturar y buscar
-                </button>
-                <button type="button" onClick={cerrarCamara}>
-                  <Icono nombre="cerrar" size={16} />
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            type="button"
+            className="foto-ia-zona"
+            onClick={() => !cargando && inputGaleriaRef.current?.click()}
+            disabled={cargando}
+          >
+            <span className="foto-ia-zona-icono">
+              <Icono nombre="imagen" size={32} />
+            </span>
+            <span className="foto-ia-zona-titulo">Elegir de galería</span>
+            <span className="foto-ia-zona-sub">
+              {compacto
+                ? "Galería o cámara · máx. 4 MB"
+                : "JPG, PNG o WebP · galería o cámara · máx. 4 MB"}
+            </span>
+          </button>
         </>
       ) : (
         <div className="foto-ia-preview">

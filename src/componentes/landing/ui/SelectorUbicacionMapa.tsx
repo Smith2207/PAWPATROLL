@@ -142,21 +142,6 @@ export function SelectorUbicacionMapa({
               <Icono nombre="buscar" size={16} />
             )}
           </button>
-          <button
-            type="button"
-            className="pp-btn-ubicarme"
-            disabled={geo.cargando}
-            onClick={() => void geo.obtenerUbicacion()}
-            title="Usar mi ubicación GPS"
-          >
-            {geo.cargando ? (
-              "…"
-            ) : (
-              <>
-                <Icono nombre="objetivo" size={16} /> Ubicarme
-              </>
-            )}
-          </button>
         </div>
 
         {listaAbierta && sugerencias.length > 0 && (
@@ -198,7 +183,7 @@ export function SelectorUbicacionMapa({
               <Icono nombre="ubicacion" size={16} />
               Escribe una dirección y pulsa{" "}
               <Icono nombre="buscar" size={14} className="pp-icon--btn" />
-              , <strong>Ubicarme</strong> o toca el mapa
+              , el botón del mapa o toca el mapa
             </>
           )}
         </div>
