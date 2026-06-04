@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { reverseGeocodeGoogle } from "@/lib/geo/proveedor-maps";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -16,19 +17,33 @@ export async function GET(request: Request) {
   }
 
   try {
+    const google = await reverseGeocodeGoogle(latN, lngN);
+    if (google) {
+      return NextResponse.json({ direccion: google, proveedor: "google" });
+    }
+
+    const precisionParam = searchParams.get("precision");
+    const precisionN = precisionParam ? Number.parseFloat(precisionParam) : null;
+    const zoom =
+      precisionN != null && Number.isFinite(precisionN) && precisionN <= 30
+        ? "19"
+        : precisionN != null && Number.isFinite(precisionN) && precisionN <= 80
+          ? "18"
+          : "17";
+
     const url = new URL("https://nominatim.openstreetmap.org/reverse");
     url.searchParams.set("lat", String(latN));
     url.searchParams.set("lon", String(lngN));
     url.searchParams.set("format", "json");
     url.searchParams.set("accept-language", "es");
-    url.searchParams.set("zoom", "18");
+    url.searchParams.set("zoom", zoom);
 
     const res = await fetch(url.toString(), {
       headers: {
         "User-Agent": "PawPatroll/1.0 (app mascotas perdidas)",
         Accept: "application/json",
       },
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -59,11 +74,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       direccion: direccion.trim() || null,
+      proveedor: "nominatim",
     });
   } catch {
     return NextResponse.json(
       { error: "Error al consultar la dirección." },
-      { status: 502 }
+      { status: 500 }
     );
   }
 }

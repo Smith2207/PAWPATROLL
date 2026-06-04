@@ -28,12 +28,18 @@ export async function buscarLugaresPorTexto(
 /** Convierte coordenadas en dirección legible (estilo mapas). */
 export async function obtenerDireccionDesdeCoords(
   lat: number,
-  lng: number
+  lng: number,
+  precisionMetros?: number
 ): Promise<string | null> {
   try {
-    const res = await fetch(
-      `/api/geo/reverse?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`
-    );
+    const params = new URLSearchParams({
+      lat: String(lat),
+      lng: String(lng),
+    });
+    if (precisionMetros != null && Number.isFinite(precisionMetros)) {
+      params.set("precision", String(Math.round(precisionMetros)));
+    }
+    const res = await fetch(`/api/geo/reverse?${params.toString()}`);
     if (!res.ok) return null;
     const data = (await res.json()) as { direccion?: string | null };
     return data.direccion?.trim() || null;

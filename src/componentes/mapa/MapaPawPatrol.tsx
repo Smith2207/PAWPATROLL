@@ -32,6 +32,7 @@ import {
   type Coordenadas,
   type UbicacionSeleccionada,
 } from "@/lib/geo/tipos";
+import { zoomMapaParaPrecision } from "@/lib/geo/precision-gps";
 import {
   COLOR_AVISTAMIENTO_SIN_VINCULO,
   mapaEstilosPorMascota,
@@ -761,14 +762,24 @@ export function MapaPawPatrol({
       /* mapa sin layout */
     }
 
-    volarAPuntoSeguro(mapa, contenedor, punto);
+    volarAPuntoSeguro(
+      mapa,
+      contenedor,
+      punto,
+      zoomMapaParaPrecision(punto.precisionMetros)
+    );
 
     const wrap = contenedor?.parentElement;
     let ro: ResizeObserver | undefined;
     let timer = 0;
 
     const reintentarVuelo = () => {
-      volarAPuntoSeguro(mapa, contenedor, punto);
+      volarAPuntoSeguro(
+        mapa,
+        contenedor,
+        punto,
+        zoomMapaParaPrecision(punto.precisionMetros)
+      );
     };
 
     if (wrap) {

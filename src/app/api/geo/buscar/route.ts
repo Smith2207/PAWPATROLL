@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buscarLugaresGoogle } from "@/lib/geo/proveedor-maps";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -9,6 +10,11 @@ export async function GET(request: Request) {
   }
 
   try {
+    const google = await buscarLugaresGoogle(q);
+    if (google.length > 0) {
+      return NextResponse.json({ resultados: google, proveedor: "google" });
+    }
+
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("q", q);
     url.searchParams.set("format", "json");
@@ -22,7 +28,7 @@ export async function GET(request: Request) {
         "User-Agent": "PawPatroll/1.0 (app mascotas perdidas)",
         Accept: "application/json",
       },
-      next: { revalidate: 300 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -44,11 +50,11 @@ export async function GET(request: Request) {
       etiqueta: item.display_name ?? q,
     }));
 
-    return NextResponse.json({ resultados });
+    return NextResponse.json({ resultados, proveedor: "nominatim" });
   } catch {
     return NextResponse.json(
       { error: "Error al buscar en el mapa." },
-      { status: 502 }
+      { status: 500 }
     );
   }
 }
