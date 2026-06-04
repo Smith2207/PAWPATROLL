@@ -66,7 +66,7 @@ export function SeccionMascotasRecientes({
           <div className="section-eyebrow">Comunidad</div>
           <div className="section-title">Mascotas perdidas y en seguimiento</div>
           <p className="section-sub">
-            Fichas públicas activas. Para reportar dónde viste una, usa «Vi una
+            Páginas públicas activas. Para reportar dónde viste una, usa «Vi una
             mascota».
           </p>
         </div>

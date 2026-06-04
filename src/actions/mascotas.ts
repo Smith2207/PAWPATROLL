@@ -387,7 +387,7 @@ export async function crearMascota(
 
   return {
     ok: true,
-    mensaje: "Ficha de mascota creada.",
+    mensaje: "Mascota creada.",
     id: insertada.id,
     slug: insertada.slug,
   };
@@ -416,7 +416,7 @@ export async function actualizarMascota(
   if (!esTipoMascotaPermitido(actual.tipo)) {
     return {
       ok: false,
-      error: "Esta ficha no es válida en PawPatroll (solo perros y gatos).",
+      error: "Esta mascota no es válida en PawPatroll (solo perros y gatos).",
     };
   }
 
@@ -443,7 +443,7 @@ export async function actualizarMascota(
 
   revalidarRutasMascota(id, actual.slug);
 
-  return { ok: true, mensaje: "Ficha actualizada." };
+  return { ok: true, mensaje: "Mascota actualizada." };
 }
 
 export async function cambiarEstadoMascota(
@@ -475,7 +475,7 @@ export async function cambiarEstadoMascota(
   if (!esTipoMascotaPermitido(actual.tipo)) {
     return {
       ok: false,
-      error: "Esta ficha no es válida en PawPatrol (solo perros y gatos).",
+      error: "Esta mascota no es válida en PawPatrol (solo perros y gatos).",
     };
   }
 
@@ -594,7 +594,7 @@ export async function cambiarEstadoMascota(
   revalidarRutasMascota(id, actual.slug);
 
   const mensajes: Partial<Record<EstadoMascota, string>> = {
-    PERDIDA: "Mascota marcada como perdida. La ficha pública ya está visible.",
+    PERDIDA: "Mascota marcada como perdida. La página pública ya está visible.",
     ENCONTRADA: "Marcada como encontrada. La comunidad puede ver el aviso.",
     REUNIDA: "¡Felicidades! Marcada como reunida con su familia.",
     EN_CASA: "Estado actualizado: en casa.",

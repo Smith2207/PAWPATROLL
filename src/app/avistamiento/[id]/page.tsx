@@ -103,7 +103,7 @@ export default async function PaginaChatAvistamiento({ params }: Props) {
             className="btn-mascota btn-mascota--secundario"
             style={{ marginTop: "1rem" }}
           >
-            Ver ficha pública
+            Ver página pública
           </Link>
         )}
       </div>

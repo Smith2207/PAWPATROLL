@@ -49,7 +49,7 @@ export default async function PaginaEditarMascota({ params }: Props) {
             className="btn-mascota pp-enlace-icono"
           >
             <Icono nombre="mensaje" size={16} className="pp-icon--btn" />
-            Chats y avistamientos
+            Mensajes y avistamientos
           </Link>
         )}
       </div>
@@ -63,7 +63,7 @@ export default async function PaginaEditarMascota({ params }: Props) {
         </div>
 
         <div className="tarjeta-panel tarjeta-panel--form-ficha">
-          <h2>Ficha de {mascota.nombre}</h2>
+          <h2>Mascota: {mascota.nombre}</h2>
           <FormularioFichaMascota
             modo="editar"
             mascota={mascota}

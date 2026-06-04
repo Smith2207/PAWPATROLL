@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props) {
 
   return {
     title: `${datos.mascota.nombre} — PawPatrol`,
-    description: `Ficha pública de ${datos.mascota.nombre}, ${datos.mascota.tipo}.`,
+    description: `Página pública de ${datos.mascota.nombre}, ${datos.mascota.tipo}.`,
   };
 }
 

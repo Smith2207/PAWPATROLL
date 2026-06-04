@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Mapa comunitario — PawPatrol",
   description:
-    "Mapa en vivo con mascotas perdidas. El detalle de cada caso está en su ficha.",
+    "Mapa en vivo con mascotas perdidas. El detalle de cada caso está en su página.",
 };
 
 export default async function PaginaComunidad() {
@@ -44,7 +44,7 @@ export default async function PaginaComunidad() {
       <EncabezadoPagina
         eyebrow="Mapa en vivo"
         titulo="Comunidad"
-        descripcion="Ubicación de mascotas perdidas en el mapa. Zonas de búsqueda, avistamientos y refugios probables en la ficha de cada una."
+        descripcion="Ubicación de mascotas perdidas en el mapa. Zonas de búsqueda, avistamientos y refugios probables en la página de cada una."
       />
       <SeccionMapa datos={datosMapa} sinEncabezado />
       <SeccionFeedComunidad actividad={actividad} colaboradores={colaboradores} />

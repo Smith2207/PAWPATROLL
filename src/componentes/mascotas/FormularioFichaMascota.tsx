@@ -316,7 +316,7 @@ export function FormularioFichaMascota({
                 <label>Contacto si se pierde</label>
                 <p className="form-ficha-ayuda">
                   Por defecto usamos tu correo y teléfono del perfil. Puedes
-                  cambiarlos aquí si quieres otro contacto solo para esta ficha.
+                  cambiarlos aquí si quieres otro contacto solo para esta mascota.
                 </p>
                 <input
                   type="tel"
@@ -373,7 +373,7 @@ export function FormularioFichaMascota({
           <section className="form-ficha-bloque form-ficha-bloque--fotos">
             <h3 className="form-ficha-bloque-titulo">Fotos</h3>
             <p className="form-ficha-tip">
-              Sube hasta 5 imágenes. La primera será la principal en la ficha pública.
+              Sube hasta 5 imágenes. La primera será la principal en la página pública.
             </p>
             <SubirFotosMascota fotos={fotos} onFotosChange={onFotosChange} />
           </section>
@@ -385,8 +385,8 @@ export function FormularioFichaMascota({
           {cargando
             ? "Guardando..."
             : modo === "crear"
-              ? "Crear ficha"
-              : "Guardar ficha"}
+              ? "Crear mascota"
+              : "Guardar mascota"}
         </button>
         <Link href="/mis-mascotas" className="btn-mascota btn-mascota--secundario">
           Cancelar

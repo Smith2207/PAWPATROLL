@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DatosMapaMascota } from "@/actions/mapa";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
+import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { BotonReportarAvistamiento } from "@/componentes/mascotas/BotonReportarAvistamiento";
 import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
@@ -49,6 +50,9 @@ export function MapaMascotaFicha({
     null
   );
   const geo = useGeolocalizacion({ onUbicacion: setMiUbicacion });
+  const { solicitarUbicacion, dialogoPermiso } = useSolicitudUbicacion({
+    obtenerUbicacion: geo.obtenerUbicacion,
+  });
 
   const actualizarMapa = useCallback(async () => {
     const nuevos = await listarDatosMapaMascota(mascotaId);
@@ -149,9 +153,10 @@ export function MapaMascotaFicha({
             mostrarBotonGeolocalizar
             geolocalizando={geo.cargando}
             onGeolocalizar={() => {
-              void geo.obtenerUbicacion();
+              void solicitarUbicacion();
             }}
           />
+          {dialogoPermiso}
         </>
       )}
     </section>

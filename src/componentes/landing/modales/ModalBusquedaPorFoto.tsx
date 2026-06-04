@@ -17,7 +17,7 @@ export function ModalBusquedaPorFoto() {
           <Icono nombre="camara" size={20} className="pp-icon--btn" /> Buscar por foto
         </div>
         <div className="modal-sub">
-          ¿Viste un perro o gato perdido? Sube una foto y te mostramos fichas
+          ¿Viste un perro o gato perdido? Sube una foto y te mostramos mascotas
           parecidas.
         </div>
       </div>

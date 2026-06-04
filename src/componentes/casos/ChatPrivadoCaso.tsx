@@ -498,7 +498,7 @@ export function ChatPrivadoCaso({
             : []
         }
         indice={0}
-        nombre="Imagen del chat"
+        nombre="Imagen del mensaje"
         abierto={Boolean(imagenAmpliada)}
         onCerrar={() => setImagenAmpliada(null)}
         onCambiarIndice={() => {}}

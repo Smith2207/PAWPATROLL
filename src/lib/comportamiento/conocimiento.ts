@@ -185,7 +185,7 @@ export function obtenerPerfilConductual(perfil: {
     if (contexto.accesoInferido) {
       base = {
         ...base,
-        tendencia: `${base.tendencia} (Acceso estimado: ${etiquetaAcceso(contexto.acceso).toLowerCase()} — indícalo en la ficha para afinar el cerco.)`,
+        tendencia: `${base.tendencia} (Acceso estimado: ${etiquetaAcceso(contexto.acceso).toLowerCase()} — indícalo en los datos de la mascota para afinar el cerco.)`,
       };
     }
     return base;

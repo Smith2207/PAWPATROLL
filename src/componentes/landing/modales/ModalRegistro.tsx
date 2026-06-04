@@ -18,7 +18,7 @@ export function ModalRegistro() {
     perdidaPendienteAuth || hayPerdidaPendienteAuth();
 
   let subtitulo =
-    "Únete a PawPatroll y protege a tus mascotas con su ficha digital";
+    "Únete a PawPatroll y protege a tus mascotas con su perfil digital";
 
   if (pendientePerdida) {
     subtitulo =

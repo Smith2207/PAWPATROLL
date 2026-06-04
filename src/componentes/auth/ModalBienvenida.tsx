@@ -143,7 +143,7 @@ export function ModalBienvenida({
           </Link>
           {" · "}
           <Link href="/mis-mascotas/ficha" onClick={omitir}>
-            Crear ficha de mascota
+            Crear mascota
           </Link>
         </p>
       </div>

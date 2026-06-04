@@ -20,7 +20,7 @@ export function EncabezadoModuloMascotas({
       <div className="mascotas-toolbar-acciones">
         {!ocultarBotonNueva && (
           <Link href="/mis-mascotas/ficha" className="btn-mascota btn-mascota--primario">
-            + Nueva ficha
+            + Nueva mascota
           </Link>
         )}
       </div>

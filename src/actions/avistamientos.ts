@@ -129,7 +129,7 @@ export async function crearAvistamiento(
       return { ok: false, error: "Mascota no encontrada." };
     }
     if (!esTipoMascotaPermitido(mascota.tipo)) {
-      return { ok: false, error: "Ficha de mascota no válida." };
+      return { ok: false, error: "Mascota no válida." };
     }
   }
 
@@ -250,7 +250,7 @@ export async function crearAvistamiento(
           tipo: "AVISTAMIENTO_NUEVO",
           prioridad: "NORMAL",
           titulo: `Tu avistamiento #${insertado.numeroReporte} fue registrado`,
-          cuerpo: "Puedes chatear en privado con el dueño desde tu panel.",
+          cuerpo: "Puedes enviar mensajes en privado con el dueño desde tu panel.",
           enlace: `/avistamiento/${insertado.id}`,
           mascotaId: datos.mascotaId,
           avistamientoId: insertado.id,
@@ -489,7 +489,7 @@ export async function enviarMensajeAvistamiento(
   if (!esDueno && !esReportante) {
     return {
       ok: false,
-      error: "Solo el dueño y quien reportó pueden usar este chat privado.",
+      error: "Solo el dueño y quien reportó pueden usar estos mensajes privados.",
     };
   }
 

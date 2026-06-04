@@ -84,7 +84,7 @@ export function AccesoCasoBusqueda({
             size={28}
           />
         </span>
-        Chats de {nombreMascota}
+        Mensajes de {nombreMascota}
         {avistamientosPendientes > 0 && (
           <span className="acceso-caso-badge">{avistamientosPendientes}</span>
         )}
@@ -108,7 +108,7 @@ export function AccesoCasoBusqueda({
         )}
       </span>
       <span className="acceso-caso-texto">
-        <span className="acceso-caso-nombre">Chats de {nombreMascota}</span>
+        <span className="acceso-caso-nombre">Mensajes de {nombreMascota}</span>
         <span className="acceso-caso-preview">
           {textoPreview(totalAvistamientos, avistamientosPendientes)}
         </span>

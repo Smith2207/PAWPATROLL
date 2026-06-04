@@ -75,7 +75,7 @@ export function CabeceraCoordinacion({
       </div>
       <div className="pp-coord-cabecera-acciones">
         <a href={`/mascota/${mascota.slug}`} className="pp-coord-btn">
-          Ver ficha
+          Ver mascota
         </a>
         <a href={urlMapa} className="pp-coord-btn">
           Ver mapa

@@ -13,7 +13,7 @@ const PASOS: {
     num: "1",
     icono: "alerta" as const,
     titulo: "Activa la alerta",
-    desc: "Nombre, foto y dónde se perdió. Publicamos tu ficha en segundos.",
+    desc: "Nombre, foto y dónde se perdió. Publicamos su página en segundos.",
     tono: "orange",
   },
   {

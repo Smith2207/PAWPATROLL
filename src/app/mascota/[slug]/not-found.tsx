@@ -7,7 +7,7 @@ export default function MascotaNoEncontrada() {
     <div className="ficha-publica" style={{ textAlign: "center" }}>
       <h1 className="ficha-publica-titulo">Mascota no disponible</h1>
       <p className="texto-vacio-modulo">
-        La ficha no existe o no está publicada (solo mascotas perdidas o
+        Esta mascota no existe o no está publicada (solo mascotas perdidas o
         encontradas).
       </p>
       <Link href="/" className="btn-mascota btn-mascota--primario" style={{ marginTop: "1.5rem" }}>

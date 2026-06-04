@@ -165,7 +165,7 @@ export default async function PaginaAdmin() {
                 id="moderacion"
                 titulo="Cola de moderación"
                 icono="escudo"
-                desc="Reportes de chats privados. Revisa solo lo necesario."
+                desc="Reportes de mensajes privados. Revisa solo lo necesario."
                 badge={reportesPendientes > 0 ? reportesPendientes : undefined}
               >
                 <ModeracionReportes reportes={reportes} />

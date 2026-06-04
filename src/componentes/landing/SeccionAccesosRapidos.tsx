@@ -13,7 +13,7 @@ const ACCESOS: {
     href: RUTAS_LANDING.casosActivos,
     icono: "buscar" as const,
     titulo: "Casos activos",
-    desc: "Fichas de mascotas perdidas con foto, datos y contacto.",
+    desc: "Mascotas perdidas con foto, datos y contacto.",
     tono: "orange",
   },
   {

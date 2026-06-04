@@ -112,7 +112,7 @@ export function PanelCambioEstado({ mascota }: Props) {
       {esFichaPublica(mascota.estado) && (
         <p style={{ fontSize: "0.82rem", marginBottom: "1rem" }}>
           <Link href={`/mascota/${mascota.slug}`} target="_blank" className="pp-enlace-icono">
-            Ver ficha pública
+            Ver página pública
             <Icono nombre="derecha" size={14} />
           </Link>
         </p>

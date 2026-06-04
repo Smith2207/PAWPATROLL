@@ -460,7 +460,7 @@ export function ModalReportarAvistamiento({
             </span>
             <div>
               <strong>Mascota: {mascotaFijada.nombre}</strong>
-              <p>Este avistamiento quedará vinculado a su ficha.</p>
+              <p>Este avistamiento quedará vinculado a esta mascota.</p>
             </div>
             <input type="hidden" name="mascotaId" value={mascotaFijada.id} />
           </div>

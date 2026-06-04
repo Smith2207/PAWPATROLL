@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Casos activos — PawPatrol",
   description:
-    "Busca y consulta mascotas perdidas con ficha pública activa en la comunidad.",
+    "Busca y consulta mascotas perdidas con página pública activa en la comunidad.",
 };
 
 export default async function PaginaCasosActivosRoute() {

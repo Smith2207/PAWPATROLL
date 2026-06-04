@@ -86,7 +86,7 @@ export function plantillaAvistamientoNuevo(opciones: {
     <p style="line-height:1.6;">Alguien reportó el <strong>avistamiento #${opciones.numeroReporte}</strong> de <strong>${escaparHtml(opciones.nombreMascota)}</strong>.</p>
     <p style="line-height:1.6;"><strong>Lugar:</strong> ${lugar}</p>
     ${botonCorreo(opciones.enlace, "Ver avistamiento en PawPatrol")}
-    <p style="font-size:0.85rem;color:#4A5568;">Puedes verificar el reporte y chatear con quien lo envió desde la línea de tiempo de avistamientos.</p>
+    <p style="font-size:0.85rem;color:#4A5568;">Puedes verificar el reporte y enviar mensajes a quien lo envió desde la línea de tiempo de avistamientos.</p>
   `
   );
 }

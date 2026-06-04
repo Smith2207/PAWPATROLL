@@ -1,6 +1,7 @@
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import { CarruselFotosPublica } from "@/componentes/mascotas/CarruselFotosPublica";
 import { MapaMascotaFicha } from "@/componentes/mascotas/MapaMascotaFicha";
+import { PanelComportamiento } from "@/componentes/comportamiento/PanelComportamiento";
 import type { obtenerMascotaPublica } from "@/actions/mascotas";
 import type { DatosMapaMascota } from "@/actions/mapa";
 import Link from "next/link";
@@ -103,6 +104,7 @@ export function FichaPublicaMascota({
           mostrarTimeline ? "ficha-publica-contenedor--con-lateral" : ""
         }`}
       >
+        <div className="ficha-publica-principal">
         <article
           className={`ficha-publica-hero ${
             mascota.estado === "PERDIDA"
@@ -219,6 +221,16 @@ export function FichaPublicaMascota({
         </div>
         </article>
 
+        {esDueno && datosMapa?.prediccion && (
+          <div className="ficha-publica-comportamiento">
+            <PanelComportamiento
+              prediccion={datosMapa.prediccion}
+              nombreMascota={mascota.nombre}
+            />
+          </div>
+        )}
+        </div>
+
         {mostrarTimeline && (
           <aside className="ficha-publica-lateral">
             <TimelineAvistamientos
@@ -230,7 +242,7 @@ export function FichaPublicaMascota({
             {esDueno && (
               <p className="ficha-publica-caso-dueno">
                 <Link href={`/mis-mascotas/${mascota.id}/caso`}>
-                  Chats y avistamientos
+                  Mensajes y avistamientos
                   <Icono nombre="derecha" size={14} className="pp-icon--btn" />
                 </Link>
               </p>

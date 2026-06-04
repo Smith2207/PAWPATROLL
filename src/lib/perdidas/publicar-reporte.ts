@@ -16,7 +16,7 @@ export async function publicarReportePerdida(
       error:
         !creada.ok && "error" in creada
           ? creada.error
-          : "No se pudo crear la ficha.",
+          : "No se pudo crear la mascota.",
     };
   }
 
@@ -33,13 +33,13 @@ export async function publicarReportePerdida(
       ok: false,
       error:
         perdida.error ??
-        "La ficha se creó, pero no se pudo activar la alerta. Complétalo en Mis fichas.",
+        "La mascota se creó, pero no se pudo activar la alerta. Complétalo en Mis mascotas.",
     };
   }
 
   return {
     ok: true,
-    mensaje: perdida.mensaje ?? "Alerta activada. Comparte la ficha pública.",
+    mensaje: perdida.mensaje ?? "Alerta activada. Comparte la página pública.",
     slug: creada.slug,
   };
 }

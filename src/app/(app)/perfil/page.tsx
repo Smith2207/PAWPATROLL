@@ -58,7 +58,7 @@ export default async function PaginaPerfil() {
                   href="/mis-mascotas/ficha"
                   className="perfil-btn-accion perfil-btn-accion--primario"
                 >
-                  Nueva ficha
+                  Nueva mascota
                 </Link>
                 <Link href="/mis-mascotas" className="perfil-btn-accion">
                   Mis mascotas

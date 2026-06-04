@@ -49,7 +49,7 @@ export default async function PaginaMisMascotas() {
           </div>
           {mascotas.length > 0 && (
             <Link href="/mis-mascotas/ficha" className="btn-mascota btn-mascota--primario">
-              + Nueva ficha
+              + Nueva mascota
             </Link>
           )}
         </header>
@@ -60,7 +60,7 @@ export default async function PaginaMisMascotas() {
           <p className="mascotas-alerta-pendientes" role="status">
             Tienes <strong>{avistamientosPendientes}</strong> avistamiento
             {avistamientosPendientes === 1 ? "" : "s"} por revisar. Abre el{" "}
-            <strong>caso de búsqueda</strong> de cada mascota para chatear y
+            <strong>caso de búsqueda</strong> de cada mascota para enviar mensajes y
             marcar como verificado o descartado.
           </p>
         )}
@@ -70,13 +70,13 @@ export default async function PaginaMisMascotas() {
             <span className="mascotas-vacio-icono" aria-hidden>
               <Icono nombre="huella" size={40} />
             </span>
-            <h2>Tu primera ficha</h2>
+            <h2>Tu primera mascota</h2>
             <p>
               Registra a tu peludo con nombre, tipo y una foto. Después podrás
               marcar si está en casa o perdido.
             </p>
             <Link href="/mis-mascotas/ficha" className="btn-mascota btn-mascota--primario">
-              + Crear ficha
+              + Crear mascota
             </Link>
           </div>
         ) : (

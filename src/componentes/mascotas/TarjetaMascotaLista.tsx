@@ -118,7 +118,7 @@ export function TarjetaMascotaLista({ mascota }: Props) {
 
               {mascota.totalAvistamientos} avistamiento
 
-              {mascota.totalAvistamientos === 1 ? "" : "s"} · toca para chats
+              {mascota.totalAvistamientos === 1 ? "" : "s"} · toca para mensajes
 
             </p>
 
@@ -152,7 +152,7 @@ export function TarjetaMascotaLista({ mascota }: Props) {
 
                 <Icono nombre="mensaje" size={14} className="pp-icon--btn" />
 
-                Chats y avistamientos
+                Mensajes y avistamientos
 
               </Link>
 
@@ -164,7 +164,7 @@ export function TarjetaMascotaLista({ mascota }: Props) {
 
               >
 
-                Editar ficha
+                Editar mascota
 
               </Link>
 
@@ -174,7 +174,7 @@ export function TarjetaMascotaLista({ mascota }: Props) {
 
             <Link href={fichaUrl} className="btn-mascota btn-mascota--secundario btn-mascota--compacto">
 
-              Editar ficha
+              Editar mascota
 
             </Link>
 
@@ -192,7 +192,7 @@ export function TarjetaMascotaLista({ mascota }: Props) {
 
             >
 
-              Ficha pública
+              Página pública
 
             </Link>
 

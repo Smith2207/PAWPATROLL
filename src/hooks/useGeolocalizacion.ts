@@ -2,6 +2,10 @@
 
 import { useCallback, useRef, useState } from "react";
 import { obtenerDireccionDesdeCoords } from "@/lib/geo/geocodificar";
+import {
+  elegirMejorUbicacion,
+  obtenerUbicacionViaGoogle,
+} from "@/lib/geo/ubicacion-cliente";
 import type { Coordenadas, UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { CENTRO_MAPA_DEFECTO } from "@/lib/geo/tipos";
 import { ETIQUETA_GPS } from "@/lib/geo/etiqueta-ubicacion";
@@ -16,9 +20,11 @@ export type ResultadoUbicacion =
   | { ok: true; ubicacion: UbicacionSeleccionada }
   | { ok: false; error: string };
 
-const META_PRECISION_METROS = 20;
-const ESPERA_GPS_ALTA_MS = 18_000;
-const ESPERA_GPS_BAJA_MS = 12_000;
+const PRECISION_IDEAL_M = 30;
+const PRECISION_ACEPTABLE_M = 150;
+const TIEMPO_ASENTAR_MS = 2_000;
+const ESPERA_RAPIDA_MS = 6_000;
+const ESPERA_PRECISA_MS = 10_000;
 
 function leerPosicion(pos: GeolocationPosition): UbicacionSeleccionada {
   return {
@@ -31,17 +37,17 @@ function leerPosicion(pos: GeolocationPosition): UbicacionSeleccionada {
 function mensajeErrorGeolocalizacion(code: number | undefined): string {
   switch (code) {
     case 1:
-      return "Activa el permiso de ubicación en el navegador o marca el punto en el mapa.";
+      return "Permiso de ubicación denegado. Pulsa Ubicarme en el mapa o toca el mapa para marcar el punto.";
     case 2:
-      return "Sin señal GPS clara. Sal al exterior, activa Wi‑Fi y vuelve a intentar, o marca en el mapa.";
+      return "Sin señal GPS clara. Sal al exterior o marca el punto en el mapa.";
     case 3:
-      return "La ubicación tardó demasiado. Intenta otra vez o toca el mapa para fijar el punto.";
+      return "No obtuvimos tu ubicación a tiempo. Pulsa Ubicarme en el mapa otra vez, o toca el mapa.";
     default:
-      return "No pudimos ubicarte. Activa el permiso de ubicación o busca una dirección.";
+      return "No pudimos ubicarte. Pulsa Ubicarme en el mapa o busca una dirección.";
   }
 }
 
-/** Varios muestreos GPS y se queda con la lectura más precisa. */
+/** Muestreos GPS del navegador (en paralelo con Google Maps). */
 function esperarMejorPosicion(
   enableHighAccuracy: boolean,
   maxEsperaMs: number
@@ -56,10 +62,11 @@ function esperarMejorPosicion(
     let ultimoError: number | undefined;
     let watchId: number | null = null;
     let resuelto = false;
+    let temporizadorAsentar: number | null = null;
 
     const opciones: PositionOptions = {
       enableHighAccuracy,
-      maximumAge: 0,
+      maximumAge: enableHighAccuracy ? 15_000 : 120_000,
       timeout: maxEsperaMs,
     };
 
@@ -67,21 +74,32 @@ function esperarMejorPosicion(
       if (resuelto) return;
       resuelto = true;
       if (watchId != null) navigator.geolocation.clearWatch(watchId);
-      window.clearTimeout(temporizador);
+      window.clearTimeout(temporizadorMax);
+      if (temporizadorAsentar != null) window.clearTimeout(temporizadorAsentar);
       resolve({ pos: mejor, errorCode: mejor ? undefined : ultimoError });
+    };
+
+    const programarAsentado = () => {
+      if (temporizadorAsentar != null) return;
+      temporizadorAsentar = window.setTimeout(finalizar, TIEMPO_ASENTAR_MS);
     };
 
     const registrar = (pos: GeolocationPosition) => {
       if (!mejor || pos.coords.accuracy < mejor.coords.accuracy) {
         mejor = pos;
       }
-      if (pos.coords.accuracy <= META_PRECISION_METROS) {
+      if (pos.coords.accuracy <= PRECISION_IDEAL_M) {
         finalizar();
+        return;
+      }
+      if (pos.coords.accuracy <= PRECISION_ACEPTABLE_M) {
+        programarAsentado();
       }
     };
 
     const registrarError = (err: GeolocationPositionError) => {
       ultimoError = err.code;
+      if (mejor) finalizar();
     };
 
     watchId = navigator.geolocation.watchPosition(
@@ -96,8 +114,37 @@ function esperarMejorPosicion(
       opciones
     );
 
-    const temporizador = window.setTimeout(finalizar, maxEsperaMs);
+    const temporizadorMax = window.setTimeout(finalizar, maxEsperaMs);
   });
+}
+
+async function obtenerPosicionNavegador(): Promise<{
+  ubicacion: UbicacionSeleccionada | null;
+  errorCode?: number;
+}> {
+  if (!navigator.geolocation || !window.isSecureContext) {
+    return { ubicacion: null };
+  }
+
+  let { pos, errorCode } = await esperarMejorPosicion(false, ESPERA_RAPIDA_MS);
+
+  if (!pos || pos.coords.accuracy > PRECISION_ACEPTABLE_M) {
+    const precisa = await esperarMejorPosicion(true, ESPERA_PRECISA_MS);
+    if (
+      precisa.pos &&
+      (!pos || precisa.pos.coords.accuracy < pos.coords.accuracy)
+    ) {
+      pos = precisa.pos;
+      errorCode = undefined;
+    } else if (!pos) {
+      errorCode = precisa.errorCode ?? errorCode;
+    }
+  }
+
+  return {
+    ubicacion: pos ? leerPosicion(pos) : null,
+    errorCode,
+  };
 }
 
 function etiquetaProvisional(base: UbicacionSeleccionada): string {
@@ -150,74 +197,46 @@ export function useGeolocalizacion(opciones: OpcionesUbicacion = {}) {
   }, [publicarUbicacion]);
 
   const obtenerUbicacion = useCallback(async (): Promise<ResultadoUbicacion> => {
-    if (!navigator.geolocation) {
-      const msg =
-        "Tu navegador no soporta ubicación. Marca el punto en el mapa.";
-      setError(msg);
-      return { ok: false, error: msg };
-    }
-
-    if (!window.isSecureContext) {
-      const msg =
-        "La ubicación GPS requiere HTTPS (o localhost). Marca el punto en el mapa.";
-      setError(msg);
-      return { ok: false, error: msg };
-    }
-
     setCargando(true);
     setError(null);
 
-    let { pos, errorCode } = await esperarMejorPosicion(
-      true,
-      ESPERA_GPS_ALTA_MS
-    );
+    let gpsError: number | undefined;
+    let ubicacionFinal: UbicacionSeleccionada | null = null;
 
-    if (!pos || pos.coords.accuracy > 80) {
-      const respaldo = await esperarMejorPosicion(false, ESPERA_GPS_BAJA_MS);
-      if (
-        respaldo.pos &&
-        (!pos || respaldo.pos.coords.accuracy < pos.coords.accuracy)
-      ) {
-        pos = respaldo.pos;
-        errorCode = undefined;
-      } else if (!pos) {
-        errorCode = respaldo.errorCode ?? errorCode;
-      }
+    const googleP = obtenerUbicacionViaGoogle();
+    const gpsP = obtenerPosicionNavegador().then((r) => {
+      gpsError = r.errorCode;
+      return r.ubicacion;
+    });
+
+    const google = await googleP;
+    if (google) {
+      ubicacionFinal = await completarUbicacion(google);
+      setCargando(false);
+    }
+
+    const gps = await gpsP;
+
+    if (
+      gps &&
+      google &&
+      (gps.precisionMetros ?? Infinity) < (google.precisionMetros ?? Infinity)
+    ) {
+      ubicacionFinal = await completarUbicacion(gps);
     }
 
     setCargando(false);
 
-    if (!pos) {
-      try {
-        const res = await fetch("/api/geo/ubicacion", { method: "POST" });
-        const data = (await res.json()) as {
-          ok?: boolean;
-          lat?: number;
-          lng?: number;
-          precisionMetros?: number;
-        };
-        if (
-          data.ok &&
-          Number.isFinite(data.lat) &&
-          Number.isFinite(data.lng)
-        ) {
-          const ubicacionFinal = await completarUbicacion({
-            lat: data.lat!,
-            lng: data.lng!,
-            precisionMetros: data.precisionMetros ?? 500,
-          });
-          return { ok: true, ubicacion: ubicacionFinal };
-        }
-      } catch {
-        /* sin Google Maps configurado */
+    if (!ubicacionFinal) {
+      const mejor = elegirMejorUbicacion(google, gps);
+      if (!mejor) {
+        const msg = mensajeErrorGeolocalizacion(gpsError);
+        setError(msg);
+        return { ok: false, error: msg };
       }
-
-      const msg = mensajeErrorGeolocalizacion(errorCode);
-      setError(msg);
-      return { ok: false, error: msg };
+      ubicacionFinal = await completarUbicacion(mejor);
     }
 
-    const ubicacionFinal = await completarUbicacion(leerPosicion(pos));
     return { ok: true, ubicacion: ubicacionFinal };
   }, [completarUbicacion]);
 

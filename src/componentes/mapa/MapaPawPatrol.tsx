@@ -210,7 +210,7 @@ function miniaturaPopup(foto: string | null, nombre: string): string {
 function popupPerdida(p: MarcadorPerdidaMapa, esMapaIndividual: boolean): string {
   const enlace = esMapaIndividual
     ? ""
-    : `<a class="pp-popup-link" href="/mascota/${p.slug}">Ver ficha <span class="pp-popup-flecha">›</span></a>`;
+    : `<a class="pp-popup-link" href="/mascota/${p.slug}">Ver mascota <span class="pp-popup-flecha">›</span></a>`;
   const cerco = p.prediccion?.cerco;
   const lineaCerco = cerco
     ? `Cerco: ~${(p.radioMetros / 1000).toFixed(1)} km — ${cerco.motivoAjuste}`
@@ -234,7 +234,7 @@ function popupPerdidaComunidad(p: MarcadorPerdidaMapa): string {
     ${miniaturaPopup(p.fotoPrincipal, p.nombre)}
     <div class="pp-popup-titulo">${tituloPopupMapa("ubicacion", `Se perdió aquí — ${p.nombre}`)}</div>
     <div class="pp-popup-meta">${p.tipo}${p.lugarPerdida ? ` · ${p.lugarPerdida}` : ""}</div>
-    <a class="pp-popup-link" href="/mascota/${p.slug}">Ver ficha con mapa detallado <span class="pp-popup-flecha">›</span></a>
+    <a class="pp-popup-link" href="/mascota/${p.slug}">Ver mascota con mapa detallado <span class="pp-popup-flecha">›</span></a>
   `;
 }
 
@@ -247,7 +247,7 @@ function popupAvistamiento(a: MarcadorAvistamientoMapa): string {
     ${miniaturaPopup(foto, a.nombreMascota ?? "Mascota")}
     <div class="pp-popup-titulo">${titulo}</div>
     <div class="pp-popup-meta">${textoDireccion(a.direccion)}</div>
-    ${a.slugMascota ? `<a class="pp-popup-link" href="/mascota/${a.slugMascota}">Ver ficha <span class="pp-popup-flecha">›</span></a>` : ""}
+    ${a.slugMascota ? `<a class="pp-popup-link" href="/mascota/${a.slugMascota}">Ver mascota <span class="pp-popup-flecha">›</span></a>` : ""}
   `;
 }
 

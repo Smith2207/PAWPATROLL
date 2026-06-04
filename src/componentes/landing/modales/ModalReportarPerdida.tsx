@@ -408,7 +408,7 @@ export function ModalReportarPerdida() {
           <BotonCerrarModal tipo="report" />
           <div className="modal-title">Alerta activada</div>
           <div className="modal-sub">
-            Tu mascota ya aparece como perdida en el mapa y en su ficha pública.
+            Tu mascota ya aparece como perdida en el mapa y en su página pública.
           </div>
         </div>
         <div className="modal-body pp-avistamiento-exito-panel">
@@ -428,7 +428,7 @@ export function ModalReportarPerdida() {
                 className="submit-btn submit-btn-blue"
                 onClick={() => cerrarModal("report")}
               >
-                Ver ficha pública
+                Ver página pública
               </Link>
               <button
                 type="button"
@@ -474,7 +474,7 @@ export function ModalReportarPerdida() {
           {paso === 2 &&
             "Un poco más de detalle ayuda a quien la vea en la calle a reconocerla."}
           {paso === 3 &&
-            "Tu contacto aparece en la ficha pública para que puedan escribirte."}
+            "Tu contacto aparece en la página pública para que puedan escribirte."}
         </div>
       </div>
       <form ref={formRef} className="modal-body" noValidate onSubmit={enviar}>
@@ -541,7 +541,7 @@ export function ModalReportarPerdida() {
         </div>
 
         <div className={paso === 3 ? "" : "pp-wizard-oculto"}>
-          <div className="section-divider">Datos de contacto en la ficha</div>
+          <div className="section-divider">Datos de contacto en la página pública</div>
 
           <div className="form-row">
             <div className="form-group">
@@ -557,7 +557,7 @@ export function ModalReportarPerdida() {
             </div>
             <div className="form-group">
               <label htmlFor="contactoTelefono">
-                Teléfono (público en ficha)
+                Teléfono (público en la página)
               </label>
               <input
                 id="contactoTelefono"
@@ -570,7 +570,7 @@ export function ModalReportarPerdida() {
             </div>
           </div>
           <div className="form-group">
-            <label htmlFor="contactoEmail">Correo (público en ficha)</label>
+            <label htmlFor="contactoEmail">Correo (público en la página)</label>
             <input
               id="contactoEmail"
               name="contactoEmail"

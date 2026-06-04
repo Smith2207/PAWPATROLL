@@ -9,7 +9,7 @@ export function AvisoSmtpDueño({ hayMascotaPerdida }: Props) {
 
   return (
     <div className="aviso-smtp-dueno" role="status">
-      <strong>Revisa tu ficha con frecuencia.</strong> Los avistamientos se
+      <strong>Revisa la página de tu mascota con frecuencia.</strong> Los avistamientos se
       guardan aquí en la web. Si activas notificaciones por correo en tu cuenta,
       también te llegarán por email.
     </div>

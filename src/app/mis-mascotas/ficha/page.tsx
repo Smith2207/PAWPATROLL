@@ -17,7 +17,7 @@ export default async function PaginaNuevaFichaMascota() {
     <EnvolturaPaginasApp>
       <div className="panel-cuenta panel-cuenta--form-ficha">
         <EncabezadoModuloMascotas
-          titulo="Nueva ficha de mascota"
+          titulo="Nueva mascota"
           subtitulo="Nombre, tipo y una foto bastan para empezar. Lo demás es opcional."
           ocultarBotonNueva
         />

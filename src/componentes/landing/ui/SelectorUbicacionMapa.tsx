@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
+import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import { buscarLugaresPorTexto } from "@/lib/geo/geocodificar";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
@@ -43,6 +44,10 @@ export function SelectorUbicacionMapa({
     onDireccionDetectada: onDireccionChange,
   });
 
+  const { solicitarUbicacion, dialogoPermiso } = useSolicitudUbicacion({
+    obtenerUbicacion: geo.obtenerUbicacion,
+  });
+
   const [buscandoDireccion, setBuscandoDireccion] = useState(false);
   const [sugerencias, setSugerencias] = useState<
     { lat: number; lng: number; etiqueta: string }[]
@@ -53,6 +58,7 @@ export function SelectorUbicacionMapa({
 
   const ubicacionActiva = valor ?? geo.ubicacion;
   const ubicacionLista = coordenadasValidas(ubicacionActiva);
+  const ubicando = geo.cargando;
 
   const aplicarLugar = useCallback(
     (lugar: { lat: number; lng: number; etiqueta: string }) => {
@@ -106,14 +112,19 @@ export function SelectorUbicacionMapa({
     setAvisoBusqueda("No encontramos esa dirección. Prueba con otra o marca en el mapa.");
   }
 
+  function pedirUbicacion() {
+    geo.setError(null);
+    void solicitarUbicacion();
+  }
+
   return (
     <div className="form-group">
       <label>{etiqueta}</label>
       <div className="location-picker">
         <div className="location-picker-top pp-busqueda-direccion">
           <span className="loc-icon">
-          <Icono nombre={icono} size={18} />
-        </span>
+            <Icono nombre={icono} size={18} />
+          </span>
           <input
             id={idInput}
             name={idInput}
@@ -135,6 +146,7 @@ export function SelectorUbicacionMapa({
             disabled={buscandoDireccion || direccionTexto.trim().length < 3}
             onClick={() => void buscarEnMapa()}
             title="Buscar dirección"
+            aria-label="Buscar dirección"
           >
             {buscandoDireccion ? (
               "…"
@@ -165,31 +177,29 @@ export function SelectorUbicacionMapa({
         <div
           className={`pp-ubicacion-estado ${ubicacionLista ? "pp-ubicacion-estado--ok" : ""}`}
         >
-          {geo.cargando ? (
+          {ubicando ? (
             <>
               <Icono nombre="reloj" size={16} />
-              Ubicándote en el mapa…
+              Obteniendo tu ubicación…
             </>
           ) : ubicacionLista ? (
             <>
               <Icono nombre="checkCirculo" size={16} />
               <strong>{etiquetaVisibleUbicacion(ubicacionActiva)}</strong>
               <span className="pp-ubicacion-estado-hint">
-                — el mapa y la dirección van juntos
+                — mapa y dirección sincronizados
               </span>
             </>
           ) : (
             <>
               <Icono nombre="ubicacion" size={16} />
-              Escribe una dirección y pulsa{" "}
-              <Icono nombre="buscar" size={14} className="pp-icon--btn" />
-              , el botón del mapa o toca el mapa
+              Pulsa <strong>Ubicarme</strong> en el mapa, busca una dirección o toca el mapa
             </>
           )}
         </div>
 
         {(geo.error || avisoBusqueda) && (
-          <p className="auth-alerta auth-alerta--error" style={{ marginBottom: "0.5rem" }}>
+          <p className="auth-alerta auth-alerta--error pp-ubicacion-alerta">
             {geo.error ?? avisoBusqueda}
           </p>
         )}
@@ -207,13 +217,13 @@ export function SelectorUbicacionMapa({
             mostrarCalor={false}
             mostrarCercos={false}
             mostrarBotonGeolocalizar
-            geolocalizando={geo.cargando}
-            onGeolocalizar={() => {
-              void geo.obtenerUbicacion();
-            }}
+            geolocalizando={ubicando}
+            onGeolocalizar={pedirUbicacion}
           />
         </div>
       </div>
+
+      {dialogoPermiso}
     </div>
   );
 }

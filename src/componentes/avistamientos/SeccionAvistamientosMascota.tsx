@@ -226,7 +226,7 @@ export function SeccionAvistamientosMascota({
 
         Reportes verificados en el mapa. La comunicación con testigos es privada:
 
-        solo tú y quien reportó pueden chatear.
+        solo tú y quien reportó pueden enviarse mensajes.
 
       </p>
 
@@ -244,7 +244,7 @@ export function SeccionAvistamientosMascota({
 
           </Link>
 
-          {" "}Chats centralizados. Los avisos llegan a la campana{" "}
+          {" "}Mensajes centralizados. Los avisos llegan a la campana{" "}
 
           <Icono nombre="campana" size={14} className="pp-icon--btn" />
 
@@ -384,7 +384,7 @@ export function SeccionAvistamientosMascota({
 
                   <Link href={`/avistamiento/${av.id}`}>
 
-                    Abrir chat privado
+                    Abrir mensajes privados
 
                     <Icono nombre="derecha" size={14} className="pp-icon--btn" />
 

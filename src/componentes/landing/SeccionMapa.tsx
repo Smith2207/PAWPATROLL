@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { listarDatosMapaPublico, type DatosMapaPublico } from "@/actions/mapa";
 import { FiltrosMapa } from "@/componentes/mapa/FiltrosMapa";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
+import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
@@ -39,6 +40,9 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
   );
   const geo = useGeolocalizacion({
     onUbicacion: setMiUbicacion,
+  });
+  const { solicitarUbicacion, dialogoPermiso } = useSolicitudUbicacion({
+    obtenerUbicacion: geo.obtenerUbicacion,
   });
 
   useEffect(() => {
@@ -95,7 +99,7 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
           <p>
             Cada icono marca <strong>dónde se perdió</strong> una mascota. Las
             zonas de búsqueda, avistamientos y refugios probables están en la{" "}
-            <strong>ficha de cada mascota</strong>.
+            <strong>página de cada mascota</strong>.
           </p>
         </div>
       )}
@@ -125,9 +129,10 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
         mostrarBotonGeolocalizar
         geolocalizando={geo.cargando}
         onGeolocalizar={() => {
-          void geo.obtenerUbicacion();
+          void solicitarUbicacion();
         }}
       />
+      {dialogoPermiso}
     </section>
   );
 }

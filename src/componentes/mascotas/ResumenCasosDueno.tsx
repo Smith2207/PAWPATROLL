@@ -26,7 +26,7 @@ export function ResumenCasosDueno({ mascotas }: Props) {
       aria-labelledby="mascotas-casos-titulo"
     >
       <header className="mascotas-casos-resumen-cabecera">
-        <h2 id="mascotas-casos-titulo">Tus chats</h2>
+        <h2 id="mascotas-casos-titulo">Tus mensajes</h2>
         <p>
           Toca una mascota para ver conversaciones y avistamientos.
         </p>

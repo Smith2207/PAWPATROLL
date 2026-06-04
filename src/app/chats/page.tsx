@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Chats — PawPatroll",
+  title: "Mensajes — PawPatroll",
   description: "Conversaciones de coordinación de tus mascotas en búsqueda.",
 };
 
@@ -22,7 +22,7 @@ export default async function PaginaChats() {
       <div className="panel-cuenta panel-cuenta--chats">
         <header className="mascotas-lista-cabecera">
           <div>
-            <h1>Chats</h1>
+            <h1>Mensajes</h1>
             <p className="mascotas-lista-resumen">
               Coordinación con testigos de tus mascotas perdidas.
             </p>
@@ -34,7 +34,7 @@ export default async function PaginaChats() {
             <span className="mascotas-vacio-icono" aria-hidden>
               <Icono nombre="mensaje" size={40} />
             </span>
-            <h2>Sin chats activos</h2>
+            <h2>Sin mensajes activos</h2>
             <p>
               Cuando tengas una mascota marcada como perdida, aquí verás el
               centro de coordinación de cada caso.
@@ -69,7 +69,7 @@ export default async function PaginaChats() {
                     </span>
                     <span className="acceso-caso-texto">
                       <span className="acceso-caso-nombre">
-                        Chats de {c.nombreMascota}
+                        Mensajes de {c.nombreMascota}
                       </span>
                       <span className="acceso-caso-preview">
                         {c.totalAvistamientos === 0

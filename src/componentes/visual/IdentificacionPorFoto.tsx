@@ -299,7 +299,7 @@ export function IdentificacionPorFoto({
                         className="foto-ia-link-ficha"
                         target="_blank"
                       >
-                        Ver ficha
+                        Ver mascota
                       </Link>
                     </div>
                   </div>

@@ -54,7 +54,7 @@ export function SeccionFeedComunidad({ actividad, colaboradores }: Props) {
                   </div>
                   {a.slug && (
                     <Link href={`/mascota/${a.slug}`} className="pp-feed-link">
-                      Ver ficha
+                      Ver mascota
                     </Link>
                   )}
                 </li>

@@ -20,6 +20,6 @@ export const PASOS_PRIMERA_VEZ: {
     icono: "mapa",
     titulo: "Mapa y casos",
     texto:
-      "Comunidad = mapa con cercos y avistamientos. Casos activos = buscar fichas.",
+      "Comunidad = mapa con cercos y avistamientos. Casos activos = buscar mascotas.",
   },
 ];

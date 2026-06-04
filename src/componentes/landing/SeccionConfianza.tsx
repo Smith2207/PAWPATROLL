@@ -15,7 +15,7 @@ const PUNTOS: {
   {
     icono: "candado" as const,
     titulo: "Tú controlas tu contacto",
-    desc: "Solo publicas teléfono o correo si quieres que aparezcan en la ficha.",
+    desc: "Solo publicas teléfono o correo si quieres que aparezcan en su página pública.",
     tono: "navy",
   },
   {

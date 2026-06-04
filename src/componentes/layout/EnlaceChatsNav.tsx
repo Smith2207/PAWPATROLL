@@ -54,7 +54,7 @@ export function EnlaceChatsNav({ pathname, onNavigate }: Props) {
       href={RUTAS_LANDING.chats}
       className={`nav-link-chats ${activo ? "nav-link--activo" : ""}`}
       aria-current={activo ? "page" : undefined}
-      aria-label={badge ? `Chats, ${badge} sin leer` : "Chats"}
+      aria-label={badge ? `Mensajes, ${badge} sin leer` : "Mensajes"}
       onClick={onNavigate}
       title={
         noLeidos > 0
@@ -63,7 +63,7 @@ export function EnlaceChatsNav({ pathname, onNavigate }: Props) {
       }
     >
       <Icono nombre="mensaje" size={16} className="nav-link-chats-icono" />
-      Chats
+      Mensajes
       {badge != null && (
         <span className="nav-link-mascotas-badge" aria-hidden>
           {badge}

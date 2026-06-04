@@ -18,22 +18,33 @@ export async function POST() {
   }
 
   try {
-    const punto = await geolocalizarGoogleRespaldo();
-    if (!punto) {
+    const resultado = await geolocalizarGoogleRespaldo();
+
+    if (!resultado.ok) {
+      if (process.env.NODE_ENV === "development" && resultado.detalle) {
+        console.warn("[geo/ubicacion]", resultado.detalle);
+      }
       return NextResponse.json(
-        { ok: false, error: "Google no pudo estimar tu ubicación." },
+        {
+          ok: false,
+          error: resultado.error,
+          ...(process.env.NODE_ENV === "development" && resultado.detalle
+            ? { detalle: resultado.detalle }
+            : {}),
+        },
         { status: 502 }
       );
     }
 
     return NextResponse.json({
       ok: true,
-      lat: punto.lat,
-      lng: punto.lng,
-      precisionMetros: punto.precisionMetros,
+      lat: resultado.lat,
+      lng: resultado.lng,
+      precisionMetros: resultado.precisionMetros,
       origen: "google-geolocation",
     });
-  } catch {
+  } catch (e) {
+    console.error("[geo/ubicacion]", e);
     return NextResponse.json(
       { ok: false, error: "Error al consultar Google Geolocation." },
       { status: 500 }

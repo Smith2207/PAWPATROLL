@@ -9,14 +9,14 @@ const PASOS: {
   {
     num: "01",
     icono: "lista" as const,
-    titulo: "Crea la ficha",
+    titulo: "Registra tu mascota",
     desc: "Registra nombre, fotos, raza y datos de contacto. Marca la mascota como perdida con fecha y punto en el mapa.",
   },
   {
     num: "02",
     icono: "mapa" as const,
     titulo: "Comparte y mapa",
-    desc: "Publica el enlace de la ficha. Aparece en el mapa comunitario con su zona de búsqueda.",
+    desc: "Publica el enlace de su página. Aparece en el mapa comunitario con su zona de búsqueda.",
   },
   {
     num: "03",
@@ -28,7 +28,7 @@ const PASOS: {
     num: "04",
     icono: "celebracion" as const,
     titulo: "Reunión",
-    desc: "Coordina por mensajes en la ficha y marca el caso como reunido cuando vuelva a casa.",
+    desc: "Coordina por mensajes en su página y marca el caso como reunido cuando vuelva a casa.",
   },
 ];
 

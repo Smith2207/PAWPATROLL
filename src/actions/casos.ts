@@ -320,7 +320,7 @@ export async function reportarComportamientoSospechoso(
   }
 
   if (!(await puedeAccederChatAvistamiento(avistamientoId))) {
-    return { ok: false, error: "No tienes acceso a este chat." };
+    return { ok: false, error: "No tienes acceso a esta conversación." };
   }
 
   const [av] = await db

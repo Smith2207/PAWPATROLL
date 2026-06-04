@@ -11,7 +11,7 @@ export function BotonEliminarMascota({ id, nombre }: { id: string; nombre: strin
   async function eliminar() {
     if (
       !confirm(
-        `¿Eliminar la ficha de ${nombre}? Se borrarán fotos y avistamientos vinculados.`
+        `¿Eliminar a ${nombre}? Se borrarán fotos y avistamientos vinculados.`
       )
     ) {
       return;
@@ -37,7 +37,7 @@ export function BotonEliminarMascota({ id, nombre }: { id: string; nombre: strin
       disabled={cargando}
       className="btn-mascota btn-mascota--peligro"
     >
-      {cargando ? "Eliminando..." : "Eliminar ficha"}
+      {cargando ? "Eliminando..." : "Eliminar mascota"}
     </button>
   );
 }
