@@ -3,6 +3,7 @@ import {
   validarArchivoImagen,
   validarDataUrlImagen,
 } from "@/lib/imagen/validar-archivo";
+import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,10 @@ export const maxDuration = 120;
 const MAX_BYTES = 4 * 1024 * 1024;
 
 export async function POST(req: Request) {
+  const ip = ipDesdeRequest(req);
+  const limite = rateLimit(`ia-buscar:${ip}`, 20, 60_000);
+  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+
   try {
     const ct = req.headers.get("content-type") ?? "";
 

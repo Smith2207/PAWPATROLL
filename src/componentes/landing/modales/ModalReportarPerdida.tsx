@@ -229,51 +229,53 @@ export function ModalReportarPerdida() {
   }, []);
 
   useEffect(() => {
-    if (modalAbierto !== "report") {
+    queueMicrotask(() => {
+      if (modalAbierto !== "report") {
+        setPaso(1);
+        return;
+      }
+
+      if (aplicarResultadoPublicacion()) return;
+
+      const borrador = leerBorradorPerdida();
+      if (!borrador) return;
+
+      const { descripcion, recompensa: recomp } = extraerRecompensa(
+        borrador.datosMascota.descripcion
+      );
+
+      setValoresFicha({
+        nombre: borrador.datosMascota.nombre,
+        tipo: borrador.datosMascota.tipo,
+        raza: borrador.datosMascota.raza,
+        sexo: borrador.datosMascota.sexo ?? "",
+        color: borrador.datosMascota.color ?? "",
+        tamano: borrador.datosMascota.tamano ?? "",
+        edad: borrador.datosMascota.edad ?? "",
+        accesoExterior: borrador.datosMascota.accesoExterior ?? "",
+        descripcion: descripcion,
+        fechaPerdida: borrador.perdida.fechaPerdida,
+      });
+      setUbicacion({
+        lat: borrador.perdida.latPerdida,
+        lng: borrador.perdida.lngPerdida,
+      });
+      const partesLugar = borrador.perdida.lugarPerdida.split(" · ");
+      setDireccion(partesLugar[0] ?? "");
+      setReferenciasZona(
+        borrador.referenciasZona ?? borrador.perdida.notas ?? partesLugar[1] ?? ""
+      );
+      setContactoNombre(borrador.contactoNombre ?? "");
+      setContactoTelefono(borrador.contactoTelefono ?? "");
+      setContactoEmail(borrador.contactoEmail ?? "");
+      setRecompensa(borrador.recompensa ?? recomp);
+      camara.establecerFotos(borrador.fotos);
+      setClaveFormulario((k) => k + 1);
+      setAvisoBorrador(true);
       setPaso(1);
-      return;
-    }
-
-    if (aplicarResultadoPublicacion()) return;
-
-    const borrador = leerBorradorPerdida();
-    if (!borrador) return;
-
-    const { descripcion, recompensa: recomp } = extraerRecompensa(
-      borrador.datosMascota.descripcion
-    );
-
-    setValoresFicha({
-      nombre: borrador.datosMascota.nombre,
-      tipo: borrador.datosMascota.tipo,
-      raza: borrador.datosMascota.raza,
-      sexo: borrador.datosMascota.sexo ?? "",
-      color: borrador.datosMascota.color ?? "",
-      tamano: borrador.datosMascota.tamano ?? "",
-      edad: borrador.datosMascota.edad ?? "",
-      accesoExterior: borrador.datosMascota.accesoExterior ?? "",
-      descripcion: descripcion,
-      fechaPerdida: borrador.perdida.fechaPerdida,
+      setError(null);
+      setExito(null);
     });
-    setUbicacion({
-      lat: borrador.perdida.latPerdida,
-      lng: borrador.perdida.lngPerdida,
-    });
-    const partesLugar = borrador.perdida.lugarPerdida.split(" · ");
-    setDireccion(partesLugar[0] ?? "");
-    setReferenciasZona(
-      borrador.referenciasZona ?? borrador.perdida.notas ?? partesLugar[1] ?? ""
-    );
-    setContactoNombre(borrador.contactoNombre ?? "");
-    setContactoTelefono(borrador.contactoTelefono ?? "");
-    setContactoEmail(borrador.contactoEmail ?? "");
-    setRecompensa(borrador.recompensa ?? recomp);
-    camara.establecerFotos(borrador.fotos);
-    setClaveFormulario((k) => k + 1);
-    setAvisoBorrador(true);
-    setPaso(1);
-    setError(null);
-    setExito(null);
   }, [modalAbierto]);
 
   const publicando = publicandoReporte === "perdida" || cargando;

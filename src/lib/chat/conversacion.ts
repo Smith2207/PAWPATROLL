@@ -10,12 +10,7 @@ export type ParticipanteConversacion = {
 
 export type ConversacionAvistamiento = {
   otro: ParticipanteConversacion;
-  /** Primera línea en contexto caso mascota: «🐶 Max» */
   mascotaLinea: string;
-  /** Nombre del otro participante (nunca el usuario actual) */
-  tituloLista: string;
-  tituloCasoLinea1: string;
-  tituloCasoLinea2: string;
 };
 
 export function normalizarNombreParticipante(
@@ -54,17 +49,11 @@ export function resolverOtroParticipante(
   return reportante;
 }
 
-export function emojiMascotaConversacion(tipo: string | null | undefined): string {
-  if (tipo?.toLowerCase() === "gato") return "🐱";
-  return "🐶";
-}
-
 export function lineaMascotaConversacion(
   nombreMascota: string | null | undefined,
-  tipoMascota?: string | null
+  _tipoMascota?: string | null
 ): string {
-  const nombre = nombreMascota?.trim() || "Mascota";
-  return `${emojiMascotaConversacion(tipoMascota)} ${nombre}`;
+  return nombreMascota?.trim() || "Mascota";
 }
 
 export type DatosParticipantesAvistamiento = {
@@ -101,9 +90,6 @@ export function resolverConversacionAvistamiento(
   return {
     otro,
     mascotaLinea,
-    tituloLista: otro.nombre,
-    tituloCasoLinea1: mascotaLinea,
-    tituloCasoLinea2: otro.nombre,
   };
 }
 

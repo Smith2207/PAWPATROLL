@@ -32,8 +32,10 @@ export function BarraBusqueda({
   const [filtroActivo, setFiltroActivo] = useState<string | null>(null);
 
   useEffect(() => {
-    setTexto("");
-    setFiltroActivo(null);
+    queueMicrotask(() => {
+      setTexto("");
+      setFiltroActivo(null);
+    });
   }, [resetSignal]);
 
   function chipActivo(): Partial<FiltrosBusquedaMascotasPublicas> {

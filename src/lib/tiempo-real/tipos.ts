@@ -15,14 +15,46 @@ export type EventoTiempoReal =
       mascotaId: string | null;
       avistamientoId: string;
     }
-  | { tipo: "mensaje:nuevo"; avistamientoId: string; mascotaId: string | null }
+  | {
+      tipo: "mensaje:nuevo";
+      avistamientoId: string;
+      mascotaId: string | null;
+      destinatarioUserId?: string;
+    }
   | { tipo: "mapa:actualizado" }
-  | { tipo: "notificacion:nueva"; userId: string; notificacionId: string }
+  | {
+      tipo: "notificacion:nueva";
+      userId: string;
+      notificacionId: string;
+      notifTipo?: string;
+      titulo?: string;
+      cuerpo?: string;
+      enlace?: string;
+    }
+  | {
+      tipo: "chat:escribiendo";
+      avistamientoId: string;
+      userId: string;
+      activo: boolean;
+    }
+  | {
+      tipo: "chat:leido";
+      avistamientoId: string;
+      userId: string;
+      leidoAt: string;
+    }
   | { tipo: "caso:actualizado"; mascotaId: string };
 
 export type MensajeClienteWs =
-  | { accion: "suscribir"; canales: CanalTiempoReal[] }
-  | { accion: "ping" };
+  | { accion: "suscribir"; canales?: CanalTiempoReal[]; token?: string }
+  | { accion: "ping" }
+  | {
+      accion: "presencia";
+      tipo: "escribiendo";
+      avistamientoId: string;
+      userId: string;
+      activo?: boolean;
+    };
 
 export type MensajeServidorWs = {
   evento: EventoTiempoReal;

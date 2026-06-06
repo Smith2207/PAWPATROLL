@@ -329,13 +329,14 @@ export function MapaPawPatrol({
   const soloPerdidas = vista === "solo-perdidas";
   const mostrarCalorEfectivo = mostrarCalor && !soloPerdidas;
   const mostrarCercosEfectivo = mostrarCercos && !soloPerdidas;
+  const idsPerdidas = datos?.perdidas.map((p) => p.id).join(",") ?? "";
 
   const coloresPorMascota = useMemo(() => {
     if (!cercoColorPorPerdida || !datos?.perdidas.length) {
       return new Map<string, EstiloFamiliaMascota>();
     }
     return mapaEstilosPorMascota(datos.perdidas.map((p) => p.id));
-  }, [cercoColorPorPerdida, datos?.perdidas]);
+  }, [cercoColorPorPerdida, idsPerdidas, datos?.perdidas]);
   const contenedorRef = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<L.Map | null>(null);
   const capasRef = useRef<L.LayerGroup | null>(null);

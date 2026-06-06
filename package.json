@@ -26,6 +26,7 @@
     "@auth/drizzle-adapter": "^1.11.2",
     "@google/genai": "^2.7.0",
     "@neondatabase/serverless": "^1.1.0",
+    "@vercel/blob": "^2.4.0",
     "@xenova/transformers": "^2.17.2",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",

@@ -83,17 +83,10 @@ export default async function PaginaChatAvistamiento({ params }: Props) {
             numeroReporte={chat.avistamiento.numeroReporte}
             mensajesIniciales={chat.mensajes}
             eventosIniciales={eventos}
-            esDueno={chat.esDueno}
             nombreMascota={chat.nombreMascota ?? "Mascota"}
             tipoMascota={chat.tipoMascota}
-            duenoUserId={chat.duenoUserId}
-            duenoNombre={chat.duenoNombre}
-            reportanteUserId={chat.reportanteUserId}
-            reportanteNombre={chat.reportanteNombre}
             miUserId={sesion.user.id!}
-            direccionAvistamiento={chat.avistamiento.direccion}
-            latAvistamiento={chat.avistamiento.lat}
-            lngAvistamiento={chat.avistamiento.lng}
+            ultimoLeidoInterlocutorAt={chat.ultimoLeidoInterlocutorAt}
           />
         </div>
 

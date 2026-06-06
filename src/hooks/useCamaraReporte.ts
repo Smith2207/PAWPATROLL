@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { preprocesarImagenesCliente } from "@/lib/imagen/preprocesar-cliente";
 import {
   MENSAJE_IMAGEN_ILEGIBLE,
@@ -32,7 +32,9 @@ export function useCamaraReporte(opciones: Opciones = {}) {
   const streamRef = useRef<MediaStream | null>(null);
   const [fotosPreview, setFotosPreview] = useState<string[]>([]);
   const fotosPreviewRef = useRef<string[]>([]);
-  fotosPreviewRef.current = fotosPreview;
+  useEffect(() => {
+    fotosPreviewRef.current = fotosPreview;
+  }, [fotosPreview]);
   const [camaraVisible, setCamaraVisible] = useState(false);
   const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
 

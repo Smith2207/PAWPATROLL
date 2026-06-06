@@ -50,6 +50,13 @@ type ContextoModalesValor = {
 const ContextoModales = createContext<ContextoModalesValor | null>(null);
 
 export function ProveedorModales({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  return (
+    <ProveedorModalesEstado key={pathname}>{children}</ProveedorModalesEstado>
+  );
+}
+
+function ProveedorModalesEstado({ children }: { children: ReactNode }) {
   const [modalAbierto, setModalAbierto] = useState<TipoModal | null>(null);
   const [mascotaAvistamiento, setMascotaAvistamiento] =
     useState<MascotaAvistamientoFijada | null>(null);
@@ -58,7 +65,6 @@ export function ProveedorModales({ children }: { children: ReactNode }) {
   const [perdidaPendienteAuth, setPerdidaPendienteAuth] = useState(false);
   const [publicandoReporte, setPublicandoReporte] =
     useState<TipoPublicandoReporte | null>(null);
-  const pathname = usePathname();
 
   const abrirModal = useCallback((tipo: TipoModal) => {
     if (tipo !== "sighting") setMascotaAvistamiento(null);
@@ -97,12 +103,6 @@ export function ProveedorModales({ children }: { children: ReactNode }) {
     document.addEventListener("keydown", onEscape);
     return () => document.removeEventListener("keydown", onEscape);
   }, [cerrarTodos]);
-
-  useEffect(() => {
-    setModalAbierto(null);
-    setMascotaAvistamiento(null);
-    document.body.style.overflow = "";
-  }, [pathname]);
 
   const valor = useMemo(
     () => ({

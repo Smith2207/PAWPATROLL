@@ -15,11 +15,7 @@ export function GestorBienvenida() {
   } | null>(null);
 
   useEffect(() => {
-    if (status !== "authenticated") {
-      setMostrar(false);
-      setDatos(null);
-      return;
-    }
+    if (status !== "authenticated") return;
 
     let activo = true;
 
@@ -40,7 +36,7 @@ export function GestorBienvenida() {
     };
   }, [status]);
 
-  if (!mostrar || !datos) return null;
+  if (status !== "authenticated" || !mostrar || !datos) return null;
 
   return (
     <ModalBienvenida

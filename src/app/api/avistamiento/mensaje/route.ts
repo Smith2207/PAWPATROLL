@@ -1,5 +1,13 @@
 import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
+import {
+  adjuntoDataUrl,
+  comprimirAdjuntoChat,
+} from "@/lib/imagen/comprimir-adjunto-chat";
 import { validarArchivoImagen } from "@/lib/imagen/validar-archivo";
+import {
+  blobChatDisponible,
+  subirAdjuntoChatBlob,
+} from "@/lib/storage/blob-chat";
 
 const MAX_ARCHIVO = 4 * 1024 * 1024;
 const MAX_DATA_URL = 900_000;
@@ -25,13 +33,22 @@ export async function POST(req: Request) {
         return Response.json({ ok: false, error: validacion.error }, { status: 400 });
       }
       const buf = Buffer.from(await archivo.arrayBuffer());
-      const mime = archivo.type || "image/jpeg";
-      adjuntoUrl = `data:${mime};base64,${buf.toString("base64")}`;
-      if (adjuntoUrl.length > MAX_DATA_URL) {
-        return Response.json(
-          { ok: false, error: "La imagen es demasiado pesada. Prueba con otra más pequeña." },
-          { status: 400 }
-        );
+      const { buffer, mime } = await comprimirAdjuntoChat(buf, archivo.type);
+
+      if (blobChatDisponible()) {
+        adjuntoUrl = await subirAdjuntoChatBlob(avistamientoId, buffer, mime);
+      } else {
+        adjuntoUrl = adjuntoDataUrl(buffer, mime);
+        if (adjuntoUrl.length > MAX_DATA_URL) {
+          return Response.json(
+            {
+              ok: false,
+              error:
+                "La imagen es demasiado pesada. Configura BLOB_READ_WRITE_TOKEN o usa otra más pequeña.",
+            },
+            { status: 400 }
+          );
+        }
       }
     }
 

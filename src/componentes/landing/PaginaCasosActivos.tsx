@@ -36,10 +36,12 @@ export function PaginaCasosActivos({ mascotasIniciales }: Props) {
   const [errorBusqueda, setErrorBusqueda] = useState(false);
 
   useEffect(() => {
-    setMascotas(mascotasIniciales);
-    setFiltrosActuales({});
-    setBusquedaActiva(false);
-    setErrorBusqueda(false);
+    queueMicrotask(() => {
+      setMascotas(mascotasIniciales);
+      setFiltrosActuales({});
+      setBusquedaActiva(false);
+      setErrorBusqueda(false);
+    });
   }, [mascotasIniciales]);
 
   const ejecutarBusqueda = useCallback(

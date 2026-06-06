@@ -21,11 +21,14 @@ export function canalesParaEvento(evento: EventoTiempoReal): CanalTiempoReal[] {
   if ("mascotaId" in evento && evento.mascotaId) {
     canales.push(`mascota:${evento.mascotaId}`);
   }
-  if ("avistamientoId" in evento) {
+  if ("avistamientoId" in evento && evento.avistamientoId) {
     canales.push(`avistamiento:${evento.avistamientoId}`);
   }
   if (evento.tipo === "notificacion:nueva") {
     canales.push(`usuario:${evento.userId}`);
+  }
+  if (evento.tipo === "mensaje:nuevo" && evento.destinatarioUserId) {
+    canales.push(`usuario:${evento.destinatarioUserId}`);
   }
   return [...new Set(canales)];
 }
@@ -72,15 +75,4 @@ export function emitirTiempoReal(evento: EventoTiempoReal) {
   if (!h.wsEmit) {
     publicarEnServidorWsRemoto(evento);
   }
-}
-
-export function suscribirCanal(canal: CanalTiempoReal, fn: Suscriptor) {
-  const h = hub();
-  if (!h.suscriptores.has(canal)) {
-    h.suscriptores.set(canal, new Set());
-  }
-  h.suscriptores.get(canal)!.add(fn);
-  return () => {
-    h.suscriptores.get(canal)?.delete(fn);
-  };
 }

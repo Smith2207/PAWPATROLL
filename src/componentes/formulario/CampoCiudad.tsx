@@ -58,19 +58,23 @@ export function CampoCiudad({
   }, [abierto]);
 
   useEffect(() => {
-    setIndiceActivo(-1);
+    queueMicrotask(() => setIndiceActivo(-1));
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (termino.length < 2) {
-      setSugerencias([]);
-      setCargando(false);
-      setErrorApi(null);
+      queueMicrotask(() => {
+        setSugerencias([]);
+        setCargando(false);
+        setErrorApi(null);
+      });
       return;
     }
 
-    setCargando(true);
-    setErrorApi(null);
+    queueMicrotask(() => {
+      setCargando(true);
+      setErrorApi(null);
+    });
 
     const solicitud = ++solicitudRef.current;
 

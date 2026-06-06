@@ -51,8 +51,8 @@ export async function verificarCuentaConToken(
   if (!usuario) {
     return {
       ok: false,
-      error: "No hay cuenta con ese correo.",
-      codigo: "USUARIO_NO_ENCONTRADO",
+      error: "Token de verificación inválido.",
+      codigo: "TOKEN_INVALIDO",
     };
   }
 
@@ -122,7 +122,11 @@ export async function consultarEstadoVerificacion(email: string) {
     .limit(1);
 
   if (!usuario) {
-    return { ok: false as const, error: "Usuario no encontrado." };
+    return {
+      ok: true as const,
+      email: correo,
+      verificado: false,
+    };
   }
 
   return {

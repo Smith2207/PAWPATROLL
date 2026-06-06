@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { obtenerDireccionDesdeCoords } from "@/lib/geo/geocodificar";
 import {
   elegirMejorUbicacion,
@@ -160,8 +160,10 @@ export function useGeolocalizacion(opciones: OpcionesUbicacion = {}) {
 
   const onUbicacionRef = useRef(opciones.onUbicacion);
   const onDireccionRef = useRef(opciones.onDireccionDetectada);
-  onUbicacionRef.current = opciones.onUbicacion;
-  onDireccionRef.current = opciones.onDireccionDetectada;
+  useEffect(() => {
+    onUbicacionRef.current = opciones.onUbicacion;
+    onDireccionRef.current = opciones.onDireccionDetectada;
+  }, [opciones.onUbicacion, opciones.onDireccionDetectada]);
 
   const publicarUbicacion = useCallback((u: UbicacionSeleccionada) => {
     setUbicacion(u);

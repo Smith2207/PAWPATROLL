@@ -118,28 +118,30 @@ export function ModalReportarAvistamiento({
   }
 
   useEffect(() => {
-    if (!mascotaFijada) {
-      setMascotaSeleccionada("");
-      return;
-    }
-    setMascotaSeleccionada(mascotaFijada.id);
-    const tipoIni = tipoInicial(mascotaFijada);
-    setTipo(tipoIni);
-    setColor(mascotaFijada.color ?? "");
-    const razaIni = parsearRaza(tipoIni, mascotaFijada.raza);
-    setRazaSeleccion(razaIni.seleccion);
-    setRazaOtra(razaIni.otra);
-    setUbicacion(null);
-    setDireccion("");
-    setError(null);
-    setExito(null);
-    setFotoAvistamiento(null);
-    setFechaAvistamiento(valorDatetimeLocalActual());
-    setReferencias("");
-    setDireccionMovimiento("");
-    setAvisoBorrador(false);
-    setPaso(1);
-    setDetallesAbiertos(false);
+    queueMicrotask(() => {
+      if (!mascotaFijada) {
+        setMascotaSeleccionada("");
+        return;
+      }
+      setMascotaSeleccionada(mascotaFijada.id);
+      const tipoIni = tipoInicial(mascotaFijada);
+      setTipo(tipoIni);
+      setColor(mascotaFijada.color ?? "");
+      const razaIni = parsearRaza(tipoIni, mascotaFijada.raza);
+      setRazaSeleccion(razaIni.seleccion);
+      setRazaOtra(razaIni.otra);
+      setUbicacion(null);
+      setDireccion("");
+      setError(null);
+      setExito(null);
+      setFotoAvistamiento(null);
+      setFechaAvistamiento(valorDatetimeLocalActual());
+      setReferencias("");
+      setDireccionMovimiento("");
+      setAvisoBorrador(false);
+      setPaso(1);
+      setDetallesAbiertos(false);
+    });
   }, [mascotaFijada]);
 
   function aplicarResultadoPublicacion() {
@@ -180,25 +182,23 @@ export function ModalReportarAvistamiento({
   }, []);
 
   useEffect(() => {
-    if (modalAbierto !== "sighting") {
+    queueMicrotask(() => {
+      if (modalAbierto !== "sighting") {
+        setPaso(1);
+        return;
+      }
+      if (aplicarResultadoPublicacion()) return;
+      if (mascotaFijada) return;
+
+      const borrador = leerBorradorAvistamiento();
+      if (!borrador) return;
+
+      restaurarDesdeBorrador(borrador.datos);
+      setAvisoBorrador(true);
+      setError(null);
+      setExito(null);
       setPaso(1);
-      return;
-    }
-    if (aplicarResultadoPublicacion()) return;
-    if (mascotaFijada) return;
-
-    const borrador = leerBorradorAvistamiento();
-    if (!borrador) return;
-
-    restaurarDesdeBorrador(borrador.datos);
-    setAvisoBorrador(true);
-    setError(null);
-    setExito(null);
-    restaurarDesdeBorrador(borrador.datos);
-    setAvisoBorrador(true);
-    setPaso(1);
-    setError(null);
-    setExito(null);
+    });
   }, [modalAbierto, mascotaFijada]);
 
   const publicando = publicandoReporte === "avistamiento" || cargando;

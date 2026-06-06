@@ -31,29 +31,28 @@ function AvatarUsuario({
   sesionActiva: boolean;
 }) {
   const inicial = inicialUsuario(nombre, correo);
-  const [imagen, setImagen] = useState<string | null>(imagenSesion ?? null);
+  const [imagenFetched, setImagenFetched] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!sesionActiva) {
-      setImagen(null);
-      return;
-    }
-
-    if (imagenSesion?.startsWith("http")) {
-      setImagen(imagenSesion);
-      return;
-    }
+    if (!sesionActiva) return;
+    if (imagenSesion?.startsWith("http")) return;
 
     let activo = true;
 
     obtenerImagenPerfilSesion().then((url) => {
-      if (activo) setImagen(url);
+      if (activo) setImagenFetched(url);
     });
 
     return () => {
       activo = false;
     };
   }, [sesionActiva, imagenSesion]);
+
+  const imagen = !sesionActiva
+    ? null
+    : imagenSesion?.startsWith("http")
+      ? imagenSesion
+      : imagenFetched;
 
   if (imagen) {
     return (

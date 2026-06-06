@@ -93,6 +93,10 @@ export async function crearNotificacionPrivada(
     tipo: "notificacion:nueva",
     userId: input.userId,
     notificacionId: insertada.id,
+    notifTipo: input.tipo,
+    titulo: input.titulo,
+    cuerpo: input.cuerpo,
+    enlace: input.enlace,
   });
 
   return insertada.id;

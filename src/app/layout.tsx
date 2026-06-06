@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AbrirLoginDesdeUrl } from "@/componentes/auth/AbrirLoginDesdeUrl";
 import { GestorBienvenida } from "@/componentes/auth/GestorBienvenida";
 import { ProveedorSesion } from "@/componentes/auth/ProveedorSesion";
+import { EscuchadorNotificacionesNavegador } from "@/componentes/notificaciones/EscuchadorNotificacionesNavegador";
 import { ModalesGlobales } from "@/componentes/landing/ModalesGlobales";
 import { ProveedorModales } from "@/contexto/ContextoModales";
 import { Nunito, Fredoka } from "next/font/google";
@@ -68,6 +69,7 @@ export default function RootLayout({
             {children}
             <ModalesGlobales />
             <GestorBienvenida />
+            <EscuchadorNotificacionesNavegador />
           </ProveedorModales>
         </ProveedorSesion>
       </body>

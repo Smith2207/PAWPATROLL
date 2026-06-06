@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { reverseGeocodeGoogle } from "@/lib/geo/proveedor-maps";
+import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
 
 export async function GET(request: Request) {
+  const ip = ipDesdeRequest(request);
+  const limite = rateLimit(`geo-reverse:${ip}`, 40, 60_000);
+  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+
   const { searchParams } = new URL(request.url);
   const lat = searchParams.get("lat");
   const lng = searchParams.get("lng");

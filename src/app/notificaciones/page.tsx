@@ -1,6 +1,14 @@
-import { redirect } from "next/navigation";
+import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
+import { ListaNotificacionesPagina } from "@/componentes/notificaciones/ListaNotificacionesPagina";
 
-/** Las notificaciones se consultan desde la campana del menú. */
+export const metadata = {
+  title: "Notificaciones — PawPatrol",
+};
+
 export default function PaginaNotificaciones() {
-  redirect("/");
+  return (
+    <EnvolturaPaginasApp>
+      <ListaNotificacionesPagina />
+    </EnvolturaPaginasApp>
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { emojiMascotaConversacion } from "@/lib/chat/conversacion";
+import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
 import type { Mascota } from "@/lib/db/schema";
 
 type MascotaCaso = Mascota & { fotoPrincipal: string | null };
@@ -28,7 +28,7 @@ export function CabeceraCoordinacion({
   onMarcarEncontrado,
   marcando,
 }: Props) {
-  const emoji = emojiMascotaConversacion(mascota.tipo);
+  const iconoMascota = iconoPorTipoMascota(mascota.tipo);
   /** Mapa con cerco y avistamientos de esta mascota (sección en ficha pública). */
   const urlMapa = `/mascota/${mascota.slug}#mapa-mascota`;
 
@@ -52,7 +52,9 @@ export function CabeceraCoordinacion({
           {mascota.fotoPrincipal ? (
             <img src={mascota.fotoPrincipal} alt="" width={52} height={52} />
           ) : (
-            <span aria-hidden>{emoji}</span>
+            <span className="pp-coord-cabecera-foto-icono" aria-hidden>
+              <Icono nombre={iconoMascota} size={28} />
+            </span>
           )}
         </span>
         <div className="pp-coord-cabecera-info">
@@ -65,11 +67,14 @@ export function CabeceraCoordinacion({
           <ul className="pp-coord-cabecera-meta">
             {resumen.ultimoAvistamientoDireccion && (
               <li>
-                📍 Último avistamiento:{" "}
-                {truncar(resumen.ultimoAvistamientoDireccion)}
+                <Icono nombre="ubicacion" size={14} className="pp-coord-meta-icono" />
+                Último avistamiento: {truncar(resumen.ultimoAvistamientoDireccion)}
               </li>
             )}
-            <li>🎯 {resumen.totalAvistamientos} avistamientos registrados</li>
+            <li>
+              <Icono nombre="objetivo" size={14} className="pp-coord-meta-icono" />
+              {resumen.totalAvistamientos} avistamientos registrados
+            </li>
           </ul>
         </div>
       </div>

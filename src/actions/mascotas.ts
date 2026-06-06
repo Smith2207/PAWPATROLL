@@ -67,8 +67,11 @@ function normalizarFicha(datos: DatosFichaMascota) {
 async function guardarFotos(mascotaId: string, fotos: string[]) {
   if (fotos.length === 0) return;
 
+  const { normalizarFotosMascota } = await import("@/lib/storage/blob-mascota");
+  const urls = await normalizarFotosMascota(mascotaId, fotos);
+
   await db.insert(mascotaFotos).values(
-    fotos.map((url, i) => ({
+    urls.map((url, i) => ({
       mascotaId,
       url,
       esPrincipal: i === 0,

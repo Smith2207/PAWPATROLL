@@ -3,9 +3,14 @@ import {
   geolocalizarGoogleRespaldo,
   mapsGoogleDisponible,
 } from "@/lib/geo/proveedor-maps";
+import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
 
 /** Respaldo de ubicación vía Google Geolocation API (cuando falla el GPS del navegador). */
-export async function POST() {
+export async function POST(req: Request) {
+  const ip = ipDesdeRequest(req);
+  const limite = rateLimit(`geo-ubicacion:${ip}`, 15, 60_000);
+  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+
   if (!mapsGoogleDisponible()) {
     return NextResponse.json(
       {

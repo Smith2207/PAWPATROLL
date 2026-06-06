@@ -19,6 +19,7 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
   const [transicion, setTransicion] = useState(false);
   const [lightboxAbierto, setLightboxAbierto] = useState(false);
   const total = fotos.length;
+  const indiceVisible = total > 0 ? indice % total : 0;
   const hayVarias = total > 1;
 
   const irA = useCallback(
@@ -34,18 +35,14 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
   );
 
   useEffect(() => {
-    if (indice >= total && total > 0) setIndice(0);
-  }, [indice, total]);
-
-  useEffect(() => {
     if (!hayVarias || lightboxAbierto) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "ArrowLeft") irA(indice - 1);
-      if (e.key === "ArrowRight") irA(indice + 1);
+      if (e.key === "ArrowLeft") irA(indiceVisible - 1);
+      if (e.key === "ArrowRight") irA(indiceVisible + 1);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [hayVarias, indice, irA, lightboxAbierto]);
+  }, [hayVarias, indiceVisible, irA, lightboxAbierto]);
 
   if (total === 0) {
     return (
@@ -58,7 +55,7 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
     );
   }
 
-  const actual = fotos[indice];
+  const actual = fotos[indiceVisible]!;
 
   return (
     <>
@@ -78,7 +75,7 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
               <img
                 key={actual.id}
                 src={actual.url}
-                alt={`${nombre} — foto ${indice + 1} de ${total}`}
+                alt={`${nombre} — foto ${indiceVisible + 1} de ${total}`}
                 className={`carrusel-ficha-imagen ${transicion ? "carrusel-ficha-imagen--fade" : ""}`}
               />
               <span className="carrusel-ficha-zoom-hint">
@@ -93,7 +90,7 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
                   className="carrusel-ficha-flecha carrusel-ficha-flecha--izq"
                   onClick={(e) => {
                     e.stopPropagation();
-                    irA(indice - 1);
+                    irA(indiceVisible - 1);
                   }}
                   aria-label="Foto anterior"
                 >
@@ -112,7 +109,7 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
                   className="carrusel-ficha-flecha carrusel-ficha-flecha--der"
                   onClick={(e) => {
                     e.stopPropagation();
-                    irA(indice + 1);
+                    irA(indiceVisible + 1);
                   }}
                   aria-label="Foto siguiente"
                 >
@@ -132,9 +129,9 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
                       key={foto.id}
                       type="button"
                       role="tab"
-                      aria-selected={i === indice}
+                      aria-selected={i === indiceVisible}
                       aria-label={`Foto ${i + 1}`}
-                      className={`carrusel-ficha-punto ${i === indice ? "carrusel-ficha-punto--activo" : ""}`}
+                      className={`carrusel-ficha-punto ${i === indiceVisible ? "carrusel-ficha-punto--activo" : ""}`}
                       onClick={() => setIndice(i)}
                     />
                   ))}
@@ -150,9 +147,9 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
                   key={foto.id}
                   type="button"
                   role="tab"
-                  aria-selected={i === indice}
+                  aria-selected={i === indiceVisible}
                   aria-label={`Ver foto ${i + 1}`}
-                  className={`carrusel-ficha-mini ${i === indice ? "carrusel-ficha-mini--activa" : ""}`}
+                  className={`carrusel-ficha-mini ${i === indiceVisible ? "carrusel-ficha-mini--activa" : ""}`}
                   onClick={() => setIndice(i)}
                 >
                   <img src={foto.url} alt="" />
@@ -165,7 +162,7 @@ export function CarruselFotosPublica({ fotos, nombre }: Props) {
 
       <VisorLightboxFotos
         fotos={fotos}
-        indice={indice}
+        indice={indiceVisible}
         nombre={nombre}
         abierto={lightboxAbierto}
         onCerrar={() => setLightboxAbierto(false)}

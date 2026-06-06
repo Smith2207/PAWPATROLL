@@ -1,6 +1,7 @@
 import { WebSocketServer, type WebSocket } from "ws";
 import type { CanalTiempoReal, MensajeClienteWs, MensajeServidorWs } from "@/lib/tiempo-real/tipos";
 import { registrarEmisorWs } from "@/lib/tiempo-real/hub";
+import { verificarTokenSuscripcionWs } from "@/lib/tiempo-real/token-ws";
 
 type ClienteWs = WebSocket & { canales?: Set<CanalTiempoReal> };
 
@@ -8,6 +9,10 @@ const globalWs = globalThis as typeof globalThis & {
   __ppWsIniciado?: boolean;
 };
 
+const SECRET_WS =
+  process.env.WS_PUBLISH_SECRET?.trim() ||
+  process.env.AUTH_SECRET?.trim() ||
+  "";
 function parsearCanales(raw: unknown): CanalTiempoReal[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter(
@@ -51,8 +56,41 @@ export function iniciarServidorWebSocket() {
           return;
         }
         if (msg.accion === "suscribir") {
-          cliente.canales = new Set(parsearCanales(msg.canales));
+          if (msg.token) {
+            const payload = verificarTokenSuscripcionWs(msg.token);
+            if (!payload) {
+              socket.close(4001, "token inválido");
+              return;
+            }
+            cliente.canales = new Set(parsearCanales(payload.canales));
+          } else if (SECRET_WS) {
+            cliente.canales = new Set(["mapa"]);
+          } else {
+            cliente.canales = new Set(parsearCanales(msg.canales));
+          }
           if (cliente.canales.size === 0) cliente.canales.add("mapa");
+          return;
+        }        if (
+          msg.accion === "presencia" &&
+          msg.tipo === "escribiendo" &&
+          msg.avistamientoId &&
+          msg.userId
+        ) {
+          const canal = `avistamiento:${msg.avistamientoId}` as CanalTiempoReal;
+          const evento = {
+            tipo: "chat:escribiendo" as const,
+            avistamientoId: msg.avistamientoId,
+            userId: msg.userId,
+            activo: msg.activo !== false,
+          };
+          const payload: MensajeServidorWs = { evento, ts: Date.now() };
+          const texto = JSON.stringify(payload);
+          wss.clients.forEach((otro) => {
+            if (otro === socket) return;
+            const c = otro as ClienteWs;
+            if (c.readyState !== 1 || !c.canales?.has(canal)) return;
+            c.send(texto);
+          });
         }
       } catch {
         /* ignorar mensajes mal formados */

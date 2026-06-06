@@ -50,8 +50,22 @@ export function CampanaNotificaciones() {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") void recargar();
-  }, [status, recargar]);
+    if (status !== "authenticated") return;
+    let cancelado = false;
+    void (async () => {
+      const [items, n] = await Promise.all([
+        listarNotificacionesUsuario(50),
+        contarNotificacionesNoLeidas(),
+      ]);
+      if (!cancelado) {
+        setLista(items);
+        setNoLeidas(n);
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [status]);
 
   const userId = sesion?.user?.id;
   useTiempoReal(userId ? [`usuario:${userId}`] : [], (ev) => {

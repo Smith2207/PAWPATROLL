@@ -5,6 +5,7 @@ import {
   Camera,
   Cat,
   Check,
+  CheckCheck,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
@@ -57,6 +58,7 @@ export type NombreIcono =
   | "ubicacion"
   | "celebracion"
   | "check"
+  | "dobleCheck"
   | "cerrar"
   | "buscar"
   | "info"
@@ -103,6 +105,7 @@ const MAPA: Record<NombreIcono, LucideIcon> = {
   ubicacion: MapPin,
   celebracion: PartyPopper,
   check: Check,
+  dobleCheck: CheckCheck,
   cerrar: X,
   buscar: Search,
   info: Info,

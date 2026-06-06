@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { contarChatsNoLeidos } from "@/actions/casos";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import { Icono } from "@/componentes/ui/Icono";
+import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 
 function rutaChatsActiva(pathname: string) {
@@ -34,15 +35,34 @@ export function EnlaceChatsNav({ pathname, onNavigate }: Props) {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") void recargar();
-  }, [status, recargar]);
+    if (status !== "authenticated") return;
+    let cancelado = false;
+    void (async () => {
+      const n = await contarChatsNoLeidos();
+      if (!cancelado) setNoLeidos(n);
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [status]);
 
   const userId = sesion?.user?.id;
-  useTiempoReal(userId ? [`usuario:${userId}`] : [], (ev) => {
-    if (ev.tipo === "mensaje:nuevo" || ev.tipo === "notificacion:nueva") {
-      void recargar();
+  const { conectado: wsConectado } = useTiempoReal(
+    userId ? [`usuario:${userId}`] : [],
+    (ev) => {
+      if (
+        ev.tipo === "notificacion:nueva" ||
+        ev.tipo === "mensaje:nuevo" ||
+        ev.tipo === "chat:leido"
+      ) {
+        void recargar();
+      }
     }
-  });
+  );
+
+  useRespaldoActualizacion(() => {
+    if (status === "authenticated") void recargar();
+  }, wsConectado, 12_000);
 
   if (status !== "authenticated") return null;
 

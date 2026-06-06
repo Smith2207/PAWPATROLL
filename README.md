@@ -28,6 +28,10 @@ npm run db:migrate-embeddings
 npm run db:migrate-embeddings-multifoto
 npm run db:migrate-comportamiento
 npm run db:migrate-acceso-exterior   # campo acceso_exterior para M5
+npm run db:migrate-gemini-768        # embeddings 768d (0009)
+npm run db:migrate-notificaciones    # notificaciones + lecturas chat (0010)
+npm run db:migrate-usuario-activo    # usuario activo (0011)
+npm run db:migrate-chat-adjunto      # adjuntos chat en blob (0012)
 npm run dev
 ```
 
@@ -45,6 +49,8 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth Google |
 | `SMTP_*` / `EMAIL_FROM` | Correos de verificación, bienvenida y aviso al dueño |
 | `WS_PORT` / `NEXT_PUBLIC_WS_PORT` | WebSocket local (por defecto `3001`) |
+| `NEXT_PUBLIC_WS_URL` / `WS_PUBLISH_*` | Tiempo real en producción (Railway); ver `docs/TIEMPO-REAL-VERCEL.md` |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob: adjuntos de chat (privado) y fotos de ficha nuevas (público) |
 | `GOOGLE_CLOUD_PROJECT` + ADC (o JSON en Vercel) | Búsqueda por foto Vertex (ver `.env.example`) |
 | `VISUAL_*` / `CLIP_*` | Umbrales y proveedor (`gemini` \| `clip`) |
 
@@ -128,6 +134,8 @@ EMAIL_FROM=PawPatrol <paw.patrol.soporte@gmail.com>
 | `/recuperar-contrasena` | Solicitar enlace para restablecer contraseña (correo + contraseña) |
 | `/restablecer-contrasena?email=...&token=...` | Elegir nueva contraseña (enlace del correo, válido 1 h) |
 | `/perfil` | Datos de usuario y accesos rápidos |
+| `/notificaciones` | Historial de notificaciones (campana del menú) |
+| `/chats` | Hub de conversaciones 1:1 (dueño ↔ testigo) |
 | `/mis-mascotas` | Listado de **mis fichas** |
 | `/mis-mascotas/ficha` | **Nueva ficha** (formulario en dos columnas: datos + fotos) |
 | `/mis-mascotas/nueva` | Redirige a `/mis-mascotas/ficha` |
@@ -204,14 +212,14 @@ src/
     landing/, mapa/, avistamientos/, visual/, comportamiento/
   lib/
     db/, geo/, visual/, comportamiento/, tiempo-real/
-drizzle/                        → Migraciones 0000–0008
+drizzle/                        → Migraciones 0000–0012
 scripts/                        → migraciones, reindexar embeddings
 ```
 
 ## Limitaciones conocidas
 
-- Fotos guardadas como data URL en PostgreSQL (no CDN).
-- WebSocket en proceso Node: en Vercel serverless no hay tiempo real sin servicio externo (`NEXT_PUBLIC_WS_URL`).
+- Fotos antiguas pueden seguir como data URL en PostgreSQL; las **nuevas** subidas usan Vercel Blob si `BLOB_READ_WRITE_TOKEN` está configurado.
+- WebSocket en proceso Node: en Vercel serverless no hay tiempo real sin servicio externo (`NEXT_PUBLIC_WS_URL`). Las suscripciones privadas requieren token firmado (`/api/ws/token`).
 - Notificaciones por correo al **dueño** del avistamiento vinculado; no hay alertas masivas por radio GPS.
 
 ## Google OAuth

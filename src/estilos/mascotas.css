@@ -356,6 +356,22 @@
   text-overflow: ellipsis;
 }
 
+.acceso-caso-meta {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.acceso-caso-meta time {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted2);
+  white-space: nowrap;
+}
+
 .acceso-caso-flecha {
   flex-shrink: 0;
   color: var(--muted);

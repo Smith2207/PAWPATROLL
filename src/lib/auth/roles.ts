@@ -11,15 +11,7 @@ export function etiquetaRol(rol: RolUsuario) {
   return ETIQUETAS_ROL[rol] ?? "Miembro";
 }
 
-export function esAdministrador(rol: RolUsuario) {
-  return rol === "ADMINISTRADOR";
-}
-
-export function puedeGestionarUsuarios(rol: RolUsuario) {
-  return esAdministrador(rol);
-}
-
 /** Cualquier usuario autenticado puede registrar mascotas, reportar pérdidas y avistamientos. */
-export function puedeUsarCuentaCompleta(_rol: RolUsuario) {
+export function puedeUsarCuentaCompleta() {
   return true;
 }

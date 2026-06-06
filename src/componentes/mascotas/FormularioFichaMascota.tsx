@@ -73,9 +73,9 @@ export function FormularioFichaMascota({
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
-  const onFotosChange = useCallback((nuevas: string[]) => {
+  const onFotosChange = (nuevas: string[]) => {
     setFotos(nuevas);
-  }, []);
+  };
 
   function onTipoChange(nuevoTipo: string) {
     setTipo(nuevoTipo);

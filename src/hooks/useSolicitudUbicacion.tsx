@@ -10,13 +10,15 @@ import {
 
 type Opciones = {
   obtenerUbicacion: () => Promise<ResultadoUbicacion>;
+  /** Se invoca al obtener ubicación (permiso ya concedido o tras confirmar el diálogo). */
+  onResultado?: (resultado: ResultadoUbicacion) => void;
 };
 
 /**
  * Muestra un diálogo tipo Rappi antes de pedir GPS (salvo si el permiso ya está concedido).
  * El confirmar debe ejecutarse desde un clic del usuario para cumplir políticas del navegador.
  */
-export function useSolicitudUbicacion({ obtenerUbicacion }: Opciones) {
+export function useSolicitudUbicacion({ obtenerUbicacion, onResultado }: Opciones) {
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
   const [estadoPermiso, setEstadoPermiso] =
     useState<EstadoPermisoUbicacion>("prompt");
@@ -35,6 +37,7 @@ export function useSolicitudUbicacion({ obtenerUbicacion }: Opciones) {
     setConfirmando(true);
     void obtenerUbicacion()
       .then((resultado) => {
+        onResultado?.(resultado);
         if (resultado.ok) {
           setDialogoAbierto(false);
           void consultarPermisoUbicacion().then(setEstadoPermiso);
@@ -46,7 +49,7 @@ export function useSolicitudUbicacion({ obtenerUbicacion }: Opciones) {
         });
       })
       .finally(() => setConfirmando(false));
-  }, [obtenerUbicacion]);
+  }, [obtenerUbicacion, onResultado]);
 
   const solicitarUbicacion = useCallback(async () => {
     const estado = await consultarPermisoUbicacion();

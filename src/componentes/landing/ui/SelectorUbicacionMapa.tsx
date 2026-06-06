@@ -80,8 +80,10 @@ export function SelectorUbicacionMapa({
 
     const texto = direccionTexto.trim();
     if (texto.length < 4) {
-      setSugerencias([]);
-      setBuscandoDireccion(false);
+      queueMicrotask(() => {
+        setSugerencias([]);
+        setBuscandoDireccion(false);
+      });
       return;
     }
 

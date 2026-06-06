@@ -27,25 +27,27 @@ export function eventoVisibleEnChat(tipo: EventoCasoTipo): boolean {
   return EVENTOS_EN_CHAT.includes(tipo);
 }
 
-export function iconoEventoTimeline(tipo: EventoCasoTipo): string {
+import type { NombreIcono } from "@/componentes/ui/Icono";
+
+export function nombreIconoEventoTimeline(tipo: EventoCasoTipo): NombreIcono {
   switch (tipo) {
     case "AVISTAMIENTO_NUEVO":
-      return "📍";
+      return "ubicacion";
     case "COINCIDENCIA_IA":
-      return "🤖";
+      return "cerebro";
     case "FOTO_AGREGADA":
-      return "📷";
+      return "camara";
     case "ALERTA_ACTIVADA":
     case "ESTADO_CAMBIADO":
-      return "🚨";
+      return "alerta";
     case "MASCOTA_RECUPERADA":
-      return "✅";
+      return "checkCirculo";
     case "AVISTAMIENTO_VERIFICADO":
-      return "✓";
+      return "check";
     case "AVISTAMIENTO_DESCARTADO":
-      return "✕";
+      return "xCirculo";
     default:
-      return "•";
+      return "info";
   }
 }
 

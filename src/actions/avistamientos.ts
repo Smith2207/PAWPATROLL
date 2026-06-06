@@ -23,6 +23,8 @@ import {
   usuarioAceptaNotificacionesEmail,
 } from "@/lib/casos/servicio-caso";
 import { tituloNotificacionMensaje } from "@/lib/chat/conversacion";
+import { ETIQUETA_MENSAJE_FOTO } from "@/lib/chat/mensaje";
+import { esAdjuntoChatValido } from "@/lib/storage/blob-chat";
 
 export type DatosAvistamiento = {
   mascotaId?: string;
@@ -451,10 +453,10 @@ export async function enviarMensajeAvistamiento(
   if (texto.length > 2000) {
     return { ok: false, error: "Mensaje demasiado largo." };
   }
-  if (adjunto && !adjunto.startsWith("data:image/")) {
+  if (adjunto && !esAdjuntoChatValido(adjunto)) {
     return { ok: false, error: "Solo se permiten imágenes como adjunto." };
   }
-  if (adjunto && adjunto.length > 900_000) {
+  if (adjunto?.startsWith("data:image/") && adjunto.length > 900_000) {
     return { ok: false, error: "La imagen es demasiado pesada." };
   }
 
@@ -493,6 +495,10 @@ export async function enviarMensajeAvistamiento(
     };
   }
 
+  const destinatarioUserId = esDueno
+    ? (av.av.userId ?? undefined)
+    : (av.mascotaUserId ?? undefined);
+
   const [usuarioActual] = await db
     .select({ name: users.name })
     .from(users)
@@ -504,7 +510,7 @@ export async function enviarMensajeAvistamiento(
     (esDueno ? av.nombreDueno : av.av.nombreReportante) ||
     "Participante";
 
-  const cuerpoMensaje = texto || (adjunto ? "📷 Foto" : " ");
+  const cuerpoMensaje = texto || (adjunto ? ETIQUETA_MENSAJE_FOTO : " ");
 
   const [insertado] = await db
     .insert(mensajesAvistamiento)
@@ -521,9 +527,10 @@ export async function enviarMensajeAvistamiento(
     tipo: "mensaje:nuevo",
     avistamientoId,
     mascotaId: av.av.mascotaId,
+    destinatarioUserId,
   });
 
-  const extractoNotif = adjunto && !texto ? "📷 Te enviaron una foto" : texto.slice(0, 160);
+  const extractoNotif = adjunto && !texto ? "Te enviaron una foto" : texto.slice(0, 160);
 
   if (av.av.mascotaId) {
     await registrarEventoCaso({
@@ -575,7 +582,7 @@ export async function enviarMensajeAvistamiento(
           nombreMascota: av.nombreMascota ?? "Mascota",
           slugMascota: av.slug ?? "",
           autorMensaje: nombreAutor ?? "Dueño",
-          extracto: (adjunto && !texto ? "📷 Foto" : texto).slice(0, 200),
+          extracto: (adjunto && !texto ? ETIQUETA_MENSAJE_FOTO : texto).slice(0, 200),
           enlacePrivado: enlaceChat,
         });
       }
@@ -607,7 +614,7 @@ export async function enviarMensajeAvistamiento(
         nombreMascota: av.nombreMascota ?? "Mascota",
         slugMascota: av.slug ?? "",
         autorMensaje: nombreAutor ?? "Alguien",
-        extracto: (adjunto && !texto ? "📷 Foto" : texto).slice(0, 200),
+        extracto: (adjunto && !texto ? ETIQUETA_MENSAJE_FOTO : texto).slice(0, 200),
         enlacePrivado: enlaceCaso,
       });
     }

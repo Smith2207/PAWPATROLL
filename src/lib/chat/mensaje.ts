@@ -1,6 +1,21 @@
 import type { MensajeAvistamiento } from "@/lib/db/schema";
+import { esUrlAdjuntoMensaje } from "@/lib/chat/adjunto-mensaje";
+import { esMensajeUbicacion } from "@/lib/chat/ubicacion-mensaje";
+import { esUrlBlobChat } from "@/lib/storage/blob-chat";
+
+/** Placeholder cuando el mensaje es solo una imagen adjunta. */
+export const ETIQUETA_MENSAJE_FOTO = "Foto";
+
+export const ETIQUETA_PREVIEW_UBICACION = "Ubicación actual";
+
+export function esContenidoFotoPlaceholder(contenido: string): boolean {
+  const t = contenido.trim();
+  return t === ETIQUETA_MENSAJE_FOTO || t === "📷 Foto";
+}
 
 export function esImagenAdjunta(url: string | null | undefined): boolean {
+  if (!url?.trim()) return false;
+  if (esUrlAdjuntoMensaje(url) || esUrlBlobChat(url)) return true;
   return urlParaMostrarAdjunto(url) != null;
 }
 
@@ -11,6 +26,7 @@ export function urlParaMostrarAdjunto(
   if (!url?.trim()) return null;
   const u = url.trim();
   if (u.startsWith("http://") || u.startsWith("https://")) return u;
+  if (esUrlAdjuntoMensaje(u)) return u;
   const match = /^data:image\/([\w+.-]+);base64,([A-Za-z0-9+/=]+)$/i.exec(u);
   if (!match) return null;
   const b64 = match[2];
@@ -25,9 +41,10 @@ export function urlParaMostrarAdjunto(
 
 /** Texto visible en lista de conversaciones */
 export function previewMensajeChat(m: Pick<MensajeAvistamiento, "contenido" | "adjuntoUrl">): string {
+  if (esMensajeUbicacion(m.contenido)) return ETIQUETA_PREVIEW_UBICACION;
   const texto = m.contenido.trim();
-  if (texto && texto !== "📷 Foto") return texto;
-  if (esImagenAdjunta(m.adjuntoUrl)) return "📷 Foto";
+  if (texto && !esContenidoFotoPlaceholder(texto)) return texto;
+  if (esImagenAdjunta(m.adjuntoUrl)) return ETIQUETA_MENSAJE_FOTO;
   return texto || "Mensaje";
 }
 

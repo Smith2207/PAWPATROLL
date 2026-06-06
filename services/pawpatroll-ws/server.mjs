@@ -4,6 +4,7 @@
  */
 import http from "node:http";
 import { WebSocketServer } from "ws";
+import { verificarTokenSuscripcionWs } from "./verificar-token-ws.mjs";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const SECRET = process.env.WS_PUBLISH_SECRET?.trim() ?? "";
@@ -17,6 +18,9 @@ function canalesParaEvento(evento) {
   if (evento.avistamientoId) canales.push(`avistamiento:${evento.avistamientoId}`);
   if (evento.tipo === "notificacion:nueva" && evento.userId) {
     canales.push(`usuario:${evento.userId}`);
+  }
+  if (evento.tipo === "mensaje:nuevo" && evento.destinatarioUserId) {
+    canales.push(`usuario:${evento.destinatarioUserId}`);
   }
   return [...new Set(canales)];
 }
@@ -106,8 +110,40 @@ wss.on("connection", (socket) => {
         return;
       }
       if (msg.accion === "suscribir") {
-        socket.canales = new Set(parsearCanales(msg.canales));
+        if (msg.token) {
+          const payload = verificarTokenSuscripcionWs(msg.token);
+          if (!payload) {
+            socket.close(4001, "token inválido");
+            return;
+          }
+          socket.canales = new Set(parsearCanales(payload.canales));
+        } else if (SECRET) {
+          socket.canales = new Set(["mapa"]);
+        } else {
+          socket.canales = new Set(parsearCanales(msg.canales));
+        }
         if (socket.canales.size === 0) socket.canales.add("mapa");
+        return;
+      }
+      if (
+        msg.accion === "presencia" &&
+        msg.tipo === "escribiendo" &&
+        msg.avistamientoId &&
+        msg.userId
+      ) {
+        const canal = `avistamiento:${msg.avistamientoId}`;
+        const evento = {
+          tipo: "chat:escribiendo",
+          avistamientoId: msg.avistamientoId,
+          userId: msg.userId,
+          activo: msg.activo !== false,
+        };
+        const payload = JSON.stringify({ evento, ts: Date.now() });
+        for (const ws of clientes) {
+          if (ws === socket) continue;
+          if (ws.readyState !== 1 || !ws.canales?.has(canal)) continue;
+          ws.send(payload);
+        }
       }
     } catch {
       /* ignorar */

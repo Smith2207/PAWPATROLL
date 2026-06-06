@@ -27,8 +27,19 @@ export function EnlaceMisMascotasNav({ pathname, className, onNavigate }: Props)
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") void recargar();
-  }, [status, pathname, recargar]);
+    if (status !== "authenticated") return;
+    let cancelado = false;
+    void (async () => {
+      const datos = await obtenerResumenCasosNav();
+      if (!cancelado) {
+        setHref(datos.href);
+        setPendientes(datos.pendientes);
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [status, pathname]);
 
   if (status !== "authenticated") return null;
 

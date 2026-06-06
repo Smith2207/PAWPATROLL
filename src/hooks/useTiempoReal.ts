@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CanalTiempoReal, EventoTiempoReal } from "@/lib/tiempo-real/tipos";
+import type {
+  CanalTiempoReal,
+  EventoTiempoReal,
+  MensajeClienteWs,
+} from "@/lib/tiempo-real/tipos";
 import { webSocketDisponibleEnCliente } from "@/lib/tiempo-real/ws-disponible";
 
 function urlWebSocket() {
@@ -15,20 +19,46 @@ function urlWebSocket() {
   return `${protocolo}://${host}:${puerto}`;
 }
 
+function requiereTokenAuth(canales: CanalTiempoReal[]) {
+  return canales.some((c) => c !== "mapa");
+}
+
+async function obtenerTokenWs(): Promise<string | null> {
+  try {
+    const res = await fetch("/api/ws/token", { credentials: "same-origin" });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { ok?: boolean; token?: string };
+    return data.ok && data.token ? data.token : null;
+  } catch {
+    return null;
+  }
+}
+
 export function useTiempoReal(
   canales: CanalTiempoReal[],
   onEvento: (evento: EventoTiempoReal) => void
 ) {
   const [conectado, setConectado] = useState(false);
   const onEventoRef = useRef(onEvento);
+  const wsRef = useRef<WebSocket | null>(null);
   useEffect(() => {
     onEventoRef.current = onEvento;
   });
-  const canalesKey = canales.join("|");
+  const canalesRef = useRef(canales);
+  useEffect(() => {
+    canalesRef.current = canales;
+  }, [canales]);
+
+  const enviar = useCallback((mensaje: MensajeClienteWs) => {
+    const ws = wsRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify(mensaje));
+  }, []);
 
   const reconectar = useCallback(() => {
     const url = urlWebSocket();
-    if (!url || canales.length === 0) return () => undefined;
+    const canalesActuales = canalesRef.current;
+    if (!url || canalesActuales.length === 0) return () => undefined;
 
     let ws: WebSocket | null = null;
     let cerrado = false;
@@ -37,15 +67,26 @@ export function useTiempoReal(
     const conectar = () => {
       if (cerrado) return;
       ws = new WebSocket(url);
+      wsRef.current = ws;
 
       ws.onopen = () => {
-        setConectado(true);
-        ws?.send(
-          JSON.stringify({
-            accion: "suscribir",
-            canales,
-          })
-        );
+        void (async () => {
+          if (requiereTokenAuth(canalesActuales)) {
+            const token = await obtenerTokenWs();
+            if (token) {
+              ws?.send(JSON.stringify({ accion: "suscribir", token }));
+            } else {
+              ws?.send(
+                JSON.stringify({ accion: "suscribir", canales: ["mapa"] })
+              );
+            }
+          } else {
+            ws?.send(
+              JSON.stringify({ accion: "suscribir", canales: ["mapa"] })
+            );
+          }
+          setConectado(true);
+        })();
       };
 
       ws.onmessage = (ev) => {
@@ -60,6 +101,7 @@ export function useTiempoReal(
       };
 
       ws.onclose = () => {
+        wsRef.current = null;
         setConectado(false);
         if (!cerrado) {
           timer = setTimeout(conectar, 3000);
@@ -77,11 +119,12 @@ export function useTiempoReal(
       cerrado = true;
       if (timer) clearTimeout(timer);
       ws?.close();
+      wsRef.current = null;
       setConectado(false);
     };
-  }, [canalesKey]);
+  }, []);
 
-  useEffect(() => reconectar(), [reconectar]);
+  useEffect(() => reconectar(), [reconectar, canales]);
 
-  return { conectado };
+  return { conectado, enviar };
 }

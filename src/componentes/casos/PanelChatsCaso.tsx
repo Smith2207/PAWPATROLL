@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { gestionarEstadoAvistamiento } from "@/actions/avistamientos";
-import { reportarComportamientoSospechoso } from "@/actions/casos";
+import {
+  listarMensajesChatAvistamiento,
+  reportarComportamientoSospechoso,
+  sincronizarResumenChatsMascota,
+  type ResumenChatAvistamiento,
+} from "@/actions/casos";
 import { ChatPrivadoCaso } from "@/componentes/casos/ChatPrivadoCaso";
 import { EtiquetaRolParticipante } from "@/componentes/casos/EtiquetaRolParticipante";
-import { Icono } from "@/componentes/ui/Icono";
-import { emojiMascotaConversacion, resolverConversacionAvistamiento } from "@/lib/chat/conversacion";
+import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
+import { resolverConversacionAvistamiento } from "@/lib/chat/conversacion";
 import { previewMensajeChat } from "@/lib/chat/mensaje";
 import { rolParticipante } from "@/lib/chat/roles";
 import { horaRelativaChat } from "@/lib/chat/tiempo";
 import type { EventoCasoTimeline } from "@/lib/chat/timeline";
 import type { Avistamiento, EventoCaso, MensajeAvistamiento, Mascota } from "@/lib/db/schema";
+import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
+import { useTiempoReal } from "@/hooks/useTiempoReal";
 
 export type MascotaCaso = Mascota & { fotoPrincipal: string | null };
 
@@ -25,6 +32,8 @@ export type AvistamientoCaso = Avistamiento & {
   reportanteUserId: string | null;
   reportanteNombre: string;
   reportanteImagen: string | null;
+  noLeidos?: number;
+  ultimoLeidoInterlocutorAt?: Date | null;
 };
 
 type Props = {
@@ -60,6 +69,24 @@ function mapEventos(eventos: EventoCaso[]): EventoCasoTimeline[] {
   }));
 }
 
+function mensajesPreviewDesdeResumen(
+  avistamientoId: string,
+  resumen: ResumenChatAvistamiento
+): MensajeAvistamiento[] {
+  if (!resumen.ultimoActividad) return [];
+  return [
+    {
+      id: `preview-${avistamientoId}`,
+      avistamientoId,
+      userId: null,
+      autorNombre: null,
+      contenido: resumen.ultimoContenido ?? "",
+      adjuntoUrl: resumen.ultimoAdjuntoUrl,
+      createdAt: resumen.ultimoActividad,
+    },
+  ];
+}
+
 export function PanelChatsCaso({
   mascota,
   avistamientos: avistamientosIniciales,
@@ -69,7 +96,7 @@ export function PanelChatsCaso({
   const router = useRouter();
   const [lista, setLista] = useState(avistamientosIniciales);
   const [pendiente, iniciar] = useTransition();
-  const emoji = emojiMascotaConversacion(mascota.tipo);
+  const iconoMascota = iconoPorTipoMascota(mascota.tipo);
 
   const ordenados = useMemo(
     () => [...lista].sort((a, b) => ultimaActividad(b) - ultimaActividad(a)),
@@ -83,14 +110,80 @@ export function PanelChatsCaso({
   const [reporteAbierto, setReporteAbierto] = useState(false);
   const [motivoReporte, setMotivoReporte] = useState("");
   const [errorReporte, setErrorReporte] = useState<string | null>(null);
+  const [errorGestion, setErrorGestion] = useState<string | null>(null);
 
   useEffect(() => {
-    setLista(avistamientosIniciales);
+    queueMicrotask(() => setLista(avistamientosIniciales));
   }, [avistamientosIniciales]);
+
+  const sincronizarPanel = useCallback(
+    async (avistamientoIdEvento?: string) => {
+      const idActivo = avistamientoIdEvento ?? seleccionadoId;
+      const [resumen, chatActivo] = await Promise.all([
+        sincronizarResumenChatsMascota(mascota.id),
+        idActivo
+          ? listarMensajesChatAvistamiento(idActivo)
+          : Promise.resolve(null),
+      ]);
+      if (!resumen) return;
+
+      setLista((prev) =>
+        prev.map((av) => {
+          const r = resumen.find((x) => x.avistamientoId === av.id);
+          if (!r) return av;
+          const esActivo = av.id === idActivo;
+          return {
+            ...av,
+            mensajes:
+              esActivo && chatActivo
+                ? chatActivo.mensajes
+                : mensajesPreviewDesdeResumen(av.id, r),
+            noLeidos: r.noLeidos,
+            ultimoLeidoInterlocutorAt:
+              esActivo && chatActivo
+                ? chatActivo.ultimoLeidoInterlocutorAt
+                : r.ultimoLeidoInterlocutorAt,
+          };
+        })
+      );
+    },
+    [mascota.id, seleccionadoId]
+  );
+
+  const { conectado: wsConectado } = useTiempoReal([`mascota:${mascota.id}`], (ev) => {
+    if (
+      ev.tipo === "mensaje:nuevo" &&
+      "mascotaId" in ev &&
+      ev.mascotaId === mascota.id
+    ) {
+      void sincronizarPanel(ev.avistamientoId);
+      return;
+    }
+    if (ev.tipo === "chat:leido") {
+      void sincronizarPanel(ev.avistamientoId);
+      return;
+    }
+    if (
+      ev.tipo === "caso:actualizado" ||
+      ev.tipo === "avistamiento:actualizado"
+    ) {
+      if (
+        ev.tipo === "caso:actualizado" &&
+        ev.mascotaId !== mascota.id
+      ) {
+        return;
+      }
+      void sincronizarPanel();
+    }
+  });
+
+  useRespaldoActualizacion(() => {
+    void sincronizarPanel();
+  }, wsConectado, 12_000);
 
   useEffect(() => {
     if (!seleccionadoId && ordenados[0]) {
-      setSeleccionadoId(ordenados[0].id);
+      queueMicrotask(() => setSeleccionadoId(ordenados[0]!.id));
     }
   }, [ordenados, seleccionadoId]);
 
@@ -138,9 +231,10 @@ export function PanelChatsCaso({
 
   function gestionar(id: string, estado: "VERIFICADO" | "DESCARTADO") {
     iniciar(async () => {
+      setErrorGestion(null);
       const res = await gestionarEstadoAvistamiento(id, estado);
       if (res.ok) router.refresh();
-      else alert(res.error ?? "Error");
+      else setErrorGestion(res.error ?? "No se pudo actualizar el avistamiento.");
     });
   }
 
@@ -188,16 +282,27 @@ export function PanelChatsCaso({
                       <img src={mascota.fotoPrincipal} alt="" width={44} height={44} />
                     ) : (
                       <span className="pp-coord-lista-foto-emoji" aria-hidden>
-                        {emoji}
+                        <Icono nombre={iconoMascota} size={20} />
                       </span>
                     )}
                   </span>
                   <span className="pp-coord-lista-texto">
                     <span className="pp-coord-lista-top">
-                      <strong>
-                        {emoji} {mascota.nombre}
+                      <strong className="pp-coord-lista-nombre-mascota">
+                        <Icono nombre={iconoMascota} size={14} className="pp-coord-lista-nombre-icono" />
+                        {mascota.nombre}
                       </strong>
-                      <time>{horaRelativaChat(fechaRef)}</time>
+                      <span className="pp-coord-lista-top-meta">
+                        {(av.noLeidos ?? 0) > 0 && (
+                          <span
+                            className="pp-coord-lista-no-leidos"
+                            aria-label={`${av.noLeidos} sin leer`}
+                          >
+                            {av.noLeidos! > 9 ? "9+" : av.noLeidos}
+                          </span>
+                        )}
+                        <time>{horaRelativaChat(fechaRef)}</time>
+                      </span>
                     </span>
                     <span className="pp-coord-lista-participante">
                       {conv.otro.nombre}
@@ -295,6 +400,12 @@ export function PanelChatsCaso({
               </div>
             </header>
 
+            {errorGestion && (
+              <p className="auth-alerta auth-alerta--error pp-coord-error-gestion" role="alert">
+                {errorGestion}
+              </p>
+            )}
+
             {reporteAbierto && (
               <div className="pp-chat-reporte-panel pp-chat-reporte-panel--compacto">
                 <textarea
@@ -327,17 +438,10 @@ export function PanelChatsCaso({
               numeroReporte={activo.numeroReporte}
               mensajesIniciales={activo.mensajes}
               eventosIniciales={mapEventos(activo.eventos)}
-              esDueno
               nombreMascota={mascota.nombre}
               tipoMascota={mascota.tipo}
-              duenoUserId={activo.duenoUserId}
-              duenoNombre={activo.duenoNombre}
-              reportanteUserId={activo.reportanteUserId}
-              reportanteNombre={activo.reportanteNombre}
               miUserId={miUserId}
-              direccionAvistamiento={activo.direccion}
-              latAvistamiento={activo.lat}
-              lngAvistamiento={activo.lng}
+              ultimoLeidoInterlocutorAt={activo.ultimoLeidoInterlocutorAt}
               embed
               ocultarReporte
             />
