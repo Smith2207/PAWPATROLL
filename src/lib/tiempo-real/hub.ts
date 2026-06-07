@@ -1,4 +1,5 @@
 import type { CanalTiempoReal, EventoTiempoReal } from "@/lib/tiempo-real/tipos";
+import { canalesParaEvento as canalesParaEventoCompartido } from "@/services/pawpatroll-ws/lib/canales-para-evento.mjs";
 
 type Suscriptor = (evento: EventoTiempoReal) => void;
 
@@ -17,20 +18,9 @@ function hub() {
 }
 
 export function canalesParaEvento(evento: EventoTiempoReal): CanalTiempoReal[] {
-  const canales: CanalTiempoReal[] = ["mapa"];
-  if ("mascotaId" in evento && evento.mascotaId) {
-    canales.push(`mascota:${evento.mascotaId}`);
-  }
-  if ("avistamientoId" in evento && evento.avistamientoId) {
-    canales.push(`avistamiento:${evento.avistamientoId}`);
-  }
-  if (evento.tipo === "notificacion:nueva") {
-    canales.push(`usuario:${evento.userId}`);
-  }
-  if (evento.tipo === "mensaje:nuevo" && evento.destinatarioUserId) {
-    canales.push(`usuario:${evento.destinatarioUserId}`);
-  }
-  return [...new Set(canales)];
+  return canalesParaEventoCompartido(
+    evento as Record<string, unknown> & { tipo: string }
+  ) as CanalTiempoReal[];
 }
 
 export function registrarEmisorWs(

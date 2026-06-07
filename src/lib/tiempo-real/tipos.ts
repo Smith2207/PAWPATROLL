@@ -42,6 +42,7 @@ export type EventoTiempoReal =
       avistamientoId: string;
       userId: string;
       leidoAt: string;
+      destinatarioUserId?: string;
     }
   | { tipo: "caso:actualizado"; mascotaId: string };
 

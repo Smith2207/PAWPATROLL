@@ -805,3 +805,74 @@
   padding: 0.4rem 0.55rem;
   box-sizing: border-box;
 }
+
+/* ─── Chat en móvil ─── */
+@media (max-width: 768px) {
+  .pp-chat-burbuja--coord {
+    max-width: min(92vw, 340px);
+  }
+
+  .pp-chat-burbuja--coord .pp-chat-burbuja-cuerpo {
+    max-width: 100%;
+    font-size: 0.9rem;
+    padding: 0.55rem 0.75rem 0.5rem 0.85rem;
+  }
+
+  .pp-chat-burbuja--coord:has(.pp-chat-ubicacion) {
+    max-width: min(94vw, 300px);
+  }
+
+  .pp-chat-burbuja--coord:has(.pp-chat-ubicacion) .pp-chat-burbuja-cuerpo {
+    max-width: 100%;
+  }
+
+  .pp-chat-ubicacion-mapa {
+    height: 110px;
+  }
+
+  .pp-chat-burbuja--coord .pp-chat-burbuja-media .pp-chat-adjunto-img {
+    max-height: 180px;
+  }
+
+  .pp-chat-privado-mensajes--coord {
+    padding: 0.5rem 0.65rem 0.65rem;
+  }
+
+  .pp-chat-privado-input--coord {
+    padding: 0.4rem 0.55rem max(0.55rem, env(safe-area-inset-bottom));
+    gap: 0.35rem;
+  }
+
+  .pp-chat-privado-input--coord textarea {
+    font-size: 16px; /* evita zoom automático en iOS */
+    min-height: 38px;
+    height: 38px;
+  }
+
+  .pp-chat-enviar-btn--coord {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+  }
+
+  .pp-coord-acciones-rapidas {
+    padding: 0.25rem 0.5rem 0;
+    gap: 0.2rem;
+  }
+
+  .pp-coord-acciones-rapidas button,
+  .pp-coord-accion-rapida {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  .pp-chat-ubicacion-preview {
+    margin: 0 0.45rem 0.45rem;
+    padding: 0.55rem 0.65rem 0.65rem;
+  }
+
+  .pp-chat-ubicacion-preview-mapa img {
+    height: 130px;
+  }
+}

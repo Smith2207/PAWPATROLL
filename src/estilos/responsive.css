@@ -257,6 +257,7 @@
 @media (max-width: 640px) {
   :root {
     --padding-pagina: 1rem;
+    --nav-altura: 60px;
   }
 
   [id] {
@@ -375,6 +376,15 @@
 
   .photo-upload[style*="grid"] {
     grid-template-columns: 1fr !important;
+  }
+
+  .panel-cuenta--chats {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .panel-cuenta--chats .mascotas-lista-cabecera h1 {
+    font-size: 1.35rem;
   }
 }
 

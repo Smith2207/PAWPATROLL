@@ -1,18 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { CampoRaza } from "@/componentes/formulario/CampoRaza";
 import { CampoSexo } from "@/componentes/formulario/CampoSexo";
 import { CampoTamano } from "@/componentes/formulario/CampoTamano";
 import { CampoTipoMascota } from "@/componentes/formulario/CampoTipoMascota";
 import { CampoFechaHora } from "@/componentes/formulario/CampoFechaHora";
 import { CampoAccesoExterior } from "@/componentes/formulario/CampoAccesoExterior";
-import {
-  componerRaza,
-  obtenerRazasPorTipo,
-  OPCION_RAZA_OTRA,
-  parsearRaza,
-} from "@/lib/mascotas/razas";
+import { useRazaPorTipo } from "@/hooks/useRazaPorTipo";
 
 export type ValoresInicialesFichaMascota = {
   nombre?: string;
@@ -50,32 +44,21 @@ export function FormularioDatosMascota({
   const tipoIni = valoresIniciales?.tipo ?? tipoInicial;
   const razaIni = valoresIniciales?.raza ?? razaInicial;
 
-  const [tipo, setTipo] = useState(tipoIni);
-  const razaParseada = parsearRaza(tipo, razaIni);
-  const [razaSeleccion, setRazaSeleccion] = useState(razaParseada.seleccion);
-  const [razaOtra, setRazaOtra] = useState(razaParseada.otra);
-
-  function onTipoChange(nuevoTipo: string) {
-    setTipo(nuevoTipo);
-    if (
-      razaSeleccion &&
-      razaSeleccion !== OPCION_RAZA_OTRA &&
-      !obtenerRazasPorTipo(nuevoTipo).includes(razaSeleccion)
-    ) {
-      setRazaSeleccion("");
-      setRazaOtra("");
-    }
-  }
+  const {
+    tipo,
+    onTipoChange,
+    razaSeleccion,
+    setRazaSeleccion,
+    razaOtra,
+    setRazaOtra,
+    razaCompuesta,
+  } = useRazaPorTipo(tipoIni, razaIni);
 
   const wizard = pasoActivo != null;
 
   return (
     <>
-      <input
-        type="hidden"
-        name="raza"
-        value={componerRaza(razaSeleccion, razaOtra)}
-      />
+      <input type="hidden" name="raza" value={razaCompuesta} />
 
       <div className={clasePaso(1, pasoActivo)}>
         {!wizard && <div className="section-divider">Datos de la mascota</div>}

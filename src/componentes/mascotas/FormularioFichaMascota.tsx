@@ -20,13 +20,16 @@ import {
 } from "@/lib/mascotas/formatoFicha";
 import {
   componerRaza,
-  obtenerRazasPorTipo,
-  OPCION_RAZA_OTRA,
-  parsearRaza,
 } from "@/lib/mascotas/razas";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import { CampoRaza } from "@/componentes/formulario/CampoRaza";
+import { CampoAccesoExterior } from "@/componentes/formulario/CampoAccesoExterior";
+import { CampoSexo } from "@/componentes/formulario/CampoSexo";
+import { CampoTamano } from "@/componentes/formulario/CampoTamano";
+import { CampoTipoMascota } from "@/componentes/formulario/CampoTipoMascota";
+import { useRazaPorTipo } from "@/hooks/useRazaPorTipo";
 
 type Props = {
   modo: "crear" | "editar";
@@ -34,11 +37,6 @@ type Props = {
   fotosIniciales?: string[];
   contactoPerfil?: { email: string; telefono?: string | null };
 };
-
-import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
-import { SEXOS, TAMANOS } from "@/lib/mascotas/catalogos";
-import { CampoRaza } from "@/componentes/formulario/CampoRaza";
-import { CampoAccesoExterior } from "@/componentes/formulario/CampoAccesoExterior";
 
 export function FormularioFichaMascota({
   modo,
@@ -48,7 +46,6 @@ export function FormularioFichaMascota({
 }: Props) {
   const router = useRouter();
   const tipoInicial = mascota?.tipo ?? "";
-  const razaInicial = parsearRaza(tipoInicial, mascota?.raza);
   const edadInicial = parsearEdad(mascota?.edad);
   const pesoInicial = parsearPeso(mascota?.peso);
   const microchipInicial = parsearMicrochip(mascota?.microchip);
@@ -58,9 +55,14 @@ export function FormularioFichaMascota({
   );
 
   const [fotos, setFotos] = useState<string[]>(fotosIniciales);
-  const [tipo, setTipo] = useState(tipoInicial);
-  const [razaSeleccion, setRazaSeleccion] = useState(razaInicial.seleccion);
-  const [razaOtra, setRazaOtra] = useState(razaInicial.otra);
+  const {
+    tipo,
+    onTipoChange,
+    razaSeleccion,
+    setRazaSeleccion,
+    razaOtra,
+    setRazaOtra,
+  } = useRazaPorTipo(tipoInicial, mascota?.raza);
   const [edadValor, setEdadValor] = useState(edadInicial.valor);
   const [edadUnidad, setEdadUnidad] = useState<UnidadEdad>(edadInicial.unidad);
   const [pesoValor, setPesoValor] = useState(pesoInicial.valor.replace(/\s*kg\s*$/i, "").trim());
@@ -76,18 +78,6 @@ export function FormularioFichaMascota({
   const onFotosChange = (nuevas: string[]) => {
     setFotos(nuevas);
   };
-
-  function onTipoChange(nuevoTipo: string) {
-    setTipo(nuevoTipo);
-    if (
-      razaSeleccion &&
-      razaSeleccion !== OPCION_RAZA_OTRA &&
-      !obtenerRazasPorTipo(nuevoTipo).includes(razaSeleccion)
-    ) {
-      setRazaSeleccion("");
-      setRazaOtra("");
-    }
-  }
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -163,24 +153,12 @@ export function FormularioFichaMascota({
                   placeholder="Ej: Max"
                 />
               </div>
-              <div className="form-group">
-                <label>
-                  Tipo <span className="form-ficha-req">*</span>
-                </label>
-                <select
-                  name="tipo"
-                  required
-                  value={tipo}
-                  onChange={(e) => onTipoChange(e.target.value)}
-                >
-                  <option value="">Elegir...</option>
-                  {TIPOS_MASCOTA.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CampoTipoMascota
+                value={tipo}
+                onChange={onTipoChange}
+                label="Tipo"
+                requerido
+              />
               <CampoRaza
                 tipo={tipo}
                 seleccion={razaSeleccion}
@@ -189,17 +167,10 @@ export function FormularioFichaMascota({
                 onOtraChange={setRazaOtra}
                 classNameSecundario="form-ficha-campo-secundario"
               />
-              <div className="form-group">
-                <label>Sexo</label>
-                <select name="sexo" defaultValue={mascota?.sexo ?? ""}>
-                  <option value="">—</option>
-                  {SEXOS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CampoSexo
+                label="Sexo"
+                defaultValue={mascota?.sexo ?? ""}
+              />
             </div>
           </section>
 
@@ -217,17 +188,11 @@ export function FormularioFichaMascota({
                   placeholder="Ej: Marrón"
                 />
               </div>
-              <div className="form-group">
-                <label>Tamaño</label>
-                <select name="tamano" defaultValue={mascota?.tamano ?? ""}>
-                  <option value="">—</option>
-                  {TAMANOS.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CampoTamano
+                label="Tamaño"
+                defaultValue={mascota?.tamano ?? ""}
+                vacio="—"
+              />
               <div className="form-group form-ficha-grid--ancho">
                 <CampoAccesoExterior tipo={tipo} defaultValue={mascota?.accesoExterior} />
               </div>

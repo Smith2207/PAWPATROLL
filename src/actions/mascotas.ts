@@ -28,6 +28,7 @@ import {
   crearNotificacionPrivada,
   registrarEventoCaso,
 } from "@/lib/casos/servicio-caso";
+import { sesionUsuario } from "@/lib/auth/sesion-servidor";
 function indexarClipMascota(mascotaId: string) {
   void import("@/lib/visual/indice-visual").then((m) =>
     m.sincronizarEmbeddingMascota(mascotaId)
@@ -36,12 +37,6 @@ function indexarClipMascota(mascotaId: string) {
 
 function soloPerrosYGatos() {
   return inArray(mascotas.tipo, [...TIPOS_MASCOTA]);
-}
-
-async function sesionUsuario() {
-  const { auth } = await import("@/auth");
-  const sesion = await auth();
-  return sesion?.user?.id ?? null;
 }
 
 function normalizarFicha(datos: DatosFichaMascota) {

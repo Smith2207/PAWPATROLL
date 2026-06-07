@@ -187,6 +187,19 @@ export function PanelChatsCaso({
     }
   }, [ordenados, seleccionadoId]);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const abrirChatUnico = () => {
+      if (mq.matches && ordenados.length === 1 && ordenados[0]) {
+        setSeleccionadoId(ordenados[0].id);
+        setVistaMovil("chat");
+      }
+    };
+    abrirChatUnico();
+    mq.addEventListener("change", abrirChatUnico);
+    return () => mq.removeEventListener("change", abrirChatUnico);
+  }, [ordenados]);
+
   const activo = ordenados.find((a) => a.id === seleccionadoId) ?? null;
 
   const convActiva = useMemo(() => {

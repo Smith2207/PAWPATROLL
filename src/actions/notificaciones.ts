@@ -3,12 +3,7 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { notificaciones, type NotificacionTipo } from "@/lib/db/schema";
-
-async function sesionUsuario() {
-  const { auth } = await import("@/auth");
-  const sesion = await auth();
-  return sesion?.user?.id ?? null;
-}
+import { sesionUsuario } from "@/lib/auth/sesion-servidor";
 
 export type NotificacionAgrupada = {
   id: string;

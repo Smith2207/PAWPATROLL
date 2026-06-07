@@ -44,6 +44,8 @@ npm install
 WS_PUBLISH_SECRET=dev-local npm start
 ```
 
+**Código compartido con Next.js:** `lib/canales-para-evento.mjs` (enrutamiento WS). El hub en Vercel importa el mismo archivo para evitar duplicación.
+
 Desde la raíz del monorepo:
 
 ```bash

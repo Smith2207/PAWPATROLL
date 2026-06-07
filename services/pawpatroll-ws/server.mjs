@@ -5,25 +5,13 @@
 import http from "node:http";
 import { WebSocketServer } from "ws";
 import { verificarTokenSuscripcionWs } from "./verificar-token-ws.mjs";
+import { canalesParaEvento } from "./lib/canales-para-evento.mjs";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const SECRET = process.env.WS_PUBLISH_SECRET?.trim() ?? "";
 
 /** @type {import('ws').WebSocket & { canales?: Set<string> }[]} */
 const clientes = new Set();
-
-function canalesParaEvento(evento) {
-  const canales = ["mapa"];
-  if (evento.mascotaId) canales.push(`mascota:${evento.mascotaId}`);
-  if (evento.avistamientoId) canales.push(`avistamiento:${evento.avistamientoId}`);
-  if (evento.tipo === "notificacion:nueva" && evento.userId) {
-    canales.push(`usuario:${evento.userId}`);
-  }
-  if (evento.tipo === "mensaje:nuevo" && evento.destinatarioUserId) {
-    canales.push(`usuario:${evento.destinatarioUserId}`);
-  }
-  return [...new Set(canales)];
-}
 
 function emitir(canales, evento) {
   const payload = JSON.stringify({ evento, ts: Date.now() });

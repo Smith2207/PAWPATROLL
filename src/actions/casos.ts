@@ -28,33 +28,24 @@ import {
   obtenerUltimaLecturaInterlocutor,
 } from "@/lib/chat/lectura-servidor";
 import { mensajesConAdjuntoApi } from "@/lib/chat/adjunto-mensaje";
-
-async function sesionUsuario() {
-  const { auth } = await import("@/auth");
-  const sesion = await auth();
-  return sesion?.user?.id ?? null;
-}
-
-async function esDuenoMascota(mascotaId: string, userId: string) {
-  const [m] = await db
-    .select({ userId: mascotas.userId })
-    .from(mascotas)
-    .where(eq(mascotas.id, mascotaId))
-    .limit(1);
-  return m?.userId === userId;
-}
+import {
+  esAdministrador,
+  esDuenoMascota,
+  obtenerSesion,
+  sesionUsuario,
+} from "@/lib/auth/sesion-servidor";
 
 export async function puedeAccederCasoBusqueda(mascotaId: string) {
-  const userId = await sesionUsuario();
+  const sesion = await obtenerSesion();
+  const userId = sesion?.user?.id ?? null;
   if (!userId) return false;
-  const { auth } = await import("@/auth");
-  const sesion = await auth();
-  if (sesion?.user?.rol === "ADMINISTRADOR") return true;
+  if (esAdministrador(sesion)) return true;
   return esDuenoMascota(mascotaId, userId);
 }
 
 export async function puedeAccederChatAvistamiento(avistamientoId: string) {
-  const userId = await sesionUsuario();
+  const sesion = await obtenerSesion();
+  const userId = sesion?.user?.id ?? null;
   if (!userId) return false;
 
   const [av] = await db
@@ -71,18 +62,15 @@ export async function puedeAccederChatAvistamiento(avistamientoId: string) {
   if (av.mascotaUserId === userId) return true;
   if (av.userId === userId) return true;
 
-  const { auth } = await import("@/auth");
-  const sesion = await auth();
-  return sesion?.user?.rol === "ADMINISTRADOR";
+  return esAdministrador(sesion);
 }
 
 export async function obtenerCasoBusqueda(mascotaId: string) {
-  const userId = await sesionUsuario();
+  const sesion = await obtenerSesion();
+  const userId = sesion?.user?.id ?? null;
   if (!userId) return null;
 
-  const { auth } = await import("@/auth");
-  const sesion = await auth();
-  const esAdmin = sesion?.user?.rol === "ADMINISTRADOR";
+  const esAdmin = esAdministrador(sesion);
   const dueno = await esDuenoMascota(mascotaId, userId);
   if (!dueno && !esAdmin) return null;
 
@@ -504,12 +492,26 @@ export async function marcarChatLeido(
       set: { ultimoLeidoAt: leidoAt },
     });
 
+  const [av] = await db
+    .select({
+      reportanteUserId: avistamientos.userId,
+      duenoUserId: mascotas.userId,
+    })
+    .from(avistamientos)
+    .leftJoin(mascotas, eq(avistamientos.mascotaId, mascotas.id))
+    .where(eq(avistamientos.id, avistamientoId))
+    .limit(1);
+
+  const destinatarioUserId =
+    av?.duenoUserId === userId ? av.reportanteUserId : av?.duenoUserId;
+
   const { emitirTiempoReal } = await import("@/lib/tiempo-real/hub");
   emitirTiempoReal({
     tipo: "chat:leido",
     avistamientoId,
     userId,
     leidoAt: leidoAt.toISOString(),
+    destinatarioUserId: destinatarioUserId ?? undefined,
   });
 
   return { ok: true };

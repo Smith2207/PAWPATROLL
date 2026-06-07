@@ -22,12 +22,7 @@ import { OverlayPublicando } from "@/componentes/ui/OverlayPublicando";
 import { Icono } from "@/componentes/ui/Icono";
 import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
-import {
-  componerRaza,
-  obtenerRazasPorTipo,
-  OPCION_RAZA_OTRA,
-  parsearRaza,
-} from "@/lib/mascotas/razas";
+import { parsearRaza } from "@/lib/mascotas/razas";
 import {
   DIRECCIONES_MOVIMIENTO,
   PLACEHOLDER_UBICACION,
@@ -35,6 +30,7 @@ import {
 import { CampoRaza } from "@/componentes/formulario/CampoRaza";
 import { CampoTamano } from "@/componentes/formulario/CampoTamano";
 import { CampoTipoMascota } from "@/componentes/formulario/CampoTipoMascota";
+import { useRazaPorTipo } from "@/hooks/useRazaPorTipo";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
 import { useModales } from "@/contexto/ContextoModales";
@@ -85,10 +81,17 @@ export function ModalReportarAvistamiento({
   const avistamientoDesdeFicha = Boolean(mascotaFijada?.id);
 
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState("");
-  const [tipo, setTipo] = useState("");
+  const {
+    tipo,
+    setTipo,
+    onTipoChange,
+    razaSeleccion,
+    setRazaSeleccion,
+    razaOtra,
+    setRazaOtra,
+    razaCompuesta,
+  } = useRazaPorTipo();
   const [color, setColor] = useState("");
-  const [razaSeleccion, setRazaSeleccion] = useState("");
-  const [razaOtra, setRazaOtra] = useState("");
   const [ubicacion, setUbicacion] = useState<UbicacionSeleccionada | null>(null);
   const [direccion, setDireccion] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -252,7 +255,7 @@ export function ModalReportarAvistamiento({
         tipoMascota: tipo,
         tamano: tamano || fd.get("tamano")?.toString(),
         color: color.trim() || undefined,
-        raza: componerRaza(razaSeleccion, razaOtra) || undefined,
+        raza: razaCompuesta || undefined,
         fotoUrl: fotoAvistamiento ?? undefined,
         referencias: referencias.trim() || fd.get("referencia")?.toString(),
         direccionMovimiento:
@@ -562,17 +565,7 @@ export function ModalReportarAvistamiento({
           <div className="form-row">
             <CampoTipoMascota
               value={tipo}
-              onChange={(nuevoTipo) => {
-                setTipo(nuevoTipo);
-                if (
-                  razaSeleccion &&
-                  razaSeleccion !== OPCION_RAZA_OTRA &&
-                  !obtenerRazasPorTipo(nuevoTipo).includes(razaSeleccion)
-                ) {
-                  setRazaSeleccion("");
-                  setRazaOtra("");
-                }
-              }}
+              onChange={onTipoChange}
               requerido
               deshabilitado={
                 avistamientoDesdeFicha && Boolean(mascotaFijada?.tipo)

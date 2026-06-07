@@ -25,6 +25,7 @@ import {
 import { tituloNotificacionMensaje } from "@/lib/chat/conversacion";
 import { ETIQUETA_MENSAJE_FOTO } from "@/lib/chat/mensaje";
 import { esAdjuntoChatValido } from "@/lib/storage/blob-chat";
+import { esDuenoMascota, sesionUsuario } from "@/lib/auth/sesion-servidor";
 
 export type DatosAvistamiento = {
   mascotaId?: string;
@@ -50,22 +51,6 @@ export type DatosAvistamiento = {
 export type AvistamientoConMensajes = Awaited<
   ReturnType<typeof listarAvistamientosPorMascota>
 >[number];
-
-async function sesionUsuario() {
-  const { auth } = await import("@/auth");
-  const sesion = await auth();
-  return sesion?.user?.id ?? null;
-}
-
-async function esDuenoMascota(mascotaId: string, userId: string | null) {
-  if (!userId) return false;
-  const [m] = await db
-    .select({ userId: mascotas.userId })
-    .from(mascotas)
-    .where(eq(mascotas.id, mascotaId))
-    .limit(1);
-  return m?.userId === userId;
-}
 
 async function siguienteNumeroReporte(mascotaId: string | null): Promise<number> {
   const [fila] = await db
