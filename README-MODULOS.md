@@ -121,7 +121,6 @@ CRUD de fichas, fotos, estados del ciclo de vida y ficha pública compartible.
 | `actualizarMascota` | Edición de campos y fotos |
 | `cambiarEstadoMascota` | `EN_CASA` → `PERDIDA` → `ENCONTRADA` → `REUNIDA` |
 | `eliminarMascota` | Borrado en cascada |
-| `crearMascotaBasica` | Alta rápida desde modal de pérdida |
 
 ### Server Actions — `src/actions/estadisticas.ts`
 
@@ -295,11 +294,9 @@ Cerco dinámico, expansión temporal, zonas de refugio y consejos según perfil 
 - `PanelComportamiento.tsx` — consejos al dueño
 - Integrado en `listarDatosMapaMascota` y `MapaPawPatrol`
 
-### Server Actions — `src/actions/comportamiento.ts`
+### Server Actions — predicción vía `src/actions/mapa.ts`
 
-| Función | Descripción |
-|---------|-------------|
-| `obtenerPrediccionMascota` | Predicción completa para una ficha perdida |
+La predicción conductual se calcula al listar datos del mapa (`listarDatosMapaMascota`, `listarMarcadoresMapaComunidad`) usando `calcularPrediccionComportamiento` de la librería. No hay action dedicada aparte.
 
 ### Librería — `src/lib/comportamiento/`
 
@@ -509,9 +506,8 @@ Archivos SQL en `drizzle/0000` … `drizzle/0011`.
 | `autenticacion.ts` | M1 |
 | `mascotas.ts` | M2 |
 | `estadisticas.ts` | M2 (landing) |
-| `mapa.ts` | M4 |
+| `mapa.ts` | M4 + predicción M5 |
 | `comunidad.ts` | M4 |
-| `comportamiento.ts` | M5 |
 | `avistamientos.ts` | M6 |
 | `casos.ts` | M6 |
 | `notificaciones.ts` | M6 |

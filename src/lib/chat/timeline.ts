@@ -1,4 +1,5 @@
 import type { EventoCaso, EventoCasoTipo, MensajeAvistamiento } from "@/lib/db/schema";
+import type { UbicacionChat } from "@/lib/chat/ubicacion-mensaje";
 
 export type ItemTimelineChat =
   | { tipo: "mensaje"; data: MensajeAvistamiento; fecha: Date }
@@ -10,7 +11,95 @@ export type EventoCasoTimeline = {
   titulo: string;
   detalle: string | null;
   createdAt: Date;
+  ubicacion?: UbicacionChat | null;
 };
+
+type AvistamientoCoords = {
+  lat: string;
+  lng: string;
+  direccion: string | null;
+  enTiempoReal: boolean;
+};
+
+export function ubicacionEnEvento(
+  ev: Pick<EventoCaso, "tipo" | "detalle" | "metadata" | "avistamientoId">,
+  avistamientosPorId: Map<string, AvistamientoCoords>
+): UbicacionChat | null {
+  if (ev.tipo !== "AVISTAMIENTO_NUEVO") return null;
+
+  if (ev.metadata?.trim()) {
+    try {
+      const data = JSON.parse(ev.metadata) as {
+        lat?: unknown;
+        lng?: unknown;
+        label?: unknown;
+        enVivo?: unknown;
+      };
+      const lat = Number(data.lat);
+      const lng = Number(data.lng);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const label =
+          typeof data.label === "string" && data.label.trim()
+            ? data.label.trim()
+            : ev.detalle?.trim() || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        return { lat, lng, label, enVivo: data.enVivo === true };
+      }
+    } catch {
+      /* metadata inválida */
+    }
+  }
+
+  if (ev.avistamientoId) {
+    const av = avistamientosPorId.get(ev.avistamientoId);
+    if (av) {
+      const lat = Number(av.lat);
+      const lng = Number(av.lng);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        return {
+          lat,
+          lng,
+          label:
+            av.direccion?.trim() ||
+            ev.detalle?.trim() ||
+            `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+          enVivo: av.enTiempoReal,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+export function mapEventosATimeline(
+  eventos: Array<
+    Pick<
+      EventoCaso,
+      "id" | "tipo" | "titulo" | "detalle" | "createdAt" | "metadata" | "avistamientoId"
+    >
+  >,
+  avistamientosPorId: Map<string, AvistamientoCoords>
+): EventoCasoTimeline[] {
+  return eventos.map((e) => {
+    const ubicacion = ubicacionEnEvento(e, avistamientosPorId);
+    return {
+      id: e.id,
+      tipo: e.tipo,
+      titulo: e.titulo,
+      detalle: ubicacion ? null : e.detalle,
+      createdAt: e.createdAt,
+      ubicacion,
+    };
+  });
+}
+
+export function mapEventosParaAvistamiento(
+  eventos: EventoCaso[],
+  avistamiento: AvistamientoCoords & { id: string }
+): EventoCasoTimeline[] {
+  const avistamientosPorId = new Map([[avistamiento.id, avistamiento]]);
+  return mapEventosATimeline(eventos, avistamientosPorId);
+}
 
 const EVENTOS_EN_CHAT: EventoCasoTipo[] = [
   "ALERTA_ACTIVADA",

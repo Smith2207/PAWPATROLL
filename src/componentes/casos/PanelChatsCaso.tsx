@@ -16,7 +16,7 @@ import { resolverConversacionAvistamiento } from "@/lib/chat/conversacion";
 import { previewMensajeChat } from "@/lib/chat/mensaje";
 import { rolParticipante } from "@/lib/chat/roles";
 import { horaRelativaChat } from "@/lib/chat/tiempo";
-import type { EventoCasoTimeline } from "@/lib/chat/timeline";
+import { mapEventosParaAvistamiento, type EventoCasoTimeline } from "@/lib/chat/timeline";
 import type { Avistamiento, EventoCaso, MensajeAvistamiento, Mascota } from "@/lib/db/schema";
 import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
@@ -59,14 +59,14 @@ function previewLista(av: AvistamientoCaso) {
   return "Sin mensajes aún";
 }
 
-function mapEventos(eventos: EventoCaso[]): EventoCasoTimeline[] {
-  return eventos.map((e) => ({
-    id: e.id,
-    tipo: e.tipo,
-    titulo: e.titulo,
-    detalle: e.detalle,
-    createdAt: e.createdAt,
-  }));
+function mapEventos(eventos: EventoCaso[], av: Avistamiento): EventoCasoTimeline[] {
+  return mapEventosParaAvistamiento(eventos, {
+    id: av.id,
+    lat: av.lat,
+    lng: av.lng,
+    direccion: av.direccion,
+    enTiempoReal: av.enTiempoReal,
+  });
 }
 
 function mensajesPreviewDesdeResumen(
@@ -437,7 +437,7 @@ export function PanelChatsCaso({
               mascotaId={mascota.id}
               numeroReporte={activo.numeroReporte}
               mensajesIniciales={activo.mensajes}
-              eventosIniciales={mapEventos(activo.eventos)}
+              eventosIniciales={mapEventos(activo.eventos, activo)}
               nombreMascota={mascota.nombre}
               tipoMascota={mascota.tipo}
               miUserId={miUserId}

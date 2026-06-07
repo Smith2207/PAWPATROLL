@@ -24,12 +24,35 @@ import {
 } from "@/lib/fechas/datetime-local";
 
 const ACCIONES: Partial<
-  Record<EstadoMascota, { icono: NombreIcono; label: string; variant?: string }>
+  Record<
+    EstadoMascota,
+    { icono: NombreIcono; label: string; detalle: string; clase: string }
+  >
 > = {
-  PERDIDA: { icono: "alertaCirculo", label: "Marcar como perdida" },
-  ENCONTRADA: { icono: "alertaCirculo", label: "Marcar como encontrada" },
-  REUNIDA: { icono: "checkCirculo", label: "Marcar como reunida" },
-  EN_CASA: { icono: "casa", label: "Volver a en casa" },
+  PERDIDA: {
+    icono: "alertaCirculo",
+    label: "Marcar como perdida",
+    detalle: "Activa la alerta en el mapa y avisa a la comunidad",
+    clase: "btn-estado--perdida",
+  },
+  ENCONTRADA: {
+    icono: "alerta",
+    label: "Marcar como encontrada",
+    detalle: "Indica que alguien ya la tiene a salvo",
+    clase: "btn-estado--encontrada",
+  },
+  REUNIDA: {
+    icono: "checkCirculo",
+    label: "Marcar como reunida",
+    detalle: "Cierra el caso — volvió con su familia",
+    clase: "btn-estado--reunida",
+  },
+  EN_CASA: {
+    icono: "casa",
+    label: "Volver a en casa",
+    detalle: "Todo normal, sin alerta activa",
+    clase: "btn-estado--casa",
+  },
 };
 
 type Props = {
@@ -105,7 +128,7 @@ export function PanelCambioEstado({ mascota }: Props) {
   return (
     <div className="tarjeta-panel">
       <h2>Estado actual</h2>
-      <div style={{ marginBottom: "1rem" }}>
+      <div className="panel-estado-actual">
         <BadgeEstadoMascota estado={mascota.estado} />
       </div>
 
@@ -167,28 +190,33 @@ export function PanelCambioEstado({ mascota }: Props) {
       </div>
 
       <div className="panel-estados">
-        {transiciones.map((estado) => (
-          <button
-            key={estado}
-            type="button"
-            className="btn-estado"
-            disabled={cargando}
-            onClick={() => aplicar(estado)}
-          >
-            {ACCIONES[estado] ? (
-              <>
-                <Icono
-                  nombre={ACCIONES[estado]!.icono}
-                  size={16}
-                  className="pp-icon--btn"
-                />{" "}
-                {ACCIONES[estado]!.label}
-              </>
-            ) : (
-              ETIQUETAS_ESTADO[estado]
-            )}
-          </button>
-        ))}
+        {transiciones.map((estado) => {
+          const accion = ACCIONES[estado];
+          return (
+            <button
+              key={estado}
+              type="button"
+              className={`btn-estado${accion ? ` ${accion.clase}` : ""}`}
+              disabled={cargando}
+              onClick={() => aplicar(estado)}
+            >
+              {accion ? (
+                <>
+                  <span className="btn-estado-icono" aria-hidden>
+                    <Icono nombre={accion.icono} size={22} />
+                  </span>
+                  <span className="btn-estado-copy">
+                    <strong>{accion.label}</strong>
+                    <small>{accion.detalle}</small>
+                  </span>
+                  <Icono nombre="derecha" size={18} className="btn-estado-flecha" />
+                </>
+              ) : (
+                ETIQUETAS_ESTADO[estado]
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

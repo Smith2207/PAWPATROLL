@@ -548,36 +548,200 @@
   background: var(--bg2);
 }
 
+.panel-estado-actual {
+  margin-bottom: 1.15rem;
+}
+
+.panel-estado-actual .estado-badge {
+  padding: 0.55rem 1.15rem;
+  font-size: 0.88rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(var(--navy-rgb), 0.08);
+}
+
 .panel-estados {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
 }
 
 .btn-estado {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
   width: 100%;
   text-align: left;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 2px solid var(--border);
   background: var(--card);
   font-family: inherit;
-  font-weight: 800;
-  font-size: 0.85rem;
   color: var(--navy);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .btn-estado:hover:not(:disabled) {
-  background: var(--blue-light);
-  border-color: var(--blue2);
-  color: var(--blue);
+  transform: translateY(-2px);
+}
+
+.btn-estado:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn-estado:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+}
+
+.btn-estado-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 14px;
+  background: var(--bg2);
+  color: var(--navy);
+}
+
+.btn-estado-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.btn-estado-copy strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.btn-estado-copy small {
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.btn-estado-flecha {
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-estado:hover:not(:disabled) .btn-estado-flecha {
+  opacity: 0.85;
+  transform: translateX(3px);
+}
+
+/* Perdida — acción urgente (naranja marca) */
+.btn-estado--perdida {
+  border-color: rgba(var(--orange-rgb), 0.45);
+  background: linear-gradient(135deg, var(--orange-light) 0%, var(--orange-light2) 100%);
+  box-shadow: 0 6px 20px var(--orange-glow);
+}
+
+.btn-estado--perdida .btn-estado-icono {
+  background: linear-gradient(135deg, var(--orange) 0%, var(--orange2) 100%);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(var(--orange-rgb), 0.35);
+}
+
+.btn-estado--perdida .btn-estado-copy strong {
+  color: var(--danger-text);
+}
+
+.btn-estado--perdida .btn-estado-copy small {
+  color: #b45309;
+}
+
+.btn-estado--perdida:hover:not(:disabled) {
+  border-color: var(--orange);
+  box-shadow: 0 10px 28px rgba(var(--orange-rgb), 0.32);
+}
+
+/* Reunida — éxito (mint) */
+.btn-estado--reunida {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: linear-gradient(135deg, var(--mint-light) 0%, #ecfdf5 100%);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.16);
+}
+
+.btn-estado--reunida .btn-estado-icono {
+  background: linear-gradient(135deg, var(--mint) 0%, #059669 100%);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-estado--reunida .btn-estado-copy strong {
+  color: var(--ok-text);
+}
+
+.btn-estado--reunida .btn-estado-copy small {
+  color: #047857;
+}
+
+.btn-estado--reunida:hover:not(:disabled) {
+  border-color: var(--mint);
+  box-shadow: 0 10px 28px rgba(16, 185, 129, 0.24);
+}
+
+/* En casa — seguro (azul marca) */
+.btn-estado--casa {
+  border-color: rgba(var(--blue-rgb), 0.35);
+  background: linear-gradient(135deg, var(--blue-light) 0%, #f0f7ff 100%);
+  box-shadow: 0 6px 18px rgba(var(--blue-rgb), 0.12);
+}
+
+.btn-estado--casa .btn-estado-icono {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(var(--blue-rgb), 0.28);
+}
+
+.btn-estado--casa .btn-estado-copy strong {
+  color: var(--navy);
+}
+
+.btn-estado--casa:hover:not(:disabled) {
+  border-color: var(--blue2);
+  box-shadow: 0 10px 26px rgba(var(--blue-rgb), 0.2);
+}
+
+/* Encontrada — intermedio (amarillo) */
+.btn-estado--encontrada {
+  border-color: var(--warn-border);
+  background: linear-gradient(135deg, var(--warn-bg) 0%, #fffbeb 100%);
+  box-shadow: 0 6px 18px rgba(251, 191, 36, 0.18);
+}
+
+.btn-estado--encontrada .btn-estado-icono {
+  background: linear-gradient(135deg, var(--yellow) 0%, #f59e0b 100%);
+  color: var(--navy);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.28);
+}
+
+.btn-estado--encontrada .btn-estado-copy strong {
+  color: var(--warn-text);
+}
+
+.btn-estado--encontrada .btn-estado-copy small {
+  color: #92400e;
+}
+
+.btn-estado--encontrada:hover:not(:disabled) {
+  border-color: #f59e0b;
+  box-shadow: 0 10px 26px rgba(245, 158, 11, 0.22);
 }
 
 .historial-lista {
@@ -1394,7 +1558,122 @@ footer.ficha-publica-pie {
   background: var(--mint);
 }
 
-.ficha-publica-mapa-envoltorio .ficha-publica-mapa .pp-mapa-wrap {
+.ficha-publica-mapa-envoltorio {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ficha-publica-mapa-envoltorio--clic {
+  cursor: zoom-in;
+}
+
+.ficha-publica-mapa-envoltorio--clic .pp-mapa-btn-geo,
+.ficha-publica-mapa-envoltorio--clic .leaflet-control {
+  cursor: pointer;
+}
+
+.ficha-publica-mapa-ampliar-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 450;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--white);
+  background: rgba(var(--navy-rgb), 0.82);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(var(--navy-rgb), 0.25);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.ficha-publica-mapa-ampliar-btn:hover {
+  background: rgba(var(--navy-rgb), 0.92);
+  transform: translateX(-50%) translateY(-1px);
+}
+
+.lightbox-ficha--mapa {
+  padding: 1rem;
+  align-items: stretch;
+}
+
+.lightbox-ficha-mapa-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(96vw, 1100px);
+  max-height: min(92vh, 900px);
+  margin: auto;
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.lightbox-ficha-mapa-cabecera {
+  flex-shrink: 0;
+  padding: 0.85rem 1rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--blue-light) 0%, var(--white) 100%);
+}
+
+.lightbox-ficha-mapa-titulo {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.lightbox-ficha-mapa-ayuda {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.lightbox-ficha-mapa-cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.65rem;
+}
+
+.lightbox-ficha-mapa-cuerpo .pp-mapa-wrap {
+  height: min(72vh, 680px);
+  min-height: 320px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.lightbox-ficha-mapa-cuerpo .pp-mapa--seccion {
+  min-height: 320px;
+  height: 100%;
+}
+
+@media (max-width: 640px) {
+  .lightbox-ficha--mapa {
+    padding: 0.5rem;
+  }
+
+  .lightbox-ficha-mapa-panel {
+    width: 100%;
+    max-height: 94vh;
+  }
+
+  .lightbox-ficha-mapa-cuerpo .pp-mapa-wrap {
+    height: min(68vh, 560px);
+    min-height: 260px;
+  }
+}
+
+.ficha-publica-mapa-envoltorio .pp-mapa-wrap {
   flex: none;
 }
 

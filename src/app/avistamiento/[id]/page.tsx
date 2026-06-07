@@ -5,7 +5,6 @@ import { EtiquetaRolParticipante } from "@/componentes/casos/EtiquetaRolParticip
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 import { resolverConversacionAvistamiento } from "@/lib/chat/conversacion";
 import { rolParticipante } from "@/lib/chat/roles";
-import type { EventoCasoTimeline } from "@/lib/chat/timeline";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -39,14 +38,6 @@ export default async function PaginaChatAvistamiento({ params }: Props) {
     conversacion.otro.userId,
     chat.duenoUserId
   );
-
-  const eventos: EventoCasoTimeline[] = chat.eventos.map((e) => ({
-    id: e.id,
-    tipo: e.tipo,
-    titulo: e.titulo,
-    detalle: e.detalle,
-    createdAt: e.createdAt,
-  }));
 
   return (
     <EnvolturaPaginasApp>
@@ -82,7 +73,7 @@ export default async function PaginaChatAvistamiento({ params }: Props) {
             mascotaId={chat.avistamiento.mascotaId}
             numeroReporte={chat.avistamiento.numeroReporte}
             mensajesIniciales={chat.mensajes}
-            eventosIniciales={eventos}
+            eventosIniciales={chat.eventos}
             nombreMascota={chat.nombreMascota ?? "Mascota"}
             tipoMascota={chat.tipoMascota}
             miUserId={sesion.user.id!}

@@ -31,7 +31,9 @@ export async function obtenerResumenCasosNav(): Promise<ResumenCasosNav> {
     return { href: "/mis-mascotas", pendientes: 0, perdidas: 0 };
   }
 
-  const perdidas = lista.filter((m) => m.estado === "PERDIDA");
+  const perdidas = lista.filter(
+    (m) => m.estado === "PERDIDA" || m.estado === "ENCONTRADA"
+  );
   const ids = lista.map((m) => m.id);
 
   const pendientesRows = await db

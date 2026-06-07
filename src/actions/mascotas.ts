@@ -631,14 +631,3 @@ export async function eliminarMascota(id: string): Promise<ResultadoAuth> {
 
   return { ok: true, mensaje: "Mascota eliminada." };
 }
-
-/** Compatibilidad con formulario simple anterior */
-export async function crearMascotaBasica(datos: {
-  nombre: string;
-  tipo: string;
-  raza?: string;
-  sexo?: string;
-  color?: string;
-}): Promise<ResultadoAuth> {
-  return crearMascota(datos);
-}

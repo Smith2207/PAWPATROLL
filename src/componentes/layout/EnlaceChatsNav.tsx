@@ -17,7 +17,7 @@ function rutaChatsActiva(pathname: string) {
   ) {
     return true;
   }
-  return pathname.includes("/caso");
+  return pathname.startsWith("/avistamiento/");
 }
 
 type Props = {

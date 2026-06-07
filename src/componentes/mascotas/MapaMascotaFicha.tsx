@@ -11,6 +11,8 @@ import { BotonReportarAvistamiento } from "@/componentes/mascotas/BotonReportarA
 import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 import { listarDatosMapaMascota } from "@/actions/mapa";
+import { LightboxMapaFicha } from "@/componentes/mascotas/LightboxMapaFicha";
+import { Icono } from "@/componentes/ui/Icono";
 
 const MapaPawPatrol = dynamic(
   () =>
@@ -49,6 +51,7 @@ export function MapaMascotaFicha({
   const [miUbicacion, setMiUbicacion] = useState<UbicacionSeleccionada | null>(
     null
   );
+  const [mapaAmpliado, setMapaAmpliado] = useState(false);
   const geo = useGeolocalizacion({ onUbicacion: setMiUbicacion });
   const { solicitarUbicacion, dialogoPermiso } = useSolicitudUbicacion({
     obtenerUbicacion: geo.obtenerUbicacion,
@@ -80,6 +83,39 @@ export function MapaMascotaFicha({
   const tieneZonaPerdida = datosMapa.perdidas.length > 0;
   const totalAvistamientos = datosMapa.avistamientos.length;
   const tieneMapa = tieneZonaPerdida || totalAvistamientos > 0;
+
+  function abrirMapaAmpliado() {
+    setMapaAmpliado(true);
+  }
+
+  function onClickVistaMapa(e: React.MouseEvent<HTMLDivElement>) {
+    const objetivo = e.target as HTMLElement;
+    if (
+      objetivo.closest(
+        ".leaflet-control, .pp-mapa-btn-geo, .ficha-publica-mapa-ampliar-btn, .leaflet-popup"
+      )
+    ) {
+      return;
+    }
+    abrirMapaAmpliado();
+  }
+
+  const propsMapa = {
+    datos: datosMapa,
+    prediccion: datosMapa.prediccion,
+    mascotaId,
+    nombreMascota: nombre,
+    mostrarCalor: false as const,
+    mostrarCercos: tieneZonaPerdida,
+    mostrarRefugios: tieneZonaPerdida,
+    marcadorUsuario: miUbicacion,
+    centrarEnUsuario: miUbicacion ?? undefined,
+    mostrarBotonGeolocalizar: true as const,
+    geolocalizando: geo.cargando,
+    onGeolocalizar: () => {
+      void solicitarUbicacion();
+    },
+  };
 
   return (
     <section
@@ -139,24 +175,33 @@ export function MapaMascotaFicha({
             </span>
           </div>
 
-          <MapaPawPatrol
-            datos={datosMapa}
-            prediccion={datosMapa.prediccion}
-            mascotaId={mascotaId}
-            nombreMascota={nombre}
-            altura="ficha"
-            mostrarCalor={false}
-            mostrarCercos={tieneZonaPerdida}
-            mostrarRefugios={tieneZonaPerdida}
-            marcadorUsuario={miUbicacion}
-            centrarEnUsuario={miUbicacion ?? undefined}
-            mostrarBotonGeolocalizar
-            geolocalizando={geo.cargando}
-            onGeolocalizar={() => {
-              void solicitarUbicacion();
-            }}
-          />
-          {dialogoPermiso}
+          <div
+            className="ficha-publica-mapa-envoltorio ficha-publica-mapa-envoltorio--clic"
+            onClick={onClickVistaMapa}
+          >
+            <MapaPawPatrol {...propsMapa} altura="ficha" />
+            <button
+              type="button"
+              className="ficha-publica-mapa-ampliar-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                abrirMapaAmpliado();
+              }}
+            >
+              <Icono nombre="buscar" size={14} className="pp-icon--btn" />
+              Clic para ampliar
+            </button>
+          </div>
+
+          <LightboxMapaFicha
+            abierto={mapaAmpliado}
+            titulo={`Mapa de búsqueda — ${nombre}`}
+            onCerrar={() => setMapaAmpliado(false)}
+          >
+            <MapaPawPatrol {...propsMapa} altura="seccion" />
+            {dialogoPermiso}
+          </LightboxMapaFicha>
+          {!mapaAmpliado && dialogoPermiso}
         </>
       )}
     </section>

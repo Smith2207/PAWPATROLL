@@ -223,6 +223,12 @@ export async function crearAvistamiento(
         titulo: `Nuevo avistamiento #${insertado.numeroReporte}`,
         detalle: direccionLimpia ?? undefined,
         actorUserId: userId,
+        metadata: {
+          lat: coords.lat,
+          lng: coords.lng,
+          label: direccionLimpia ?? undefined,
+          enVivo: Boolean(datos.enTiempoReal),
+        },
       });
 
       if (datos.fotoUrl?.startsWith("data:image/")) {

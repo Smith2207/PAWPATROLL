@@ -15,16 +15,28 @@ function enlaceMisMascotasActivo(pathname: string) {
   return pathname === "/mis-mascotas" || pathname.startsWith("/mis-mascotas/");
 }
 
+function hrefInicial(pathname: string) {
+  return enlaceMisMascotasActivo(pathname) ? pathname : "/mis-mascotas";
+}
+
 export function EnlaceMisMascotasNav({ pathname, className, onNavigate }: Props) {
   const { status } = useSession();
-  const [href, setHref] = useState("/mis-mascotas");
+  const [href, setHref] = useState(() => hrefInicial(pathname));
   const [pendientes, setPendientes] = useState(0);
 
   const recargar = useCallback(async () => {
     const datos = await obtenerResumenCasosNav();
-    setHref(datos.href);
     setPendientes(datos.pendientes);
-  }, []);
+    if (!enlaceMisMascotasActivo(pathname)) {
+      setHref(datos.href);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    if (enlaceMisMascotasActivo(pathname)) {
+      setHref(pathname);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -32,8 +44,10 @@ export function EnlaceMisMascotasNav({ pathname, className, onNavigate }: Props)
     void (async () => {
       const datos = await obtenerResumenCasosNav();
       if (!cancelado) {
-        setHref(datos.href);
         setPendientes(datos.pendientes);
+        if (!enlaceMisMascotasActivo(pathname)) {
+          setHref(datos.href);
+        }
       }
     })();
     return () => {
@@ -44,11 +58,12 @@ export function EnlaceMisMascotasNav({ pathname, className, onNavigate }: Props)
   if (status !== "authenticated") return null;
 
   const activo = enlaceMisMascotasActivo(pathname);
+  const hrefDestino = activo ? pathname : href;
   const badge = pendientes > 0 ? pendientes : null;
 
   return (
     <Link
-      href={href}
+      href={hrefDestino}
       className={`nav-link-mascotas ${activo ? "nav-link--activo" : ""} ${className ?? ""}`.trim()}
       aria-current={activo ? "page" : undefined}
       onClick={onNavigate}

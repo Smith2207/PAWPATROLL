@@ -55,6 +55,15 @@ export function esMensajePropio(
   return Boolean(miUserId && m.userId && m.userId === miUserId);
 }
 
+function formatoDiaCompleto(fecha: Date): string {
+  const texto = fecha.toLocaleDateString("es-PE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
 export function etiquetaFechaChat(fecha: Date): string {
   const hoy = new Date();
   const ayer = new Date(hoy);
@@ -65,23 +74,21 @@ export function etiquetaFechaChat(fecha: Date): string {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
 
-  if (mismaFecha(fecha, hoy)) return "Hoy";
-  if (mismaFecha(fecha, ayer)) return "Ayer";
+  const dia = formatoDiaCompleto(fecha);
 
-  return fecha.toLocaleDateString("es-PE", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  if (mismaFecha(fecha, hoy)) return `Hoy, ${dia}`;
+  if (mismaFecha(fecha, ayer)) return `Ayer, ${dia}`;
+
+  return dia;
 }
 
-/** Hora compacta para burbujas (evita saltos por «p. m.» con espacios extra) */
+/** Hora compacta estilo Messenger / Instagram */
 export function formatearHoraMensaje(fecha: Date): string {
   const h = fecha.getHours();
   const m = fecha.getMinutes().toString().padStart(2, "0");
   const h12 = h % 12 || 12;
-  const periodo = h < 12 ? "a.m." : "p.m.";
-  return `${h12}:${m} ${periodo}`;
+  const periodo = h < 12 ? "a. m." : "p. m.";
+  return `${h12}:${m}\u00a0${periodo}`;
 }
 
 export function mostrarSeparadorFecha(
@@ -94,4 +101,36 @@ export function mostrarSeparadorFecha(
     actual.getMonth() !== anterior.getMonth() ||
     actual.getDate() !== anterior.getDate()
   );
+}
+
+/** El servidor ya tiene este mensaje optimista (mismo autor, cuerpo y ~hora). */
+export function optimistaYaPersistido(
+  temp: Pick<MensajeAvistamiento, "userId" | "contenido" | "adjuntoUrl" | "createdAt">,
+  servidor: Pick<MensajeAvistamiento, "userId" | "contenido" | "adjuntoUrl" | "createdAt">
+): boolean {
+  if (temp.userId !== servidor.userId) return false;
+  if (temp.contenido.trim() !== servidor.contenido.trim()) return false;
+
+  const msTemp = new Date(temp.createdAt).getTime();
+  const msSrv = new Date(servidor.createdAt).getTime();
+  if (Math.abs(msSrv - msTemp) > 120_000) return false;
+
+  const adjTemp = Boolean(temp.adjuntoUrl?.trim());
+  const adjSrv = Boolean(servidor.adjuntoUrl?.trim());
+  if (adjTemp || adjSrv) return adjTemp && adjSrv;
+  return true;
+}
+
+/** Lista del servidor + optimistas que aún no aparecieron en BD. */
+export function fusionarMensajesConOptimistas(
+  servidor: MensajeAvistamiento[],
+  prev: MensajeAvistamiento[]
+): MensajeAvistamiento[] {
+  const idsServidor = new Set(servidor.map((m) => m.id));
+  const optimistas = prev.filter((m) => {
+    if (!m.id.startsWith("temp-")) return false;
+    if (idsServidor.has(m.id)) return false;
+    return !servidor.some((s) => optimistaYaPersistido(m, s));
+  });
+  return [...servidor, ...optimistas];
 }

@@ -18,6 +18,15 @@ export const BADGE_ESTADO: Record<
   REUNIDA: { clase: "estado-badge--reunida", icono: "checkCirculo" },
 };
 
+/** Centro de coordinación: búsqueda activa o historial de avistamientos */
+export function puedeAccederCentroCoordinacion(
+  estado: EstadoMascota,
+  totalAvistamientos: number
+): boolean {
+  if (estado === "PERDIDA" || estado === "ENCONTRADA") return true;
+  return totalAvistamientos > 0;
+}
+
 /** Visible en la ficha pública de la comunidad */
 export function esFichaPublica(estado: EstadoMascota) {
   return estado === "PERDIDA" || estado === "ENCONTRADA";

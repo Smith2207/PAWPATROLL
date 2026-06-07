@@ -34,12 +34,19 @@ export function ipDesdeRequest(req: Request): string {
   return req.headers.get("x-real-ip")?.trim() || "anon";
 }
 
-export function respuestaRateLimit(reintentarEnSeg: number) {
+export function respuestaRateLimit(reintentarEnSeg: number, limite?: number) {
+  const headers: Record<string, string> = {
+    "Retry-After": String(reintentarEnSeg),
+  };
+  if (limite != null) {
+    headers["X-RateLimit-Limit"] = String(limite);
+    headers["X-RateLimit-Remaining"] = "0";
+  }
   return Response.json(
     { ok: false, error: "Demasiadas solicitudes. Intenta de nuevo en un momento." },
     {
       status: 429,
-      headers: { "Retry-After": String(reintentarEnSeg) },
+      headers,
     }
   );
 }

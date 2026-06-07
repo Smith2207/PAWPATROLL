@@ -43,7 +43,7 @@ export default async function PaginaEditarMascota({ params }: Props) {
           <Icono nombre="izquierda" size={14} />
           Listado
         </Link>
-        {mascota.estado === "PERDIDA" && (
+        {(mascota.estado === "PERDIDA" || mascota.estado === "ENCONTRADA") && (
           <Link
             href={`/mis-mascotas/${mascota.id}/caso`}
             className="btn-mascota pp-enlace-icono"

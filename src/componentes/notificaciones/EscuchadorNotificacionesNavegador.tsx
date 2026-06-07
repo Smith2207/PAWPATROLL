@@ -9,12 +9,20 @@ import {
   solicitarPermisoNotificacionesSiCorresponde,
 } from "@/lib/notificaciones/navegador";
 
+function esRutaChatCoordinacion(pathname: string) {
+  return (
+    pathname.startsWith("/chats") ||
+    pathname.startsWith("/avistamiento/") ||
+    /\/mis-mascotas\/[^/]+\/caso$/.test(pathname)
+  );
+}
+
 function usuarioEnPaginaDelMensaje(pathname: string, enlace?: string | null) {
-  if (!enlace) return pathname.includes("/caso");
-  const base = enlace.split("?")[0];
-  if (pathname === base || pathname.startsWith(`${base}/`)) return true;
-  if (base.includes("/caso") && pathname.includes("/caso")) return true;
-  return false;
+  if (enlace) {
+    const base = enlace.split("?")[0]?.split("#")[0] ?? enlace;
+    return pathname === base || pathname.startsWith(`${base}/`);
+  }
+  return esRutaChatCoordinacion(pathname);
 }
 
 /** Avisos del sistema cuando la pestaña no está visible. */

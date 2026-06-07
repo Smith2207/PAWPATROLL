@@ -1,0 +1,9 @@
+import "@/estilos/admin.css";
+
+export default function LayoutAdmin({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}

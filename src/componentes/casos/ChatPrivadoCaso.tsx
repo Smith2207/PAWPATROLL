@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, useCallback, type ReactNode } from "react";
 import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
 import { marcarChatLeido, listarMensajesChatAvistamiento, reportarComportamientoSospechoso } from "@/actions/casos";
 import type { MensajeAvistamiento } from "@/lib/db/schema";
@@ -10,10 +10,13 @@ import {
   ETIQUETA_MENSAJE_FOTO,
   etiquetaFechaChat,
   formatearHoraMensaje,
+  fusionarMensajesConOptimistas,
   mostrarSeparadorFecha,
   urlParaMostrarAdjunto,
 } from "@/lib/chat/mensaje";
 import { BurbujaUbicacionChat } from "@/componentes/casos/BurbujaUbicacionChat";
+import { BurbujaChatEstandar } from "@/componentes/casos/BurbujaChatEstandar";
+import { PreviewUbicacionComposer } from "@/componentes/casos/PreviewUbicacionComposer";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import { ETIQUETA_GPS, pareceCoordenadas } from "@/lib/geo/etiqueta-ubicacion";
@@ -68,6 +71,87 @@ function textoVisible(contenido: string, adjuntoUrl: string | null | undefined) 
   return null;
 }
 
+function separadorFechaChat(fecha: Date, indice: number) {
+  const etiqueta = etiquetaFechaChat(fecha);
+  return (
+    <li
+      key={`fecha-${fecha.toISOString().slice(0, 10)}-${indice}`}
+      className="pp-chat-fecha-item"
+    >
+      <div
+        className="pp-chat-fecha-linea"
+        role="separator"
+        aria-label={`Mensajes del ${etiqueta}`}
+      >
+        <span>{etiqueta}</span>
+      </div>
+    </li>
+  );
+}
+
+function metaSoloHora(fecha: Date) {
+  return (
+    <span className="pp-chat-burbuja-meta">
+      <time dateTime={fecha.toISOString()}>{formatearHoraMensaje(fecha)}</time>
+    </span>
+  );
+}
+
+function metaMensaje(
+  fecha: Date,
+  esPropio: boolean,
+  recibo: { estado: "pendiente" | "enviado" | "leido"; etiqueta: string }
+) {
+  return (
+    <span className="pp-chat-burbuja-meta">
+      <time dateTime={fecha.toISOString()}>{formatearHoraMensaje(fecha)}</time>
+      {esPropio && (
+        <span
+          className={`pp-chat-leido${
+            recibo.estado === "leido" ? " pp-chat-leido--visto" : ""
+          }${recibo.estado === "pendiente" ? " pp-chat-leido--pendiente" : ""}`}
+          aria-label={recibo.etiqueta}
+        >
+          {recibo.estado === "pendiente" && "…"}
+          {recibo.estado === "enviado" && <Icono nombre="check" size={12} />}
+          {recibo.estado === "leido" && <Icono nombre="dobleCheck" size={12} />}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function construirMediaMensaje(
+  ubicacion: UbicacionChat | null,
+  adjuntoRoto: boolean,
+  urlImagen: string | null,
+  onAmpliarImagen: (url: string) => void
+) {
+  if (!ubicacion && !adjuntoRoto && !urlImagen) return null;
+
+  return (
+    <>
+      {ubicacion && <BurbujaUbicacionChat ubicacion={ubicacion} />}
+      {adjuntoRoto && (
+        <p className="pp-chat-adjunto-roto" role="status">
+          <Icono nombre="imagen" size={14} className="pp-chat-adjunto-roto-icono" />
+          No se pudo cargar la imagen
+        </p>
+      )}
+      {!ubicacion && urlImagen && (
+        <button
+          type="button"
+          className="pp-chat-adjunto-btn"
+          aria-label="Ver imagen ampliada"
+          onClick={() => onAmpliarImagen(urlImagen)}
+        >
+          <img src={urlImagen} alt="Imagen adjunta" className="pp-chat-adjunto-img" />
+        </button>
+      )}
+    </>
+  );
+}
+
 export function ChatPrivadoCaso({
   avistamientoId,
   mascotaId,
@@ -86,6 +170,8 @@ export function ChatPrivadoCaso({
   );
   const [texto, setTexto] = useState("");
   const [adjuntoPreview, setAdjuntoPreview] = useState<string | null>(null);
+  const [ubicacionPendiente, setUbicacionPendiente] =
+    useState<UbicacionSeleccionada | null>(null);
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mostrarReporte, setMostrarReporte] = useState(false);
@@ -103,24 +189,10 @@ export function ChatPrivadoCaso({
   const sincronizarChat = useCallback(async () => {
     const datos = await listarMensajesChatAvistamiento(avistamientoId);
     if (!datos) return;
-    setMensajes((prev) => {
-      const idsServidor = new Set(datos.mensajes.map((m) => m.id));
-      const optimistas = prev.filter(
-        (m) => m.id.startsWith("temp-") && !idsServidor.has(m.id)
-      );
-      return [...datos.mensajes, ...optimistas];
-    });
+    setMensajes((prev) => fusionarMensajesConOptimistas(datos.mensajes, prev));
     setUltimoLeidoInterlocutor(datos.ultimoLeidoInterlocutorAt);
     if (datos.eventos) {
-      setEventos(
-        datos.eventos.map((e) => ({
-          id: e.id,
-          tipo: e.tipo,
-          titulo: e.titulo,
-          detalle: e.detalle,
-          createdAt: e.createdAt,
-        }))
-      );
+      setEventos(datos.eventos);
     }
   }, [avistamientoId]);
 
@@ -170,12 +242,20 @@ export function ChatPrivadoCaso({
         setError(resultado.error);
         return;
       }
-      iniciar(async () => {
-        await enviarUbicacionEnChat(resultado.ubicacion);
-      });
+      setError(null);
+      setUbicacionPendiente(resultado.ubicacion);
     },
-    [enviarUbicacionEnChat, iniciar]
+    [],
   );
+
+  function confirmarUbicacionPendiente() {
+    if (!ubicacionPendiente) return;
+    const seleccion = ubicacionPendiente;
+    iniciar(async () => {
+      await enviarUbicacionEnChat(seleccion);
+      setUbicacionPendiente(null);
+    });
+  }
 
   const { solicitarUbicacion, dialogoPermiso } = useSolicitudUbicacion({
     obtenerUbicacion: geo.obtenerUbicacion,
@@ -345,6 +425,7 @@ export function ChatPrivadoCaso({
   }
 
   function enviar() {
+    if (pendiente) return;
     const cuerpo = texto.trim();
     const adjuntoEnviar = adjuntoPreview;
     if (!cuerpo && !adjuntoEnviar) return;
@@ -479,35 +560,38 @@ export function ChatPrivadoCaso({
               Coordina la búsqueda de {nombreMascota} desde aquí.
             </li>
           )}
-          {timeline.map((item, indiceTimeline) => {
+          {timeline.flatMap((item, indiceTimeline) => {
           const fechaActual = item.fecha;
           const fechaAnterior =
             indiceTimeline > 0 ? timeline[indiceTimeline - 1]!.fecha : undefined;
           const mostrarFecha = mostrarSeparadorFecha(fechaActual, fechaAnterior);
+          const nodos: ReactNode[] = [];
+
+          if (mostrarFecha) {
+            nodos.push(separadorFechaChat(fechaActual, indiceTimeline));
+          }
 
           if (item.tipo === "evento") {
             const ev = item.data;
-            return (
+
+            nodos.push(
               <li key={`ev-${ev.id}`}>
-                {mostrarFecha && (
-                  <div className="pp-chat-fecha-linea" role="separator">
-                    <span>{etiquetaFechaChat(fechaActual)}</span>
-                  </div>
-                )}
-                <div className="pp-coord-evento">
-                  <span className="pp-coord-evento-icono" aria-hidden>
-                    <Icono nombre={nombreIconoEventoTimeline(ev.tipo)} size={16} />
-                  </span>
-                  <div className="pp-coord-evento-cuerpo">
-                    <strong>{tituloEventoTimeline(ev)}</strong>
-                    {ev.detalle && <p>{ev.detalle}</p>}
-                    <time dateTime={fechaActual.toISOString()}>
-                      {formatearHoraMensaje(fechaActual)}
-                    </time>
-                  </div>
-                </div>
+                <BurbujaChatEstandar
+                  alineacion="propio"
+                  icono={nombreIconoEventoTimeline(ev.tipo)}
+                  titulo={tituloEventoTimeline(ev)}
+                  texto={ev.detalle}
+                  media={
+                    ev.ubicacion ? (
+                      <BurbujaUbicacionChat ubicacion={ev.ubicacion} />
+                    ) : null
+                  }
+                  meta={metaSoloHora(fechaActual)}
+                />
               </li>
             );
+
+            return nodos;
           }
 
           const m = item.data;
@@ -518,75 +602,23 @@ export function ChatPrivadoCaso({
           const adjuntoRoto = Boolean(m.adjuntoUrl?.trim()) && !urlImagen;
           const enviando = esPropio && m.id.startsWith("temp-");
 
-          return (
+          nodos.push(
             <li key={m.id}>
-              {mostrarFecha && (
-                <div className="pp-chat-fecha-linea" role="separator">
-                  <span>{etiquetaFechaChat(fechaActual)}</span>
-                </div>
-              )}
-              <div
-                className={`pp-chat-fila${esPropio ? " pp-chat-fila--propio" : " pp-chat-fila--ajeno"}`}
-              >
-                <div
-                  className={`pp-chat-burbuja pp-chat-burbuja--coord${esPropio ? " pp-chat-burbuja--propio" : " pp-chat-burbuja--ajeno"}${ubicacion ? " pp-chat-burbuja--ubicacion" : ""}`}
-                >
-                  <div className="pp-chat-burbuja-cuerpo">
-                    {ubicacion && <BurbujaUbicacionChat ubicacion={ubicacion} />}
-                    {adjuntoRoto && (
-                      <p className="pp-chat-adjunto-roto" role="status">
-                        <Icono nombre="imagen" size={14} className="pp-chat-adjunto-roto-icono" />
-                        No se pudo cargar la imagen
-                      </p>
-                    )}
-                    {!ubicacion && urlImagen && (
-                      <button
-                        type="button"
-                        className="pp-chat-adjunto-btn"
-                        aria-label="Ver imagen ampliada"
-                        onClick={() => setImagenAmpliada(urlImagen)}
-                      >
-                        <img
-                          src={urlImagen}
-                          alt="Imagen adjunta"
-                          className="pp-chat-adjunto-img"
-                        />
-                      </button>
-                    )}
-                    <div className="pp-chat-burbuja-inner">
-                      {cuerpo && (
-                        <span className="pp-chat-burbuja-texto">{cuerpo}</span>
-                      )}
-                      <span className="pp-chat-burbuja-meta">
-                        <time dateTime={fechaActual.toISOString()}>
-                          {formatearHoraMensaje(fechaActual)}
-                        </time>
-                        {esPropio && (() => {
-                          const recibo = estadoRecibo(m, enviando);
-                          return (
-                            <span
-                              className={`pp-chat-leido${
-                                recibo.estado === "leido" ? " pp-chat-leido--visto" : ""
-                              }${recibo.estado === "pendiente" ? " pp-chat-leido--pendiente" : ""}`}
-                              aria-label={recibo.etiqueta}
-                            >
-                              {recibo.estado === "pendiente" && "…"}
-                              {recibo.estado === "enviado" && (
-                                <Icono nombre="check" size={12} />
-                              )}
-                              {recibo.estado === "leido" && (
-                                <Icono nombre="dobleCheck" size={12} />
-                              )}
-                            </span>
-                          );
-                        })()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <BurbujaChatEstandar
+                alineacion={esPropio ? "propio" : "ajeno"}
+                media={construirMediaMensaje(
+                  ubicacion,
+                  adjuntoRoto,
+                  urlImagen,
+                  setImagenAmpliada
+                )}
+                texto={cuerpo}
+                meta={metaMensaje(fechaActual, esPropio, estadoRecibo(m, enviando))}
+              />
             </li>
           );
+
+          return nodos;
         })}
         </ul>
 
@@ -617,6 +649,15 @@ export function ChatPrivadoCaso({
         </p>
       )}
 
+      {ubicacionPendiente && (
+        <PreviewUbicacionComposer
+          seleccion={ubicacionPendiente}
+          enviando={pendiente}
+          onEnviar={confirmarUbicacionPendiente}
+          onCancelar={() => setUbicacionPendiente(null)}
+        />
+      )}
+
       <div className="pp-chat-privado-composer">
         <div className="pp-coord-acciones-rapidas" role="toolbar" aria-label="Acciones rápidas">
         <button
@@ -635,7 +676,7 @@ export function ChatPrivadoCaso({
           title="Enviar mi ubicación actual"
           aria-label="Enviar ubicación actual"
           onClick={insertarUbicacion}
-          disabled={pendiente || geo.cargando}
+          disabled={pendiente || geo.cargando || Boolean(ubicacionPendiente)}
         >
           <Icono nombre="ubicacion" size={18} />
         </button>

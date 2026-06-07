@@ -6,6 +6,8 @@ Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** 
 
 > **Documentación de módulos:** ver [README-MODULOS.md](./README-MODULOS.md) — referencia completa **M1 a M7** (métodos, rutas, APIs y librerías).
 
+> **Migraciones BD:** [docs/MIGRACIONES.md](./docs/MIGRACIONES.md) · **Deploy y rutas legacy:** [docs/DEPLOY-Y-RUTAS.md](./docs/DEPLOY-Y-RUTAS.md)
+
 ## Stack
 
 - **Next.js 16** (App Router)
@@ -32,6 +34,7 @@ npm run db:migrate-gemini-768        # embeddings 768d (0009)
 npm run db:migrate-notificaciones    # notificaciones + lecturas chat (0010)
 npm run db:migrate-usuario-activo    # usuario activo (0011)
 npm run db:migrate-chat-adjunto      # adjuntos chat en blob (0012)
+npm run test
 npm run dev
 ```
 
@@ -207,7 +210,7 @@ src/
     mis-mascotas/, mascota/[slug]/
     api/auth/, api/ia/, api/geo/, api/admin/
   actions/
-    mascotas.ts, mapa.ts, avistamientos.ts, comportamiento.ts, estadisticas.ts
+    mascotas.ts, mapa.ts, avistamientos.ts, estadisticas.ts
   componentes/
     landing/, mapa/, avistamientos/, visual/, comportamiento/
   lib/

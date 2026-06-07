@@ -616,12 +616,6 @@
   font-size: 1rem;
 }
 
-.pp-mapa-btn-geo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
 .pp-marcador--usuario {
   z-index: 1000 !important;
 }

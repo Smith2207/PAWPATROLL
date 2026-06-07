@@ -17,9 +17,7 @@ import "@/estilos/responsive.css";
 import "@/estilos/mapa.css";
 import "@/estilos/visual.css";
 import "@/estilos/notificaciones.css";
-import "@/estilos/coordinacion.css";
 import "@/estilos/iconos.css";
-import "@/estilos/admin.css";
 
 const nunito = Nunito({
   subsets: ["latin"],
