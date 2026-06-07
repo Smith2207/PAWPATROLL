@@ -517,7 +517,13 @@ export function MapaPawPatrol({
             }).addTo(capas);
           }
 
-          L.circle([p.lat, p.lng], {
+          const centroCercoLat = p.cercoLat ?? p.lat;
+          const centroCercoLng = p.cercoLng ?? p.lng;
+          const desplazado =
+            Math.abs(centroCercoLat - p.lat) > 0.00001 ||
+            Math.abs(centroCercoLng - p.lng) > 0.00001;
+
+          L.circle([centroCercoLat, centroCercoLng], {
             radius: radio,
             color: estiloFamilia.color,
             fillColor: estiloFamilia.fillColor,
@@ -526,7 +532,7 @@ export function MapaPawPatrol({
             dashArray: "6 4",
           })
             .bindPopup(
-              `<div class="pp-popup-titulo">Zona de búsqueda — ${p.nombre}</div><div class="pp-popup-meta">~${(radio / 1000).toFixed(1)} km desde donde se perdió</div>`
+              `<div class="pp-popup-titulo">Zona de búsqueda — ${p.nombre}</div><div class="pp-popup-meta">~${(radio / 1000).toFixed(1)} km${desplazado ? " · centro ajustado por avistamientos" : " desde donde se perdió"}</div>`
             )
             .addTo(capas);
 

@@ -4,18 +4,46 @@ import { Icono } from "@/componentes/ui/Icono";
 type Props = {
   prediccion: PrediccionComportamiento;
   nombreMascota: string;
+  mascotaId?: string;
 };
 
-export function PanelComportamiento({ prediccion, nombreMascota }: Props) {
+function etiquetaTendencia(tendencia: PrediccionComportamiento["cerco"]["tendencia"]) {
+  if (tendencia === "ampliado") return "ampliado";
+  if (tendencia === "contraido") return "focalizado";
+  return "ajustado";
+}
+
+export function PanelComportamiento({ prediccion, nombreMascota, mascotaId }: Props) {
+  if (mascotaId && prediccion.mascotaId !== mascotaId) {
+    return null;
+  }
+
+  const nombre = prediccion.nombreMascota || nombreMascota;
+  const tiempo =
+    prediccion.horasTranscurridas < 24
+      ? `${Math.round(prediccion.horasTranscurridas)} h`
+      : `${prediccion.diasTranscurridos} d`;
+
   return (
     <section className="panel-comportamiento" aria-labelledby="comportamiento-titulo">
       <h2 id="comportamiento-titulo" className="ficha-publica-seccion-titulo">
-        <Icono nombre="cerebro" size={20} className="pp-icon--btn" /> Búsqueda inteligente
+        <Icono nombre="cerebro" size={20} className="pp-icon--btn" /> Búsqueda inteligente de{" "}
+        {nombre}
       </h2>
-      <p className="panel-comportamiento-perfil">{prediccion.perfilConductual.etiqueta}</p>
-      <p className="panel-comportamiento-evidencia" role="note">
-        {prediccion.notaEvidencia}
+      <p className="panel-comportamiento-plan">
+        Plan exclusivo de <strong>{nombre}</strong>
+        <span className="panel-comportamiento-perfil-meta"> · {tiempo} desde la pérdida</span>
       </p>
+
+      {prediccion.rasgos.length > 0 && (
+        <ul className="panel-comportamiento-rasgos" aria-label="Características de la mascota">
+          {prediccion.rasgos.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+      )}
+
+      <p className="panel-comportamiento-perfil">{prediccion.perfilConductual.etiqueta}</p>
 
       <div className="panel-comportamiento-metricas">
         <div className="panel-comportamiento-metrica">
@@ -23,22 +51,14 @@ export function PanelComportamiento({ prediccion, nombreMascota }: Props) {
             {(prediccion.radioActualMetros / 1000).toFixed(1)} km
           </span>
           <span className="panel-comportamiento-metrica-etiq">
-            Cerco en mapa (
-            {prediccion.cerco.tendencia === "ampliado"
-              ? "ampliado"
-              : prediccion.cerco.tendencia === "contraido"
-                ? "focalizado"
-                : "ajustado"}
-            )
+            Cerco de {nombre} ({etiquetaTendencia(prediccion.cerco.tendencia)})
           </span>
         </div>
         <div className="panel-comportamiento-metrica">
           <span className="panel-comportamiento-metrica-valor">
-            {prediccion.horasTranscurridas < 24
-              ? `${Math.round(prediccion.horasTranscurridas)} h`
-              : `${prediccion.diasTranscurridos} d`}
+            {prediccion.cerco.totalAvistamientos}
           </span>
-          <span className="panel-comportamiento-metrica-etiq">Desde la pérdida</span>
+          <span className="panel-comportamiento-metrica-etiq">Sus avistamientos</span>
         </div>
         <div className="panel-comportamiento-metrica">
           <span className="panel-comportamiento-metrica-valor">
@@ -48,38 +68,35 @@ export function PanelComportamiento({ prediccion, nombreMascota }: Props) {
         </div>
       </div>
 
-      <ul className="panel-comportamiento-consejos">
-        {prediccion.consejos.map((c, i) => (
-          <li key={i}>{c}</li>
-        ))}
-      </ul>
-
-      <p className="panel-comportamiento-avistamientos" role="status">
-        {prediccion.cerco.motivoAjuste}
-        {prediccion.cerco.totalAvistamientos > 0 &&
-          ` · ${prediccion.cerco.totalAvistamientos} avistamiento(s) considerados.`}
-      </p>
+      {prediccion.consejos.length > 0 && (
+        <>
+          <h3 className="panel-comportamiento-subtitulo">Qué hacer con {nombre}</h3>
+          <ul className="panel-comportamiento-consejos">
+            {prediccion.consejos.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <details className="panel-comportamiento-fuentes">
-        <summary>Referencias y estudios</summary>
-        <ul>
+        <summary>Estudios usados para {nombre}</summary>
+        <ul className="panel-comportamiento-fuentes-lista">
           {prediccion.fuentes.map((f) => (
             <li key={f.id}>
               <a href={f.url} target="_blank" rel="noopener noreferrer">
+                {f.autores ? `${f.autores} — ` : ""}
                 {f.titulo}
                 {f.anio ? ` (${f.anio})` : ""}
               </a>
-              {f.autores && <span className="panel-comportamiento-fuentes-autor"> — {f.autores}</span>}
-              <p>{f.nota}</p>
             </li>
           ))}
         </ul>
       </details>
 
       <p className="panel-comportamiento-nota">
-        Análisis de <strong>{nombreMascota}</strong>: acceso al exterior, raza, tamaño,
-        tiempo perdido y avistamientos. No sustituye búsqueda física ni asesoría
-        profesional.
+        Cálculo exclusivo de <strong>{nombre}</strong> según su ficha, avistamientos y
+        mapa. 
       </p>
     </section>
   );

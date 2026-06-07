@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { Icono } from "@/componentes/ui/Icono";
 import { useModales } from "@/contexto/ContextoModales";
+import { preprocesarImagenesCliente } from "@/lib/imagen/preprocesar-cliente";
 import type {
   CoincidenciaVisual,
   FiltrosBusquedaVisual,
@@ -92,7 +93,9 @@ export function IdentificacionPorFoto({
         setError(data.error);
       } else if (!data.coincidencias?.length && !data.indiceVacio) {
         setError(
-          "No encontramos coincidencias claras. Prueba otra foto o un ángulo más cercano."
+          compacto
+            ? "No encontramos coincidencias claras con esta foto. Puedes continuar el avistamiento igualmente."
+            : "No encontramos coincidencias claras. Prueba otra foto o un ángulo más cercano."
         );
       }
     } catch {
@@ -118,7 +121,14 @@ export function IdentificacionPorFoto({
     reader.onerror = () => setError(MENSAJE_IMAGEN_ILEGIBLE);
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      void procesarImagen(dataUrl);
+      void (async () => {
+        try {
+          const [procesada] = await preprocesarImagenesCliente([dataUrl]);
+          if (procesada) void procesarImagen(procesada);
+        } catch {
+          setError(MENSAJE_IMAGEN_ILEGIBLE);
+        }
+      })();
     };
     reader.readAsDataURL(file);
   }
@@ -130,7 +140,7 @@ export function IdentificacionPorFoto({
     >
       {!compacto && (
         <p className="foto-ia-intro">
-          Subí una foto y buscamos mascotas <strong>perdidas</strong> que se
+          Sube una foto y buscamos mascotas <strong>perdidas</strong> que se
           parezcan.
         </p>
       )}

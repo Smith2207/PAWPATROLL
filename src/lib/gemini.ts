@@ -4,7 +4,11 @@
  */
 
 import { existsSync, readFileSync } from "fs";
+import { join, resolve } from "path";
+import { cwd } from "process";
 import type { GoogleGenAI } from "@google/genai";
+
+const RUTAS_CREDENCIALES_RESERVA = ["secrets/gcp-sa.json"];
 
 export const MODELO_GEMINI_VISION =
   process.env.GEMINI_VISION_MODEL?.trim() || "gemini-2.5-flash";
@@ -52,6 +56,28 @@ function modoPlataforma() {
     : ({ vertexai: true as const } as const);
 }
 
+function leerJsonCredenciales(ruta: string): object | undefined {
+  try {
+    return JSON.parse(readFileSync(ruta, "utf8")) as object;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Resuelve rutas relativas y detecta rutas Windows inválidas en macOS/Linux. */
+function resolverRutaCredenciales(ruta: string): string | undefined {
+  if (/^[A-Za-z]:[\\/]/.test(ruta)) {
+    for (const alt of RUTAS_CREDENCIALES_RESERVA) {
+      const candidata = resolve(cwd(), alt);
+      if (existsSync(candidata)) return candidata;
+    }
+    return undefined;
+  }
+
+  const abs = ruta.startsWith("/") ? ruta : resolve(cwd(), ruta);
+  return existsSync(abs) ? abs : undefined;
+}
+
 function parseCredentials(): object | undefined {
   const raw = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim();
   if (raw) {
@@ -62,14 +88,23 @@ function parseCredentials(): object | undefined {
     }
   }
 
-  const ruta = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
-  if (ruta && existsSync(ruta)) {
-    try {
-      return JSON.parse(readFileSync(ruta, "utf8")) as object;
-    } catch {
+  const rutaEnv = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
+  if (rutaEnv) {
+    const ruta = resolverRutaCredenciales(rutaEnv);
+    if (ruta) {
+      const credenciales = leerJsonCredenciales(ruta);
+      if (credenciales) return credenciales;
       throw new Error(
-        `No se pudo leer JSON en GOOGLE_APPLICATION_CREDENTIALS: ${ruta}`
+        `No se pudo leer JSON en GOOGLE_APPLICATION_CREDENTIALS: ${rutaEnv}`
       );
+    }
+  }
+
+  for (const alt of RUTAS_CREDENCIALES_RESERVA) {
+    const candidata = join(cwd(), alt);
+    if (existsSync(candidata)) {
+      const credenciales = leerJsonCredenciales(candidata);
+      if (credenciales) return credenciales;
     }
   }
 
@@ -118,9 +153,10 @@ export async function getAIClient(): Promise<GoogleGenAI> {
 }
 
 export function geminiConfigurada(): boolean {
-  return Boolean(
-    proyectoGoogleCloud() || parseCredentials() || apiKeyGemini()
-  );
+  if (apiKeyGemini()) return true;
+  const project = proyectoGoogleCloud();
+  if (!project) return false;
+  return Boolean(parseCredentials());
 }
 
 function dimensionSalida(): number {

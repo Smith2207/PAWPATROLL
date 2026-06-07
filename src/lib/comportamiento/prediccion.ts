@@ -4,7 +4,7 @@ import {
   identificarZonasRefugio,
   identificarZonasRefugioConAvistamientos,
 } from "@/lib/comportamiento/zonas-refugio";
-import { generarConsejosBusqueda } from "@/lib/comportamiento/consejos";
+import { generarConsejosBusqueda, idsFuentesRelevantes, rasgosUnicosMascota } from "@/lib/comportamiento/consejos";
 import {
   calcularCercoDinamico,
   type PuntoAvistamientoCerco,
@@ -18,6 +18,9 @@ import { parsearCoordenada } from "@/lib/geo/tipos";
 import type { Mascota } from "@/lib/db/schema";
 
 export type PrediccionComportamiento = {
+  /** Cada predicción pertenece a una sola mascota */
+  mascotaId: string;
+  nombreMascota: string;
   perfilConductual: ReturnType<typeof obtenerPerfilConductual>;
   radioBaseMetros: number;
   radioActualMetros: number;
@@ -30,10 +33,13 @@ export type PrediccionComportamiento = {
   centro: { lat: number; lng: number };
   notaEvidencia: string;
   fuentes: FuenteComportamiento[];
+  /** Rasgos de esta mascota (raza, tamaño, acceso…) */
+  rasgos: string[];
 };
 
 type PerfilMascotaPrediccion = Pick<
   Mascota,
+  | "id"
   | "tipo"
   | "raza"
   | "tamano"
@@ -101,11 +107,13 @@ export function calcularPrediccionComportamiento(
 
   const consejos = generarConsejosBusqueda({
     nombre: mascota.nombre,
+    raza: mascota.raza,
+    tamano: mascota.tamano,
+    accesoExterior: mascota.accesoExterior,
     conductual,
     horasTranscurridas: radio.horasTranscurridas,
     diasTranscurridos: radio.diasTranscurridos,
     radioActualMetros: cerco.radioMetros,
-    radioTemporalMetros: cerco.radioTemporalMetros,
     totalAvistamientos: cerco.totalAvistamientos,
     zonasRefugio,
     esGato,
@@ -113,11 +121,12 @@ export function calcularPrediccionComportamiento(
     avistamientos,
   });
 
-  const fuentesIds = new Set<string>([evidencia.fuenteId]);
-  if (esGato) fuentesIds.add("mar-gatos");
-  const fuentes = FUENTES_COMPORTAMIENTO.filter((f) => fuentesIds.has(f.id));
+  const idsFuentes = new Set(idsFuentesRelevantes(esGato));
+  const fuentes = FUENTES_COMPORTAMIENTO.filter((f) => idsFuentes.has(f.id));
 
   return {
+    mascotaId: mascota.id,
+    nombreMascota: mascota.nombre,
     perfilConductual: conductual,
     radioBaseMetros: radio.radioBaseMetros,
     radioActualMetros: cerco.radioMetros,
@@ -130,5 +139,6 @@ export function calcularPrediccionComportamiento(
     centro: { lat: cerco.centroLat, lng: cerco.centroLng },
     notaEvidencia: evidencia.notaRadio,
     fuentes,
+    rasgos: rasgosUnicosMascota(perfilEntrada),
   };
 }

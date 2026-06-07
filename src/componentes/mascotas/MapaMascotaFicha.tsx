@@ -105,7 +105,7 @@ export function MapaMascotaFicha({
     prediccion: datosMapa.prediccion,
     mascotaId,
     nombreMascota: nombre,
-    mostrarCalor: false as const,
+    mostrarCalor: (tieneZonaPerdida || totalAvistamientos > 0) as boolean,
     mostrarCercos: tieneZonaPerdida,
     mostrarRefugios: tieneZonaPerdida,
     marcadorUsuario: miUbicacion,
@@ -126,10 +126,10 @@ export function MapaMascotaFicha({
       <div className="ficha-publica-mapa-cabecera">
         <div>
           <h2 id="mapa-mascota-titulo" className="ficha-publica-mapa-titulo">
-            Mapa de búsqueda
+            Mapa de búsqueda de {nombre}
           </h2>
           <p className="ficha-publica-mapa-desc">
-            Zona activa y avistamientos de <strong>{nombre}</strong>
+            Cerco, calor y avistamientos exclusivos de esta mascota.
           </p>
         </div>
         {totalAvistamientos > 0 && (
@@ -169,6 +169,11 @@ export function MapaMascotaFicha({
                   Refugio
                 </span>
               </>
+            )}
+            {(tieneZonaPerdida || totalAvistamientos > 0) && (
+              <span className="ficha-publica-mapa-leyenda-pill ficha-publica-mapa-leyenda-pill--calor">
+                Mapa de calor
+              </span>
             )}
             <span className="ficha-publica-mapa-leyenda-pill ficha-publica-mapa-leyenda-pill--avist">
               Avistamientos

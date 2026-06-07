@@ -226,6 +226,7 @@ export function FichaPublicaMascota({
             <PanelComportamiento
               prediccion={datosMapa.prediccion}
               nombreMascota={mascota.nombre}
+              mascotaId={mascota.id}
             />
           </div>
         )}

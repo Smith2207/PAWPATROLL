@@ -1,4 +1,4 @@
-/** Referencias usadas para calibrar radios y consejos (M5). */
+/** Referencias usadas para calibrar radios, refugios y consejos (M5). */
 
 export type FuenteComportamiento = {
   id: string;
@@ -14,29 +14,47 @@ export const FUENTES_COMPORTAMIENTO: FuenteComportamiento[] = [
     id: "huang-2018-gatos",
     titulo:
       "Search Methods Used to Locate Missing Cats and Locations Where Missing Cats Are Found",
-    autores: "Huang et al.",
+    autores: "Huang, Coradini & Rand",
     anio: 2018,
-    url: "https://www.researchgate.net/publication/322239789_Search_Methods_Used_to_Locate_Missing_Cats_and_Locations_Where_Missing_Cats_Are_Found",
-    nota: "~75% de gatos encontrados dentro de 500 m; gatos solo interior mediana ~137 m; con acceso exterior hasta ~1,6 km en parte de los casos.",
+    url: "https://www.mdpi.com/2076-2613/8/5/78",
+    nota: "Estudio observacional en gatos perdidos: ~75 % se encontraron dentro de 500 m; gatos de interior mediana ~137 m; acceso exterior amplía el radio de desplazamiento.",
   },
   {
     id: "lord-2007-perros-gatos",
-    titulo: "Search and identification methods that owners use to find a lost dog or cat",
-    autores: "Lord et al.",
+    titulo:
+      "Search and identification methods that owners use to find a lost dog or cat",
+    autores: "Lord, Wittum & Ferketich",
     anio: 2007,
-    url: "https://lostpetresearch.com/2019/03/lost-pet-statistics/",
-    nota: "Búsqueda física en el vecindario y regreso por cuenta propia son vías frecuentes de recuperación.",
+    url: "https://pubmed.ncbi.nlm.nih.gov/17603017/",
+    nota: "Encuesta a dueños en Ohio: la búsqueda física en el vecindario y el regreso espontáneo son vías frecuentes; subraya ventanas críticas de búsqueda activa.",
+  },
+  {
+    id: "lord-2009-perros",
+    titulo:
+      "Search and identification methods to find lost dogs and characteristics of recovering dogs",
+    autores: "Lord, Haar & Witte",
+    anio: 2009,
+    url: "https://pubmed.ncbi.nlm.nih.gov/19678807/",
+    nota: "Perros recuperados: muchos permanecen cerca del hogar; la señalización y la búsqueda callejera mejoran hallazgos en las primeras 48–72 h.",
   },
   {
     id: "mar-gatos",
     titulo: "Missing Cat Study — Missing Animal Response Network",
     autores: "Kat Albrecht / MAR",
     url: "https://www.missinganimalresponse.com/missing-cat-study/",
-    nota: "Muchos gatos se ocultan muy cerca (propiedad vecina, debajo de estructuras); búsqueda sistemática en radios cortos.",
+    nota: "Gatos asustados suelen ocultarse a pocos metros (jardines vecinos, garajes, estructuras bajas); búsqueda sistemática en radios cortos y de noche.",
+  },
+  {
+    id: "albrecht-2015",
+    titulo: "Pet Tracker Protocol and lost pet recovery (Missing Animal Response)",
+    autores: "Kat Albrecht",
+    anio: 2015,
+    url: "https://www.missinganimalresponse.com/",
+    nota: "Protocolos de búsqueda por especie: perros pueden recorrer más terreno; gatos tienden a refugiarse cerca del punto de escape.",
   },
 ];
 
-/** Metros — Huang et al. 2018 */
+/** Metros y umbrales — calibrados con Huang et al. 2018 y Lord et al. 2007/2009 */
 export const EVIDENCIA = {
   GATO_INTERIOR_MEDIANA_M: 137,
   GATO_INTERIOR_P75_M: 200,

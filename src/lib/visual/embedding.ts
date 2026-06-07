@@ -9,7 +9,9 @@ export type ProveedorEmbedding = "gemini" | "clip";
 export function proveedorVisualActivo(): ProveedorEmbedding {
   const modo = process.env.VISUAL_PROVIDER?.trim().toLowerCase();
   if (modo === "clip") return "clip";
-  if (modo === "gemini") return "gemini";
+  if (modo === "gemini") {
+    return geminiEmbeddingConfigurada() ? "gemini" : "clip";
+  }
   return geminiEmbeddingConfigurada() ? "gemini" : "clip";
 }
 

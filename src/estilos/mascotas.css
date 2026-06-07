@@ -1558,6 +1558,10 @@ footer.ficha-publica-pie {
   background: var(--mint);
 }
 
+.ficha-publica-mapa-leyenda-pill--calor::before {
+  background: linear-gradient(90deg, #3b82f6, #eab308, #ef4444);
+}
+
 .ficha-publica-mapa-envoltorio {
   position: relative;
   border-radius: 8px;
@@ -2162,6 +2166,13 @@ footer.ficha-publica-pie {
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
+.panel-comportamiento-resumen {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--pp-texto-secundario, #5c5c5c);
+}
+
 .panel-comportamiento-evidencia {
   margin: 0 0 0.75rem;
   font-size: 0.88rem;
@@ -2203,10 +2214,60 @@ footer.ficha-publica-pie {
   color: var(--pp-texto-secundario, #5c5c5c);
 }
 
+.panel-comportamiento-plan {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  color: var(--navy);
+}
+
+.panel-comportamiento-rasgos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.panel-comportamiento-rasgos li {
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: var(--navy);
+}
+
 .panel-comportamiento-perfil {
   margin: 0 0 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--pp-texto-secundario, #5c5c5c);
+  line-height: 1.4;
+}
+
+.panel-comportamiento-perfil-meta {
+  font-weight: 400;
+  color: var(--pp-texto-secundario, #5c5c5c);
+}
+
+.panel-comportamiento-subtitulo {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pp-texto-secundario, #5c5c5c);
+}
+
+.panel-comportamiento-fuentes-lista {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.panel-comportamiento-fuentes-lista li + li {
+  margin-top: 0.35rem;
 }
 
 .panel-comportamiento-metricas {

@@ -476,6 +476,10 @@ export function ModalReportarAvistamiento({
               onChange={setFotoAvistamiento}
             />
             <div className="section-divider">Buscar coincidencias</div>
+            <p className="form-ficha-ayuda" style={{ marginTop: 0 }}>
+              Opcional: sube otra foto aquí solo para comparar con mascotas
+              perdidas. Es independiente de la foto de evidencia de arriba.
+            </p>
             <IdentificacionPorFoto
               compacto
               onElegir={aplicarCoincidenciaFoto}
