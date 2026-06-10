@@ -38,63 +38,15 @@ import {
   mapaEstilosPorMascota,
   type EstiloFamiliaMascota,
 } from "@/lib/mapa/colores-cerco";
+import {
+  agregarCapaCalorSegura,
+  contenedorMapaVisible,
+  invalidarTamanoMapaSeguro,
+} from "@/lib/mapa/leaflet-utilidades";
 
 function textoDireccion(direccion: string | null): string {
   if (!direccion || pareceCoordenadas(direccion)) return "Zona reportada";
   return direccion;
-}
-
-/** Evita IndexSizeError cuando Leaflet redibuja con contenedor aún en 0×0 */
-function invalidarTamanoMapaSeguro(mapa: L.Map, contenedor?: HTMLElement | null) {
-  const el = contenedor ?? mapa.getContainer();
-  if (!el?.isConnected) return;
-  const { width, height } = el.getBoundingClientRect();
-  if (width < 1 || height < 1) return;
-  try {
-    mapa.invalidateSize();
-  } catch {
-    /* contenedor oculto o sin layout */
-  }
-}
-
-function contenedorMapaVisible(contenedor: HTMLElement | null | undefined): boolean {
-  if (!contenedor?.isConnected) return false;
-  const { width, height } = contenedor.getBoundingClientRect();
-  return width >= 1 && height >= 1;
-}
-
-type OpcionesCalor = {
-  radius?: number;
-  blur?: number;
-  maxZoom?: number;
-  gradient?: Record<number, string>;
-};
-
-/** leaflet.heat falla con IndexSizeError si el canvas del mapa mide 0×0 */
-function agregarCapaCalorSegura(
-  mapa: L.Map,
-  contenedor: HTMLElement | null | undefined,
-  puntos: [number, number, number?][],
-  opciones: OpcionesCalor = {}
-): L.Layer | null {
-  if (puntos.length === 0 || !contenedorMapaVisible(contenedor)) return null;
-  try {
-    invalidarTamanoMapaSeguro(mapa, contenedor);
-    return L.heatLayer(puntos, {
-      radius: 28,
-      blur: 22,
-      maxZoom: 17,
-      gradient: {
-        0.2: "#3b82f6",
-        0.5: "#eab308",
-        0.8: "#f97316",
-        1: "#ef4444",
-      },
-      ...opciones,
-    }).addTo(mapa);
-  } catch {
-    return null;
-  }
 }
 
 function observarHastaCapaCalor(

@@ -511,7 +511,7 @@
 .pp-marcador-perdida-etiq {
   margin-top: 4px;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   background: var(--orange, #ea580c);
   color: white;
   font-size: 0.62rem;
@@ -878,7 +878,7 @@
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border, #e2e8f0);
 }
 
@@ -929,7 +929,7 @@
 
 .pp-camara-avistamiento {
   margin: 0.5rem 0;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background: #000;
   position: relative;

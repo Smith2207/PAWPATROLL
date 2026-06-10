@@ -446,7 +446,7 @@
   font-size: 1.35rem;
   background: white;
   border: 2px solid rgba(var(--blue-rgb), 0.25);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 4px 12px rgba(var(--blue-rgb), 0.15);
 }
 

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import {
   BotonCerrarModal,
   ModalContenedor,
@@ -31,6 +30,7 @@ import { CampoRaza } from "@/componentes/formulario/CampoRaza";
 import { CampoTamano } from "@/componentes/formulario/CampoTamano";
 import { CampoTipoMascota } from "@/componentes/formulario/CampoTipoMascota";
 import { useRazaPorTipo } from "@/hooks/useRazaPorTipo";
+import { useWizardReporte } from "@/hooks/useWizardReporte";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
 import { useModales } from "@/contexto/ContextoModales";
@@ -41,7 +41,9 @@ import type { CaracteristicasVisuales } from "@/lib/visual/extraer-caracteristic
 import { TAMANOS } from "@/lib/mascotas/catalogos";
 import { CampoFechaHora } from "@/componentes/formulario/CampoFechaHora";
 import { valorDatetimeLocalActual } from "@/lib/fechas/datetime-local";
-import { RUTAS_LANDING } from "@/lib/landing/rutas";
+import { PasosWizard } from "@/componentes/landing/modales/PasosWizard";
+import { AvisoBorradorReporte } from "@/componentes/landing/modales/AvisoBorradorReporte";
+import { PanelExitoReporte } from "@/componentes/landing/modales/PanelExitoReporte";
 
 const PASOS_AVISTAMIENTO = [
   { id: 1, titulo: "Foto" },
@@ -67,18 +69,13 @@ function tipoInicial(mascotaFijada: ReturnType<typeof useModales>["mascotaAvista
 export function ModalReportarAvistamiento({
   mascotasPerdidas = [],
 }: Props) {
-  const {
-    cerrarModal,
-    abrirModal,
-    mascotaAvistamiento: mascotaFijada,
-    setAvistamientoPendienteAuth,
-    modalAbierto,
-    publicandoReporte,
-  } = useModales();
-  const router = useRouter();
+  const { mascotaAvistamiento: mascotaFijada } = useModales();
   const { status: estadoSesion } = useSession();
   const sesionActiva = estadoSesion === "authenticated";
   const avistamientoDesdeFicha = Boolean(mascotaFijada?.id);
+
+  const pasos = avistamientoDesdeFicha ? PASOS_FICHA : PASOS_AVISTAMIENTO;
+  const pasoFinalWizard = pasos.length;
 
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState("");
   const {
@@ -94,9 +91,6 @@ export function ModalReportarAvistamiento({
   const [color, setColor] = useState("");
   const [ubicacion, setUbicacion] = useState<UbicacionSeleccionada | null>(null);
   const [direccion, setDireccion] = useState("");
-  const [cargando, setCargando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [exito, setExito] = useState<string | null>(null);
   const [identificadaPorFoto, setIdentificadaPorFoto] =
     useState<CoincidenciaVisual | null>(null);
   const [fotoAvistamiento, setFotoAvistamiento] = useState<string | null>(null);
@@ -106,13 +100,61 @@ export function ModalReportarAvistamiento({
   );
   const [referencias, setReferencias] = useState("");
   const [direccionMovimiento, setDireccionMovimiento] = useState("");
-  const [avisoBorrador, setAvisoBorrador] = useState(false);
-  const [paso, setPaso] = useState(1);
   const [detallesAbiertos, setDetallesAbiertos] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
 
-  const pasos = avistamientoDesdeFicha ? PASOS_FICHA : PASOS_AVISTAMIENTO;
-  const pasoFinal = pasos.length;
+  function restaurarDesdeBorrador(datos: DatosAvistamiento) {
+    setUbicacion({ lat: datos.lat, lng: datos.lng });
+    setDireccion(datos.direccion ?? "");
+    setTipo(datos.tipoMascota ?? "");
+    setColor(datos.color ?? "");
+    const razaIni = parsearRaza(datos.tipoMascota ?? "", datos.raza);
+    setRazaSeleccion(razaIni.seleccion);
+    setRazaOtra(razaIni.otra);
+    setTamano(datos.tamano ?? "");
+    setFotoAvistamiento(datos.fotoUrl ?? null);
+    setReferencias(datos.referencias ?? "");
+    setDireccionMovimiento(datos.direccionMovimiento ?? "");
+    if (datos.fechaHora) setFechaAvistamiento(datos.fechaHora);
+    if (datos.mascotaId) setMascotaSeleccionada(datos.mascotaId);
+  }
+
+  const restaurarBorrador = useCallback(() => {
+    const borrador = leerBorradorAvistamiento();
+    if (!borrador) return false;
+    restaurarDesdeBorrador(borrador.datos);
+    return true;
+  }, []);
+
+  const {
+    paso,
+    setPaso,
+    pasoFinal,
+    error,
+    setError,
+    exito,
+    setExito,
+    setMetaExito,
+    avisoBorrador,
+    setAvisoBorrador,
+    cargando,
+    setCargando,
+    publicando,
+    formRef,
+    irAtras,
+    irSiguiente,
+    verMapaYCerrar,
+    cerrarModal,
+    solicitarLoginParaPublicar,
+    setAvistamientoPendienteAuth,
+  } = useWizardReporte({
+    modalId: "sighting",
+    pasoFinal: pasoFinalWizard,
+    tipoPublicando: "avistamiento",
+    leerYQuitarExito: leerYQuitarExitoAvistamiento,
+    esExitoPublicacion: (r) => Boolean(r.numeroReporte),
+    restaurarBorrador,
+    omitirRestaurarBorrador: () => avistamientoDesdeFicha,
+  });
 
   function aplicarCoincidenciaFoto(c: CoincidenciaVisual) {
     setIdentificadaPorFoto(c);
@@ -145,71 +187,16 @@ export function ModalReportarAvistamiento({
       setPaso(1);
       setDetallesAbiertos(false);
     });
-  }, [mascotaFijada]);
-
-  function aplicarResultadoPublicacion() {
-    const resultado = leerYQuitarExitoAvistamiento();
-    if (!resultado) return false;
-    if (resultado.numeroReporte) {
-      setExito(resultado.mensaje);
-      setError(null);
-      setAvisoBorrador(false);
-    } else {
-      setExito(null);
-      setError(resultado.mensaje);
-    }
-    return true;
-  }
-
-  function restaurarDesdeBorrador(datos: DatosAvistamiento) {
-    setUbicacion({ lat: datos.lat, lng: datos.lng });
-    setDireccion(datos.direccion ?? "");
-    setTipo(datos.tipoMascota ?? "");
-    setColor(datos.color ?? "");
-    const razaIni = parsearRaza(datos.tipoMascota ?? "", datos.raza);
-    setRazaSeleccion(razaIni.seleccion);
-    setRazaOtra(razaIni.otra);
-    setTamano(datos.tamano ?? "");
-    setFotoAvistamiento(datos.fotoUrl ?? null);
-    setReferencias(datos.referencias ?? "");
-    setDireccionMovimiento(datos.direccionMovimiento ?? "");
-    if (datos.fechaHora) setFechaAvistamiento(datos.fechaHora);
-    if (datos.mascotaId) setMascotaSeleccionada(datos.mascotaId);
-  }
-
-  useEffect(() => {
-    const onPublicado = () => aplicarResultadoPublicacion();
-    window.addEventListener("pawpatroll:reporte-publicado", onPublicado);
-    return () =>
-      window.removeEventListener("pawpatroll:reporte-publicado", onPublicado);
-  }, []);
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      if (modalAbierto !== "sighting") {
-        setPaso(1);
-        return;
-      }
-      if (aplicarResultadoPublicacion()) return;
-      if (mascotaFijada) return;
-
-      const borrador = leerBorradorAvistamiento();
-      if (!borrador) return;
-
-      restaurarDesdeBorrador(borrador.datos);
-      setAvisoBorrador(true);
-      setError(null);
-      setExito(null);
-      setPaso(1);
-    });
-  }, [modalAbierto, mascotaFijada]);
-
-  const publicando = publicandoReporte === "avistamiento" || cargando;
-
-  function irAtras() {
-    setError(null);
-    setPaso((p) => Math.max(1, p - 1));
-  }
+  }, [
+    mascotaFijada,
+    setTipo,
+    setRazaSeleccion,
+    setRazaOtra,
+    setPaso,
+    setError,
+    setExito,
+    setAvisoBorrador,
+  ]);
 
   function validarPasoActual(): string | null {
     if (avistamientoDesdeFicha) {
@@ -228,16 +215,6 @@ export function ModalReportarAvistamiento({
     }
 
     return null;
-  }
-
-  function irSiguiente() {
-    const err = validarPasoActual();
-    if (err) {
-      setError(err);
-      return;
-    }
-    setError(null);
-    setPaso((p) => Math.min(pasoFinal, p + 1));
   }
 
   const armarDatosAvistamiento = useCallback(
@@ -271,8 +248,7 @@ export function ModalReportarAvistamiento({
       tipo,
       tamano,
       color,
-      razaSeleccion,
-      razaOtra,
+      razaCompuesta,
       fotoAvistamiento,
       fechaAvistamiento,
       referencias,
@@ -299,9 +275,10 @@ export function ModalReportarAvistamiento({
     e.preventDefault();
     setError(null);
     setExito(null);
+    setMetaExito(null);
 
     if (paso < pasoFinal) {
-      irSiguiente();
+      irSiguiente(validarPasoActual);
       return;
     }
 
@@ -330,16 +307,13 @@ export function ModalReportarAvistamiento({
     }
 
     if (!sesionActiva) {
-      const guardado = guardarBorradorAvistamiento(datos);
-      if (!guardado) {
-        setError(
-          "No se pudo guardar el reporte (la foto puede ser muy pesada). Prueba con una imagen más pequeña o inicia sesión antes de subirla."
-        );
-        return;
-      }
-      marcarAvistamientoPendienteAuth();
-      setAvistamientoPendienteAuth(true);
-      abrirModal("login");
+      solicitarLoginParaPublicar({
+        guardarBorrador: () => guardarBorradorAvistamiento(datos),
+        marcarPendienteStorage: marcarAvistamientoPendienteAuth,
+        setFlagContexto: setAvistamientoPendienteAuth,
+        mensajeErrorGuardado:
+          "No se pudo guardar el reporte (la foto puede ser muy pesada). Prueba con una imagen más pequeña o inicia sesión antes de subirla.",
+      });
       return;
     }
 
@@ -356,54 +330,26 @@ export function ModalReportarAvistamiento({
       resultado.mensaje ??
         `Avistamiento #${resultado.numeroReporte} registrado.`
     );
+    setMetaExito({ numeroReporte: resultado.numeroReporte });
     setUbicacion(null);
     setDireccion("");
     setFotoAvistamiento(null);
   }
 
-  function verMapaYCerrar() {
-    cerrarModal("sighting");
-    router.push(`${RUTAS_LANDING.comunidad}#mapa`);
-  }
-
   if (exito) {
     return (
-      <ModalContenedor tipo="sighting">
+      <>
         <OverlayPublicando visible={publicando} />
-        <div className="modal-header">
-          <div className="modal-header-accent modal-header-accent--mint" />
-          <BotonCerrarModal tipo="sighting" />
-          <div className="modal-title">Avistamiento publicado</div>
-          <div className="modal-sub">
-            Gracias por ayudar. El reporte ya está visible en el mapa.
-          </div>
-        </div>
-        <div className="modal-body pp-avistamiento-exito-panel">
-          <div className="pp-avistamiento-exito" role="status">
-            <span className="pp-avistamiento-exito-icono">
-              <Icono nombre="checkCirculo" size={28} />
-            </span>
-            <div>
-              <strong>¡Publicado correctamente!</strong>
-              <p>{exito}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="submit-btn submit-btn-blue"
-            onClick={verMapaYCerrar}
-          >
-            <Icono nombre="mapa" size={18} className="pp-icon--btn" /> Ver en el mapa
-          </button>
-          <button
-            type="button"
-            className="submit-btn"
-            onClick={() => cerrarModal("sighting")}
-          >
-            Cerrar
-          </button>
-        </div>
-      </ModalContenedor>
+        <PanelExitoReporte
+          tipo="sighting"
+          titulo="Avistamiento publicado"
+          subtitulo="Gracias por ayudar. El reporte ya está visible en el mapa."
+          mensaje={exito}
+          accentMint
+          onVerMapa={verMapaYCerrar}
+          onCerrar={cerrarModal}
+        />
+      </>
     );
   }
 
@@ -435,26 +381,16 @@ export function ModalReportarAvistamiento({
         </div>
       </div>
       <form ref={formRef} className="modal-body" noValidate onSubmit={enviar}>
-        {avisoBorrador && (
-          <p className="auth-alerta auth-alerta--info" role="status">
-            Recuperamos tu borrador. Revisa los datos y continúa para publicar.
-          </p>
-        )}
+        <AvisoBorradorReporte visible={avisoBorrador} />
         {error && (
           <p className="auth-alerta auth-alerta--error">{error}</p>
         )}
 
-        <div className="auth-pasos" aria-label="Progreso del avistamiento">
-          {pasos.map((p) => (
-            <div
-              key={p.id}
-              className={`auth-paso ${paso === p.id ? "auth-paso--activo" : ""} ${paso > p.id ? "auth-paso--hecho" : ""}`}
-            >
-              <span className="auth-paso-num">{p.id}</span>
-              <span className="auth-paso-titulo">{p.titulo}</span>
-            </div>
-          ))}
-        </div>
+        <PasosWizard
+          pasos={pasos}
+          pasoActivo={paso}
+          etiqueta="Progreso del avistamiento"
+        />
 
         {avistamientoDesdeFicha && mascotaFijada && (
           <div className="pp-avistamiento-ficha-fijada" role="status">

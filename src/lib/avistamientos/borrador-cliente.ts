@@ -1,5 +1,10 @@
 import type { DatosAvistamiento } from "@/actions/avistamientos";
 import {
+  SESSION_BORRADOR_AVISTAMIENTO,
+  SESSION_EXITO_AVISTAMIENTO,
+  SESSION_PENDIENTE_AUTH_AVISTAMIENTO,
+} from "@/lib/claves-session-cliente";
+import {
   guardarExitoSession,
   guardarJsonSession,
   hayPendienteAuth,
@@ -10,9 +15,9 @@ import {
   marcarPendienteAuth,
 } from "@/lib/borrador/session-storage";
 
-const CLAVE_BORRADOR = "pawpatroll:borrador-avistamiento";
-const CLAVE_EXITO = "pawpatroll:avistamiento-exito";
-const CLAVE_PENDIENTE_AUTH = "pawpatroll:avistamiento-pendiente-auth";
+const CLAVE_BORRADOR = SESSION_BORRADOR_AVISTAMIENTO;
+const CLAVE_EXITO = SESSION_EXITO_AVISTAMIENTO;
+const CLAVE_PENDIENTE_AUTH = SESSION_PENDIENTE_AUTH_AVISTAMIENTO;
 
 export function marcarAvistamientoPendienteAuth() {
   marcarPendienteAuth(CLAVE_PENDIENTE_AUTH);

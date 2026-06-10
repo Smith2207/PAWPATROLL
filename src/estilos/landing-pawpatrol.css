@@ -334,7 +334,7 @@
 
     .alert-banner {
       background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
-      border: 1.5px solid #FDE68A; border-radius: 12px;
+      border: 1.5px solid #FDE68A; border-radius: var(--radius-sm);
       padding: 0.7rem 0.9rem; margin-top: 0.9rem;
       display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden;
     }

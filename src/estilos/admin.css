@@ -154,7 +154,7 @@
   height: 2.5rem;
   display: grid;
   place-items: center;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: var(--blue-light);
   color: var(--blue);
 }

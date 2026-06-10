@@ -10,6 +10,7 @@ import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
+import { EVENTO_CENTRAR_MAPA_USUARIO } from "@/lib/eventos-cliente";
 import { LeyendaMapaColapsable } from "@/componentes/mapa/LeyendaMapaColapsable";
 
 const MapaPawPatrol = dynamic(
@@ -49,9 +50,9 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
     const centrar = () => {
       void geo.obtenerUbicacion();
     };
-    window.addEventListener("pawpatroll:centrar-mapa-usuario", centrar);
+    window.addEventListener(EVENTO_CENTRAR_MAPA_USUARIO, centrar);
     return () =>
-      window.removeEventListener("pawpatroll:centrar-mapa-usuario", centrar);
+      window.removeEventListener(EVENTO_CENTRAR_MAPA_USUARIO, centrar);
   }, [geo]);
 
   const actualizar = useCallback(async (f: FiltrosMapaPublico = filtros) => {

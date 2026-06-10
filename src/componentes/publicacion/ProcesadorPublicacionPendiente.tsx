@@ -18,6 +18,7 @@ import {
   limpiarBorradorPerdida,
 } from "@/lib/perdidas/borrador-cliente";
 import { publicarReportePerdida } from "@/lib/perdidas/publicar-reporte";
+import { emitirReportePublicado } from "@/lib/eventos-cliente";
 
 type TipoPublicacion = "avistamiento" | "perdida";
 
@@ -92,7 +93,6 @@ function usePublicacionPendienteAuth<T>({
         guardarExito({
           mensaje: resultado.error ?? mensajeErrorFallback,
         });
-        window.dispatchEvent(new CustomEvent("pawpatroll:reporte-publicado"));
         return;
       }
 
@@ -103,7 +103,7 @@ function usePublicacionPendienteAuth<T>({
         slug: resultado.slug,
       });
 
-      window.dispatchEvent(new CustomEvent("pawpatroll:reporte-publicado"));
+      emitirReportePublicado();
       router.refresh();
     })();
   }, [

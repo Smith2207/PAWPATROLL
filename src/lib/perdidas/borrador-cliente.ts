@@ -1,5 +1,10 @@
 import type { DatosFichaMascota } from "@/lib/db/schema";
 import {
+  SESSION_BORRADOR_PERDIDA,
+  SESSION_EXITO_PERDIDA,
+  SESSION_PENDIENTE_AUTH_PERDIDA,
+} from "@/lib/claves-session-cliente";
+import {
   guardarExitoSession,
   guardarJsonSession,
   hayPendienteAuth,
@@ -10,9 +15,9 @@ import {
   marcarPendienteAuth,
 } from "@/lib/borrador/session-storage";
 
-const CLAVE_BORRADOR = "pawpatroll:borrador-perdida";
-const CLAVE_EXITO = "pawpatroll:perdida-exito";
-const CLAVE_PENDIENTE_AUTH = "pawpatroll:perdida-pendiente-auth";
+const CLAVE_BORRADOR = SESSION_BORRADOR_PERDIDA;
+const CLAVE_EXITO = SESSION_EXITO_PERDIDA;
+const CLAVE_PENDIENTE_AUTH = SESSION_PENDIENTE_AUTH_PERDIDA;
 
 export type DatosPerdidaBorrador = {
   lugarPerdida: string;

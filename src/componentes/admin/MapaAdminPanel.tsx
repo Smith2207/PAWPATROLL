@@ -6,16 +6,15 @@ import "leaflet.heat";
 import type { DatosMapaPublico } from "@/actions/mapa";
 import { configurarIconosLeaflet } from "@/lib/geo/leaflet-iconos";
 import { CENTRO_MAPA_DEFECTO } from "@/lib/geo/tipos";
+import {
+  agregarCapaCalorSegura,
+  contenedorMapaVisible,
+  OPCIONES_CALOR_MAPA_ADMIN,
+} from "@/lib/mapa/leaflet-utilidades";
 
 type Props = {
   datos: DatosMapaPublico;
 };
-
-function contenedorVisible(el: HTMLElement | null): boolean {
-  if (!el?.isConnected) return false;
-  const { width, height } = el.getBoundingClientRect();
-  return width >= 1 && height >= 1;
-}
 
 export function MapaAdminPanel({ datos }: Props) {
   const contenedorRef = useRef<HTMLDivElement>(null);
@@ -36,8 +35,18 @@ export function MapaAdminPanel({ datos }: Props) {
     let cancelado = false;
     let mapa: L.Map | null = null;
 
+    const pintarCalor = (m: L.Map, el: HTMLElement) => {
+      if (datos.puntosCalor.length === 0) return null;
+      return agregarCapaCalorSegura(
+        m,
+        el,
+        datos.puntosCalor,
+        OPCIONES_CALOR_MAPA_ADMIN
+      );
+    };
+
     const init = () => {
-      if (cancelado || mapaRef.current || !contenedorVisible(contenedor)) return;
+      if (cancelado || mapaRef.current || !contenedorMapaVisible(contenedor)) return;
 
       mapa = L.map(contenedor, {
         scrollWheelZoom: true,
@@ -67,24 +76,7 @@ export function MapaAdminPanel({ datos }: Props) {
         calorRef.current = null;
       }
 
-      if (datos.puntosCalor.length > 0 && contenedorVisible(el)) {
-        try {
-          m.invalidateSize();
-          calorRef.current = L.heatLayer(datos.puntosCalor, {
-            radius: 32,
-            blur: 24,
-            maxZoom: 17,
-            gradient: {
-              0.2: "#3b82f6",
-              0.5: "#eab308",
-              0.8: "#f97316",
-              1: "#ef4444",
-            },
-          }).addTo(m);
-        } catch {
-          /* canvas 0×0 */
-        }
-      }
+      calorRef.current = pintarCalor(m, el);
 
       datos.perdidas.forEach((p) => {
         L.circleMarker([p.lat, p.lng], {
@@ -127,22 +119,8 @@ export function MapaAdminPanel({ datos }: Props) {
       window.setTimeout(() => {
         if (!m || !el) return;
         m.invalidateSize();
-        if (!calorRef.current && datos.puntosCalor.length > 0 && contenedorVisible(el)) {
-          try {
-            calorRef.current = L.heatLayer(datos.puntosCalor, {
-              radius: 32,
-              blur: 24,
-              maxZoom: 17,
-              gradient: {
-                0.2: "#3b82f6",
-                0.5: "#eab308",
-                0.8: "#f97316",
-                1: "#ef4444",
-              },
-            }).addTo(m);
-          } catch {
-            /* reintento fallido */
-          }
+        if (!calorRef.current && datos.puntosCalor.length > 0) {
+          calorRef.current = pintarCalor(m, el);
         }
       }, 150);
     };

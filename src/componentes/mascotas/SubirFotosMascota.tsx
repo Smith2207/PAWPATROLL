@@ -1,24 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Icono } from "@/componentes/ui/Icono";
-import {
-  ACCEPT_INPUT_IMAGEN,
-  MENSAJE_IMAGEN_ILEGIBLE,
-  validarArchivoImagen,
-} from "@/lib/imagen/validar-archivo";
-
-const MAX_FOTOS = 5;
-const MAX_BYTES_FOTO = 8 * 1024 * 1024;
-
-function leerArchivo(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+import { GaleriaFotosMascota } from "@/componentes/mascotas/GaleriaFotosMascota";
+import { useFotosMascota } from "@/hooks/useFotosMascota";
 
 type Props = {
   fotos: string[];
@@ -26,138 +9,17 @@ type Props = {
 };
 
 export function SubirFotosMascota({ fotos, onFotosChange }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  async function agregarArchivos() {
-    if (!inputRef.current?.files?.length) return;
-    const restantes = MAX_FOTOS - fotos.length;
-    if (restantes <= 0) return;
-
-    const archivos = Array.from(inputRef.current.files).slice(0, restantes);
-    inputRef.current.value = "";
-
-    for (const archivo of archivos) {
-      const validacion = validarArchivoImagen(archivo, {
-        maxBytes: MAX_BYTES_FOTO,
-      });
-      if (!validacion.ok) {
-        setError(validacion.error);
-        return;
-      }
-    }
-
-    try {
-      const nuevas = await Promise.all(archivos.map(leerArchivo));
-      setError(null);
-      onFotosChange([...fotos, ...nuevas].slice(0, MAX_FOTOS));
-    } catch {
-      setError(MENSAJE_IMAGEN_ILEGIBLE);
-    }
-  }
-
-  function quitar(indice: number) {
-    onFotosChange(fotos.filter((_, i) => i !== indice));
-  }
-
-  function marcarPrincipal(indice: number) {
-    const copia = [...fotos];
-    const [foto] = copia.splice(indice, 1);
-    if (!foto) return;
-    onFotosChange([foto, ...copia]);
-  }
+  const galeria = useFotosMascota({ fotos, onFotosChange });
 
   return (
-    <div>
-      {fotos.length > 0 && (
-        <div className="galeria-fotos" style={{ marginBottom: "1rem" }}>
-          {fotos.map((src, i) => (
-            <div
-              key={`${i}-${src.slice(0, 32)}`}
-              className={`galeria-foto-item ${i === 0 ? "galeria-foto-item--principal" : ""}`}
-            >
-              <img src={src} alt={`Foto ${i + 1}`} />
-              {i === 0 && <span className="galeria-foto-badge">Principal</span>}
-              <div
-                style={{
-                  position: "absolute",
-                  top: 4,
-                  right: 4,
-                  display: "flex",
-                  gap: 4,
-                }}
-              >
-                {i !== 0 && (
-                  <button
-                    type="button"
-                    title="Marcar como principal"
-                    onClick={() => marcarPrincipal(i)}
-                    style={{
-                      background: "rgba(255,255,255,0.9)",
-                      border: "none",
-                      borderRadius: 6,
-                      cursor: "pointer",
-                      fontSize: "0.65rem",
-                      padding: "2px 5px",
-                    }}
-                  >
-                    <Icono nombre="estrella" size={14} />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => quitar(i)}
-                  style={{
-                    background: "rgba(0,0,0,0.55)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 6,
-                    width: 22,
-                    height: 22,
-                    cursor: "pointer",
-                  }}
-                >
-                  <Icono nombre="cerrar" size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {fotos.length < MAX_FOTOS && (
-        <div
-          className="subir-fotos-zona"
-          onClick={() => inputRef.current?.click()}
-          onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept={ACCEPT_INPUT_IMAGEN}
-            multiple
-            hidden
-            onChange={agregarArchivos}
-          />
-          <div style={{ marginBottom: 6 }}>
-            <Icono nombre="camara" size={28} />
-          </div>
-          <div style={{ fontWeight: 800, color: "var(--navy)", fontSize: "0.85rem" }}>
-            Subir fotos ({fotos.length}/{MAX_FOTOS})
-          </div>
-          <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: 4 }}>
-            JPG, PNG o WebP. La primera foto es la principal.
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <p className="auth-alerta auth-alerta--error" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
+    <GaleriaFotosMascota
+      fotos={galeria.fotos}
+      maxFotos={galeria.maxFotos}
+      error={galeria.errorArchivo}
+      onQuitar={galeria.quitarFoto}
+      onMarcarPrincipal={galeria.marcarPrincipal}
+      onInputChange={galeria.previewFotos}
+      variante="ficha"
+    />
   );
 }

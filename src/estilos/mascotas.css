@@ -182,7 +182,7 @@
 .mascotas-alerta-pendientes {
   margin: 0 0 1.25rem;
   padding: 0.85rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: #ecfdf5;
   border: 1px solid #a7f3d0;
   font-size: 0.9rem;
@@ -194,7 +194,7 @@
 .aviso-smtp-dueno {
   margin: 0 0 1rem;
   padding: 0.85rem 1rem;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: #fffbeb;
   border: 1px solid #fde68a;
   font-size: 0.88rem;
@@ -530,7 +530,46 @@
   font-size: 0.6rem;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
+}
+
+.galeria-foto-acciones {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+.galeria-foto-btn {
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.galeria-foto-btn--estrella {
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 0.65rem;
+  padding: 2px 5px;
+}
+
+.galeria-foto-btn--quitar {
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  width: 22px;
+  height: 22px;
+}
+
+.subir-fotos-zona-titulo {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 0.85rem;
+}
+
+.subir-fotos-zona-ayuda {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
 }
 
 .subir-fotos-zona {
@@ -1068,7 +1107,7 @@
   height: 56px;
   padding: 0;
   border: 2px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
   background: var(--card);
@@ -3284,7 +3323,7 @@ footer.ficha-publica-pie {
   align-items: flex-start;
   padding: 0.85rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: white;
 }
 

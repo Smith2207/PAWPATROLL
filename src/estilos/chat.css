@@ -3,7 +3,7 @@
 .pp-chat-privado {
   margin-top: 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   background: #fafafa;
 }
@@ -473,7 +473,7 @@
 }
 
 .pp-chat-burbuja--coord .pp-chat-burbuja-media .pp-chat-adjunto-img {
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   max-height: 220px;
 }
 

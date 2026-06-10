@@ -10,8 +10,3 @@ export const ETIQUETAS_ROL: Record<RolUsuario, string> = {
 export function etiquetaRol(rol: RolUsuario) {
   return ETIQUETAS_ROL[rol] ?? "Miembro";
 }
-
-/** Cualquier usuario autenticado puede registrar mascotas, reportar pérdidas y avistamientos. */
-export function puedeUsarCuentaCompleta() {
-  return true;
-}

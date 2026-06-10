@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
@@ -13,8 +13,8 @@ import { PLACEHOLDER_UBICACION } from "@/lib/mascotas/catalogos";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
 import { etiquetaVisibleUbicacion } from "@/lib/geo/etiqueta-ubicacion";
-import { useModales } from "@/contexto/ContextoModales";
 import { useCamaraReporte } from "@/hooks/useCamaraReporte";
+import { useWizardReporte } from "@/hooks/useWizardReporte";
 import type { DatosFichaMascota } from "@/lib/db/schema";
 import {
   guardarBorradorPerdida,
@@ -31,7 +31,9 @@ import {
 import { OverlayPublicando } from "@/componentes/ui/OverlayPublicando";
 import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
-import { RUTAS_LANDING } from "@/lib/landing/rutas";
+import { PasosWizard } from "@/componentes/landing/modales/PasosWizard";
+import { AvisoBorradorReporte } from "@/componentes/landing/modales/AvisoBorradorReporte";
+import { PanelExitoReporte } from "@/componentes/landing/modales/PanelExitoReporte";
 
 const PASOS_PERDIDA = [
   { id: 1, titulo: "Lo esencial" },
@@ -175,23 +177,12 @@ function extraerRecompensa(descripcion?: string | null): {
 
 export function ModalReportarPerdida() {
   const { data: sesion, status } = useSession();
-  const {
-    abrirModal,
-    cerrarModal,
-    setPerdidaPendienteAuth,
-    modalAbierto,
-    publicandoReporte,
-  } = useModales();
   const router = useRouter();
   const camara = useCamaraReporte({ idPrefijo: "reporte-perdida" });
   const sesionActiva = status === "authenticated";
 
   const [ubicacion, setUbicacion] = useState<UbicacionSeleccionada | null>(null);
   const [direccion, setDireccion] = useState("");
-  const [cargando, setCargando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [exito, setExito] = useState<string | null>(null);
-  const [slugExito, setSlugExito] = useState<string | null>(null);
   const [valoresFicha, setValoresFicha] = useState<
     ValoresInicialesFichaMascota | undefined
   >(undefined);
@@ -201,126 +192,97 @@ export function ModalReportarPerdida() {
   const [contactoEmail, setContactoEmail] = useState("");
   const [recompensa, setRecompensa] = useState("");
   const [claveFormulario, setClaveFormulario] = useState(0);
-  const [avisoBorrador, setAvisoBorrador] = useState(false);
-  const [paso, setPaso] = useState(1);
-  const formRef = useRef<HTMLFormElement>(null);
 
-  function aplicarResultadoPublicacion() {
-    const resultado = leerYQuitarExitoPerdida();
-    if (!resultado) return false;
-    if (resultado.slug) {
-      setExito(resultado.mensaje);
-      setSlugExito(resultado.slug);
-      setError(null);
-      setAvisoBorrador(false);
-    } else {
-      setExito(null);
-      setSlugExito(null);
-      setError(resultado.mensaje);
-    }
-    return true;
-  }
+  const restaurarBorrador = useCallback(() => {
+    const borrador = leerBorradorPerdida();
+    if (!borrador) return false;
 
-  useEffect(() => {
-    const onPublicado = () => aplicarResultadoPublicacion();
-    window.addEventListener("pawpatroll:reporte-publicado", onPublicado);
-    return () =>
-      window.removeEventListener("pawpatroll:reporte-publicado", onPublicado);
-  }, []);
+    const { descripcion, recompensa: recomp } = extraerRecompensa(
+      borrador.datosMascota.descripcion
+    );
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      if (modalAbierto !== "report") {
-        setPaso(1);
-        return;
-      }
-
-      if (aplicarResultadoPublicacion()) return;
-
-      const borrador = leerBorradorPerdida();
-      if (!borrador) return;
-
-      const { descripcion, recompensa: recomp } = extraerRecompensa(
-        borrador.datosMascota.descripcion
-      );
-
-      setValoresFicha({
-        nombre: borrador.datosMascota.nombre,
-        tipo: borrador.datosMascota.tipo,
-        raza: borrador.datosMascota.raza,
-        sexo: borrador.datosMascota.sexo ?? "",
-        color: borrador.datosMascota.color ?? "",
-        tamano: borrador.datosMascota.tamano ?? "",
-        edad: borrador.datosMascota.edad ?? "",
-        accesoExterior: borrador.datosMascota.accesoExterior ?? "",
-        descripcion: descripcion,
-        fechaPerdida: borrador.perdida.fechaPerdida,
-      });
-      setUbicacion({
-        lat: borrador.perdida.latPerdida,
-        lng: borrador.perdida.lngPerdida,
-      });
-      const partesLugar = borrador.perdida.lugarPerdida.split(" · ");
-      setDireccion(partesLugar[0] ?? "");
-      setReferenciasZona(
-        borrador.referenciasZona ?? borrador.perdida.notas ?? partesLugar[1] ?? ""
-      );
-      setContactoNombre(borrador.contactoNombre ?? "");
-      setContactoTelefono(borrador.contactoTelefono ?? "");
-      setContactoEmail(borrador.contactoEmail ?? "");
-      setRecompensa(borrador.recompensa ?? recomp);
-      camara.establecerFotos(borrador.fotos);
-      setClaveFormulario((k) => k + 1);
-      setAvisoBorrador(true);
-      setPaso(1);
-      setError(null);
-      setExito(null);
+    setValoresFicha({
+      nombre: borrador.datosMascota.nombre,
+      tipo: borrador.datosMascota.tipo,
+      raza: borrador.datosMascota.raza,
+      sexo: borrador.datosMascota.sexo ?? "",
+      color: borrador.datosMascota.color ?? "",
+      tamano: borrador.datosMascota.tamano ?? "",
+      edad: borrador.datosMascota.edad ?? "",
+      accesoExterior: borrador.datosMascota.accesoExterior ?? "",
+      descripcion,
+      fechaPerdida: borrador.perdida.fechaPerdida,
     });
-  }, [modalAbierto]);
+    setUbicacion({
+      lat: borrador.perdida.latPerdida,
+      lng: borrador.perdida.lngPerdida,
+    });
+    const partesLugar = borrador.perdida.lugarPerdida.split(" · ");
+    setDireccion(partesLugar[0] ?? "");
+    setReferenciasZona(
+      borrador.referenciasZona ?? borrador.perdida.notas ?? partesLugar[1] ?? ""
+    );
+    setContactoNombre(borrador.contactoNombre ?? "");
+    setContactoTelefono(borrador.contactoTelefono ?? "");
+    setContactoEmail(borrador.contactoEmail ?? "");
+    setRecompensa(borrador.recompensa ?? recomp);
+    camara.establecerFotos(borrador.fotos);
+    setClaveFormulario((k) => k + 1);
+    return true;
+  }, [camara]);
 
-  const publicando = publicandoReporte === "perdida" || cargando;
+  const {
+    paso,
+    setPaso,
+    pasoFinal,
+    error,
+    setError,
+    exito,
+    setExito,
+    metaExito,
+    setMetaExito,
+    avisoBorrador,
+    cargando,
+    setCargando,
+    publicando,
+    formRef,
+    irAtras,
+    irSiguiente,
+    verMapaYCerrar,
+    cerrarModal,
+    solicitarLoginParaPublicar,
+    setPerdidaPendienteAuth,
+  } = useWizardReporte({
+    modalId: "report",
+    pasoFinal: 3,
+    tipoPublicando: "perdida",
+    leerYQuitarExito: leerYQuitarExitoPerdida,
+    esExitoPublicacion: (r) => Boolean(r.slug),
+    restaurarBorrador,
+  });
 
-  function irAtras() {
-    setError(null);
-    setPaso((p) => Math.max(1, p - 1));
-  }
-
-  function irSiguiente() {
-    const form = formRef.current;
-    if (!form) return;
-
-    if (paso === 1) {
-      const err = validarPaso1(form, ubicacion, camara.fotosPreview);
-      if (err) {
-        setError(err);
-        return;
-      }
-    }
-
-    if (paso === 2) {
-      const err = validarPaso2(form);
-      if (err) {
-        setError(err);
-        return;
-      }
-    }
-
-    setError(null);
-    setPaso((p) => Math.min(3, p + 1));
-  }
+  const slugExito = metaExito?.slug ?? null;
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setExito(null);
-    setSlugExito(null);
+    setMetaExito(null);
 
     if (status === "loading") return;
 
     const form = e.currentTarget;
 
-    if (paso < 3) {
-      irSiguiente();
+    if (paso < pasoFinal) {
+      if (paso === 1) {
+        irSiguiente(() =>
+          validarPaso1(form, ubicacion, camara.fotosPreview)
+        );
+      } else if (paso === 2) {
+        irSiguiente(() => validarPaso2(form));
+      } else {
+        irSiguiente();
+      }
       return;
     }
 
@@ -358,16 +320,13 @@ export function ModalReportarPerdida() {
     }
 
     if (!sesionActiva) {
-      const guardado = guardarBorradorPerdida(borrador);
-      if (!guardado) {
-        setError(
-          "No se pudo guardar el reporte (las fotos pueden ser muy pesadas). Prueba con imágenes más pequeñas."
-        );
-        return;
-      }
-      marcarPerdidaPendienteAuth();
-      setPerdidaPendienteAuth(true);
-      abrirModal("login");
+      solicitarLoginParaPublicar({
+        guardarBorrador: () => guardarBorradorPerdida(borrador),
+        marcarPendienteStorage: marcarPerdidaPendienteAuth,
+        setFlagContexto: setPerdidaPendienteAuth,
+        mensajeErrorGuardado:
+          "No se pudo guardar el reporte (las fotos pueden ser muy pesadas). Prueba con imágenes más pequeñas.",
+      });
       return;
     }
 
@@ -381,16 +340,11 @@ export function ModalReportarPerdida() {
     }
 
     setExito(resultado.mensaje);
-    setSlugExito(resultado.slug ?? null);
+    setMetaExito({ slug: resultado.slug });
     camara.limpiarFotos();
     setUbicacion(null);
     setDireccion("");
     router.refresh();
-  }
-
-  function verMapaYCerrar() {
-    cerrarModal("report");
-    router.push(`${RUTAS_LANDING.comunidad}#mapa`);
   }
 
   function compartirWhatsApp() {
@@ -404,59 +358,34 @@ export function ModalReportarPerdida() {
 
   if (exito) {
     return (
-      <ModalContenedor tipo="report">
-        <div className="modal-header">
-          <div className="modal-header-accent" />
-          <BotonCerrarModal tipo="report" />
-          <div className="modal-title">Alerta activada</div>
-          <div className="modal-sub">
-            Tu mascota ya aparece como perdida en el mapa y en su página pública.
-          </div>
-        </div>
-        <div className="modal-body pp-avistamiento-exito-panel">
-          <div className="pp-avistamiento-exito" role="status">
-            <span className="pp-avistamiento-exito-icono">
-              <Icono nombre="checkCirculo" size={28} />
-            </span>
-            <div>
-              <strong>¡Alerta publicada!</strong>
-              <p>{exito}</p>
-            </div>
-          </div>
-          {slugExito && (
-            <>
-              <Link
-                href={`/mascota/${slugExito}`}
-                className="submit-btn submit-btn-blue"
-                onClick={() => cerrarModal("report")}
-              >
-                Ver página pública
-              </Link>
-              <button
-                type="button"
-                className="submit-btn submit-btn-blue"
-                onClick={compartirWhatsApp}
-              >
-                Compartir en WhatsApp
-              </button>
-            </>
-          )}
-          <button
-            type="button"
-            className="submit-btn"
-            onClick={verMapaYCerrar}
-          >
-            <Icono nombre="mapa" size={18} className="pp-icon--btn" /> Ver en el mapa
-          </button>
-          <button
-            type="button"
-            className="submit-btn"
-            onClick={() => cerrarModal("report")}
-          >
-            Cerrar
-          </button>
-        </div>
-      </ModalContenedor>
+      <PanelExitoReporte
+        tipo="report"
+        titulo="Alerta activada"
+        subtitulo="Tu mascota ya aparece como perdida en el mapa y en su página pública."
+        tituloExito="¡Alerta publicada!"
+        mensaje={exito}
+        onVerMapa={verMapaYCerrar}
+        onCerrar={cerrarModal}
+      >
+        {slugExito && (
+          <>
+            <Link
+              href={`/mascota/${slugExito}`}
+              className="submit-btn submit-btn-blue"
+              onClick={cerrarModal}
+            >
+              Ver página pública
+            </Link>
+            <button
+              type="button"
+              className="submit-btn submit-btn-blue"
+              onClick={compartirWhatsApp}
+            >
+              Compartir en WhatsApp
+            </button>
+          </>
+        )}
+      </PanelExitoReporte>
     );
   }
 
@@ -480,28 +409,14 @@ export function ModalReportarPerdida() {
         </div>
       </div>
       <form ref={formRef} className="modal-body" noValidate onSubmit={enviar}>
-        {avisoBorrador && (
-          <p className="auth-alerta auth-alerta--info" role="status">
-            Recuperamos tu borrador. Revisa los datos y continúa para publicar.
-          </p>
-        )}
+        <AvisoBorradorReporte visible={avisoBorrador} />
         {error && (
           <p className="auth-alerta auth-alerta--error" role="alert">
             {error}
           </p>
         )}
 
-        <div className="auth-pasos" aria-label="Progreso del reporte">
-          {PASOS_PERDIDA.map((p) => (
-            <div
-              key={p.id}
-              className={`auth-paso ${paso === p.id ? "auth-paso--activo" : ""} ${paso > p.id ? "auth-paso--hecho" : ""}`}
-            >
-              <span className="auth-paso-num">{p.id}</span>
-              <span className="auth-paso-titulo">{p.titulo}</span>
-            </div>
-          ))}
-        </div>
+        <PasosWizard pasos={PASOS_PERDIDA} pasoActivo={paso} etiqueta="Progreso del reporte" />
 
         <FormularioDatosMascota
           key={claveFormulario}

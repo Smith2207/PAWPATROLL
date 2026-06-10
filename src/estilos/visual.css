@@ -267,7 +267,7 @@
 .foto-ia-item-foto {
   width: 64px;
   height: 64px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   flex-shrink: 0;
   border: 2px solid var(--border);
@@ -389,7 +389,7 @@
   gap: 0.65rem;
   margin-top: 0.75rem;
   padding: 0.7rem 0.85rem;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: linear-gradient(
     90deg,
     rgba(16, 185, 129, 0.12),
@@ -422,7 +422,7 @@
 .foto-ia-caracteristicas {
   margin: 0.75rem 0;
   padding: 0.75rem 0.9rem;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: #f0f9ff;
   border: 1px solid rgba(59, 130, 246, 0.25);
   font-size: 0.85rem;
