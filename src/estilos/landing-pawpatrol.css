@@ -935,6 +935,37 @@ footer {
   font-size: 1rem;
 }
 
+.pp-btn-vi-mascota {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  background: linear-gradient(135deg, var(--orange) 0%, var(--orange2) 100%);
+  color: var(--white);
+  box-shadow:
+    0 4px 16px rgba(var(--orange-rgb), 0.5),
+    0 0 0 1px rgba(var(--orange-rgb), 0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.02em;
+  animation: pp-badge-perdida-pulso 2.4s ease-in-out infinite;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.pp-btn-vi-mascota:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+.pp-btn-vi-mascota .pp-icon {
+  color: var(--white);
+}
+
 .pp-casos-vacio {
   padding: 1.5rem 0 2rem;
   text-align: center;

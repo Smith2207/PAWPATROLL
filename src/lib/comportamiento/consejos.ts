@@ -31,7 +31,6 @@ export function generarConsejosBusqueda(opciones: {
   avistamientos?: PuntoAvistamientoCerco[];
 }): string[] {
   const {
-    nombre,
     conductual,
     horasTranscurridas,
     diasTranscurridos,
@@ -47,11 +46,11 @@ export function generarConsejosBusqueda(opciones: {
     const num = cerco.totalAvistamientos;
     if (cerco.desplazamientoDesdePerdidaMetros > 500) {
       consejos.push(
-        `${nombre} fue visto lejos del punto de pérdida: el mapa se movió ~${km} km hacia su último avistamiento (#${num}). Busca ahí y en ${lugares}.`
+        `Fue visto lejos del punto de pérdida: el mapa se movió ~${km} km hacia el último avistamiento (#${num}). Busca ahí y en ${lugares}.`
       );
     } else {
       consejos.push(
-        `${nombre} tiene ${num} avistamiento(s): concentra la búsqueda en el más reciente y en ${lugares}.`
+        `Hay ${num} avistamiento(s): concentra la búsqueda en el más reciente y en ${lugares}.`
       );
     }
   } else if (opciones.zonasRefugio.length > 0) {
@@ -60,38 +59,38 @@ export function generarConsejosBusqueda(opciones: {
       .map((z) => z.etiqueta.split("(")[0]?.trim() ?? z.etiqueta)
       .join(" y ");
     consejos.push(
-      `Para ${nombre} (${conductual.etiqueta.toLowerCase()}): revisa primero ${top}.`
+      `Perfil ${conductual.etiqueta.toLowerCase()}: revisa primero ${top}.`
     );
   } else {
     const km = (opciones.radioActualMetros / 1000).toFixed(1);
     consejos.push(
-      `${nombre} aún sin avistamientos: recorre el cerco de ~${km} km del mapa, sobre todo ${lugares}.`
+      `Aún sin avistamientos: recorre el cerco de ~${km} km del mapa, sobre todo ${lugares}.`
     );
   }
 
   const comportamiento = primeraOracion(conductual.tendencia);
   if (comportamiento) {
     consejos.push(
-      `${nombre}: ${comportamiento.charAt(0).toLowerCase()}${comportamiento.slice(1)}`
+      `${comportamiento.charAt(0).toUpperCase()}${comportamiento.slice(1)}`
     );
   }
 
   if (consejos.length < MAX_CONSEJOS) {
     if (horasTranscurridas < 48) {
       consejos.push(
-        `En las primeras horas de ${nombre}, busca sobre todo ${conductual.horarioActivo.toLowerCase()} (${acceso}).`
+        `En las primeras horas, busca sobre todo ${conductual.horarioActivo.toLowerCase()} (${acceso}).`
       );
     } else if (esGato && diasTranscurridos < 7) {
       consejos.push(
-        `${nombre} lleva ${diasTranscurridos} días: amplía la búsqueda cada día y deja comida en el punto de pérdida.`
+        `Lleva ${diasTranscurridos} días: amplía la búsqueda cada día y deja comida en el punto de pérdida.`
       );
     } else if (!esGato && opciones.totalAvistamientos === 0 && diasTranscurridos >= 2) {
       consejos.push(
-        `Sin avistamientos de ${nombre}: deja ropa con tu olor donde se perdió y reparte volantes en el vecindario.`
+        `Sin avistamientos aún: deja ropa con tu olor donde se perdió y reparte volantes en el vecindario.`
       );
     } else if (diasTranscurridos >= 7) {
       consejos.push(
-        `${nombre} lleva más de una semana: avisa veterinarias y revisa refugios fijos en ${lugares}.`
+        `Lleva más de una semana: avisa veterinarias y revisa refugios fijos en ${lugares}.`
       );
     }
   }

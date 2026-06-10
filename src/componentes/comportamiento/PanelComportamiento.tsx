@@ -8,9 +8,9 @@ type Props = {
 };
 
 function etiquetaTendencia(tendencia: PrediccionComportamiento["cerco"]["tendencia"]) {
-  if (tendencia === "ampliado") return "ampliado";
-  if (tendencia === "contraido") return "focalizado";
-  return "ajustado";
+  if (tendencia === "ampliado") return "Área ampliada";
+  if (tendencia === "contraido") return "Área focalizada";
+  return "Área ajustada";
 }
 
 export function PanelComportamiento({ prediccion, nombreMascota, mascotaId }: Props) {
@@ -26,14 +26,24 @@ export function PanelComportamiento({ prediccion, nombreMascota, mascotaId }: Pr
 
   return (
     <section className="panel-comportamiento" aria-labelledby="comportamiento-titulo">
-      <h2 id="comportamiento-titulo" className="ficha-publica-seccion-titulo">
-        <Icono nombre="cerebro" size={20} className="pp-icon--btn" /> Búsqueda inteligente de{" "}
-        {nombre}
-      </h2>
-      <p className="panel-comportamiento-plan">
-        Plan exclusivo de <strong>{nombre}</strong>
-        <span className="panel-comportamiento-perfil-meta"> · {tiempo} desde la pérdida</span>
-      </p>
+      <header className="panel-comportamiento-cabecera">
+        <div className="panel-comportamiento-cabecera-icono" aria-hidden>
+          <Icono nombre="cerebro" size={26} />
+        </div>
+        <div className="panel-comportamiento-cabecera-texto">
+          <span className="panel-comportamiento-eyebrow">Plan de búsqueda</span>
+          <h2 id="comportamiento-titulo" className="panel-comportamiento-titulo">
+            Búsqueda inteligente de {nombre}
+          </h2>
+          <p className="panel-comportamiento-lead">
+            Exclusivo para <strong>{nombre}</strong>
+            <span className="panel-comportamiento-lead-meta">
+              {" "}
+              · {tiempo} desde la pérdida
+            </span>
+          </p>
+        </div>
+      </header>
 
       {prediccion.rasgos.length > 0 && (
         <ul className="panel-comportamiento-rasgos" aria-label="Características de la mascota">
@@ -43,44 +53,74 @@ export function PanelComportamiento({ prediccion, nombreMascota, mascotaId }: Pr
         </ul>
       )}
 
-      <p className="panel-comportamiento-perfil">{prediccion.perfilConductual.etiqueta}</p>
+      <p className="panel-comportamiento-perfil">
+        <Icono nombre="objetivo" size={16} className="pp-icon--btn" />
+        {prediccion.perfilConductual.etiqueta}
+      </p>
 
       <div className="panel-comportamiento-metricas">
-        <div className="panel-comportamiento-metrica">
+        <article className="panel-comportamiento-metrica panel-comportamiento-metrica--cerco">
+          <span className="panel-comportamiento-metrica-icono" aria-hidden>
+            <Icono nombre="mapa" size={20} />
+          </span>
           <span className="panel-comportamiento-metrica-valor">
             {(prediccion.radioActualMetros / 1000).toFixed(1)} km
           </span>
           <span className="panel-comportamiento-metrica-etiq">
-            Cerco de {nombre} ({etiquetaTendencia(prediccion.cerco.tendencia)})
+            Cerco de búsqueda
           </span>
-        </div>
-        <div className="panel-comportamiento-metrica">
+          <span className="panel-comportamiento-metrica-detalle">
+            {etiquetaTendencia(prediccion.cerco.tendencia)}
+          </span>
+        </article>
+
+        <article className="panel-comportamiento-metrica panel-comportamiento-metrica--avist">
+          <span className="panel-comportamiento-metrica-icono" aria-hidden>
+            <Icono nombre="ojo" size={20} />
+          </span>
           <span className="panel-comportamiento-metrica-valor">
             {prediccion.cerco.totalAvistamientos}
           </span>
-          <span className="panel-comportamiento-metrica-etiq">Sus avistamientos</span>
-        </div>
-        <div className="panel-comportamiento-metrica">
+          <span className="panel-comportamiento-metrica-etiq">Avistamientos</span>
+          <span className="panel-comportamiento-metrica-detalle">Reportados en el mapa</span>
+        </article>
+
+        <article className="panel-comportamiento-metrica panel-comportamiento-metrica--refugio">
+          <span className="panel-comportamiento-metrica-icono" aria-hidden>
+            <Icono nombre="casa" size={20} />
+          </span>
           <span className="panel-comportamiento-metrica-valor">
             {prediccion.zonasRefugio.length}
           </span>
           <span className="panel-comportamiento-metrica-etiq">Refugios probables</span>
-        </div>
+          <span className="panel-comportamiento-metrica-detalle">En el mapa de arriba</span>
+        </article>
       </div>
 
       {prediccion.consejos.length > 0 && (
-        <>
-          <h3 className="panel-comportamiento-subtitulo">Qué hacer con {nombre}</h3>
+        <div className="panel-comportamiento-consejos-bloque">
+          <h3 className="panel-comportamiento-consejos-titulo">
+            <Icono nombre="checkCirculo" size={18} className="pp-icon--btn" />
+            Qué hacer con {nombre}
+          </h3>
           <ul className="panel-comportamiento-consejos">
             {prediccion.consejos.map((c, i) => (
-              <li key={i}>{c}</li>
+              <li key={i}>
+                <span className="panel-comportamiento-consejo-num" aria-hidden>
+                  {i + 1}
+                </span>
+                <span>{c}</span>
+              </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
 
       <details className="panel-comportamiento-fuentes">
-        <summary>Estudios usados para {nombre}</summary>
+        <summary>
+          <Icono nombre="graduacion" size={16} className="pp-icon--btn" />
+          Fuentes científicas
+        </summary>
         <ul className="panel-comportamiento-fuentes-lista">
           {prediccion.fuentes.map((f) => (
             <li key={f.id}>
@@ -95,8 +135,9 @@ export function PanelComportamiento({ prediccion, nombreMascota, mascotaId }: Pr
       </details>
 
       <p className="panel-comportamiento-nota">
-        Cálculo exclusivo de <strong>{nombre}</strong> según su ficha, avistamientos y
-        mapa. 
+        <Icono nombre="info" size={14} className="pp-icon--btn" />
+        Cálculo basado en su ficha, avistamientos y mapa.
+        Orientativo; no sustituye tu criterio en la búsqueda.
       </p>
     </section>
   );

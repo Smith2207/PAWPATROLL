@@ -83,10 +83,10 @@ export function SeccionMascotasRecientes({
         )}
         <button
           type="button"
-          className="see-all pp-enlace-icono"
-          style={{ background: "none", border: "none", font: "inherit" }}
+          className="pp-btn-vi-mascota"
           onClick={() => abrirModal("sighting")}
         >
+          <Icono nombre="ojo" size={18} className="pp-icon--btn" />
           Vi una mascota
           <Icono nombre="derecha" size={14} />
         </button>
