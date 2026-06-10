@@ -1,22 +1,29 @@
 import type { DatosAvistamiento } from "@/actions/avistamientos";
+import {
+  guardarExitoSession,
+  guardarJsonSession,
+  hayPendienteAuth,
+  leerJsonSession,
+  leerYQuitarExitoSession,
+  limpiarJsonSession,
+  limpiarPendienteAuth,
+  marcarPendienteAuth,
+} from "@/lib/borrador/session-storage";
 
 const CLAVE_BORRADOR = "pawpatroll:borrador-avistamiento";
 const CLAVE_EXITO = "pawpatroll:avistamiento-exito";
 const CLAVE_PENDIENTE_AUTH = "pawpatroll:avistamiento-pendiente-auth";
 
 export function marcarAvistamientoPendienteAuth() {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(CLAVE_PENDIENTE_AUTH, "1");
+  marcarPendienteAuth(CLAVE_PENDIENTE_AUTH);
 }
 
 export function hayAvistamientoPendienteAuth(): boolean {
-  if (typeof window === "undefined") return false;
-  return sessionStorage.getItem(CLAVE_PENDIENTE_AUTH) === "1";
+  return hayPendienteAuth(CLAVE_PENDIENTE_AUTH);
 }
 
 export function limpiarAvistamientoPendienteAuth() {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(CLAVE_PENDIENTE_AUTH);
+  limpiarPendienteAuth(CLAVE_PENDIENTE_AUTH);
 }
 
 export type BorradorAvistamiento = {
@@ -30,49 +37,26 @@ export type ExitoAvistamientoPendiente = {
 };
 
 export function guardarBorradorAvistamiento(datos: DatosAvistamiento): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    const payload: BorradorAvistamiento = {
-      datos,
-      guardadoEn: new Date().toISOString(),
-    };
-    sessionStorage.setItem(CLAVE_BORRADOR, JSON.stringify(payload));
-    return true;
-  } catch {
-    return false;
-  }
+  const payload: BorradorAvistamiento = {
+    datos,
+    guardadoEn: new Date().toISOString(),
+  };
+  return guardarJsonSession(CLAVE_BORRADOR, payload);
 }
 
 export function leerBorradorAvistamiento(): BorradorAvistamiento | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(CLAVE_BORRADOR);
-    if (!raw) return null;
-    return JSON.parse(raw) as BorradorAvistamiento;
-  } catch {
-    return null;
-  }
+  return leerJsonSession<BorradorAvistamiento>(CLAVE_BORRADOR);
 }
 
 export function limpiarBorradorAvistamiento() {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(CLAVE_BORRADOR);
+  limpiarJsonSession(CLAVE_BORRADOR);
   limpiarAvistamientoPendienteAuth();
 }
 
 export function guardarExitoAvistamiento(exito: ExitoAvistamientoPendiente) {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(CLAVE_EXITO, JSON.stringify(exito));
+  guardarExitoSession(CLAVE_EXITO, exito);
 }
 
 export function leerYQuitarExitoAvistamiento(): ExitoAvistamientoPendiente | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(CLAVE_EXITO);
-    if (!raw) return null;
-    sessionStorage.removeItem(CLAVE_EXITO);
-    return JSON.parse(raw) as ExitoAvistamientoPendiente;
-  } catch {
-    return null;
-  }
+  return leerYQuitarExitoSession<ExitoAvistamientoPendiente>(CLAVE_EXITO);
 }

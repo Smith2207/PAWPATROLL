@@ -7,8 +7,7 @@ import { ModalReportarAvistamiento } from "@/componentes/landing/modales/ModalRe
 import { ModalIniciarSesion } from "@/componentes/landing/modales/ModalIniciarSesion";
 import { ModalRegistro } from "@/componentes/landing/modales/ModalRegistro";
 import { ModalBusquedaPorFoto } from "@/componentes/landing/modales/ModalBusquedaPorFoto";
-import { ProcesadorAvistamientoPendiente } from "@/componentes/avistamientos/ProcesadorAvistamientoPendiente";
-import { ProcesadorPerdidaPendiente } from "@/componentes/perdidas/ProcesadorPerdidaPendiente";
+import { ProcesadorPublicacionPendiente } from "@/componentes/publicacion/ProcesadorPublicacionPendiente";
 
 /** Modales disponibles en toda la app (landing, ficha pública, perfil, etc.) */
 export function ModalesGlobales() {
@@ -24,8 +23,7 @@ export function ModalesGlobales() {
 
   return (
     <>
-      <ProcesadorAvistamientoPendiente />
-      <ProcesadorPerdidaPendiente />
+      <ProcesadorPublicacionPendiente />
       <ModalReportarPerdida />
       <ModalReportarAvistamiento mascotasPerdidas={mascotasPerdidas} />
       <ModalIniciarSesion />

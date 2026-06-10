@@ -1,4 +1,14 @@
 import type { DatosFichaMascota } from "@/lib/db/schema";
+import {
+  guardarExitoSession,
+  guardarJsonSession,
+  hayPendienteAuth,
+  leerJsonSession,
+  leerYQuitarExitoSession,
+  limpiarJsonSession,
+  limpiarPendienteAuth,
+  marcarPendienteAuth,
+} from "@/lib/borrador/session-storage";
 
 const CLAVE_BORRADOR = "pawpatroll:borrador-perdida";
 const CLAVE_EXITO = "pawpatroll:perdida-exito";
@@ -17,7 +27,6 @@ export type BorradorReportePerdida = {
   fotos: string[];
   perdida: DatosPerdidaBorrador;
   guardadoEn: string;
-  /** Campos extra para restaurar el formulario */
   referenciasZona?: string;
   contactoNombre?: string;
   contactoTelefono?: string;
@@ -31,60 +40,34 @@ export type ExitoPerdidaPendiente = {
 };
 
 export function marcarPerdidaPendienteAuth() {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(CLAVE_PENDIENTE_AUTH, "1");
+  marcarPendienteAuth(CLAVE_PENDIENTE_AUTH);
 }
 
 export function hayPerdidaPendienteAuth(): boolean {
-  if (typeof window === "undefined") return false;
-  return sessionStorage.getItem(CLAVE_PENDIENTE_AUTH) === "1";
+  return hayPendienteAuth(CLAVE_PENDIENTE_AUTH);
 }
 
 export function limpiarPerdidaPendienteAuth() {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(CLAVE_PENDIENTE_AUTH);
+  limpiarPendienteAuth(CLAVE_PENDIENTE_AUTH);
 }
 
 export function guardarBorradorPerdida(borrador: BorradorReportePerdida): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    sessionStorage.setItem(CLAVE_BORRADOR, JSON.stringify(borrador));
-    return true;
-  } catch {
-    return false;
-  }
+  return guardarJsonSession(CLAVE_BORRADOR, borrador);
 }
 
 export function leerBorradorPerdida(): BorradorReportePerdida | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(CLAVE_BORRADOR);
-    if (!raw) return null;
-    return JSON.parse(raw) as BorradorReportePerdida;
-  } catch {
-    return null;
-  }
+  return leerJsonSession<BorradorReportePerdida>(CLAVE_BORRADOR);
 }
 
 export function limpiarBorradorPerdida() {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(CLAVE_BORRADOR);
+  limpiarJsonSession(CLAVE_BORRADOR);
   limpiarPerdidaPendienteAuth();
 }
 
 export function guardarExitoPerdida(exito: ExitoPerdidaPendiente) {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(CLAVE_EXITO, JSON.stringify(exito));
+  guardarExitoSession(CLAVE_EXITO, exito);
 }
 
 export function leerYQuitarExitoPerdida(): ExitoPerdidaPendiente | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(CLAVE_EXITO);
-    if (!raw) return null;
-    sessionStorage.removeItem(CLAVE_EXITO);
-    return JSON.parse(raw) as ExitoPerdidaPendiente;
-  } catch {
-    return null;
-  }
+  return leerYQuitarExitoSession<ExitoPerdidaPendiente>(CLAVE_EXITO);
 }
