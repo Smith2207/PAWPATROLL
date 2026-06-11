@@ -15,7 +15,7 @@ import {
   validarFotosDataUrl,
 } from "@/lib/mascotas/validacion";
 import { esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
-import { estimarRadioBusquedaMetros } from "@/lib/geo/cerco-perimetrico";
+import { estimarRadioBusquedaMetros } from "@/lib/comportamiento/evidencia-radios";
 import {
   crearNotificacionPrivada,
   registrarEventoCaso,

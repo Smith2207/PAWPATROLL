@@ -1,28 +1,212 @@
-/** Clave de Maps Platform (Geocoding, Geolocation, Places). */
-export function claveGoogleMaps(): string | null {
-  const k =
-    process.env.GOOGLE_MAPS_API_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim();
-  return k || null;
-}
+import {
+  etiquetaGeocodeConConsulta,
+  etiquetaLegibleGeocodeGoogle,
+  etiquetaYNombreDesdeGoogle,
+  formatearDireccionGoogle,
+  limpiarSubtituloAutocomplete,
+  resultadoGooglePareceUtil,
+  type ResultadoGeocodeGoogle,
+} from "@/lib/geo/formatear-direccion-google";
+import {
+  lugarDesdeNominatim,
+  type ItemNominatim,
+  type ResultadoBusquedaLugar,
+} from "@/lib/geo/lugares";
 
-export function mapsGoogleDisponible(): boolean {
-  return claveGoogleMaps() != null;
-}
+export type { ResultadoBusquedaLugar };
 
-export type ResultadoBusquedaLugar = {
-  lat: number;
-  lng: number;
-  etiqueta: string;
-};
+function claveGoogleMaps(): string | null {
+  return process.env.GOOGLE_MAPS_API_KEY?.trim() || null;
+}
 
 type GeocodeGoogle = {
-  results?: Array<{
-    formatted_address?: string;
-    geometry?: { location?: { lat?: number; lng?: number } };
+  results?: Array<
+    ResultadoGeocodeGoogle & {
+      geometry?: { location?: { lat?: number; lng?: number } };
+      place_id?: string;
+    }
+  >;
+  status?: string;
+};
+
+type PlacesAutocomplete = {
+  predictions?: Array<{
+    place_id?: string;
+    description?: string;
+    structured_formatting?: {
+      main_text?: string;
+      secondary_text?: string;
+    };
   }>;
   status?: string;
 };
+
+type PlaceDetails = {
+  result?: {
+    name?: string;
+    formatted_address?: string;
+    geometry?: { location?: { lat?: number; lng?: number } };
+  };
+  status?: string;
+};
+
+type PistaLugar = Pick<ResultadoBusquedaLugar, "etiqueta" | "subtitulo">;
+
+function coordenadasDeGeometry(
+  geometry?: { location?: { lat?: number; lng?: number } }
+): { lat: number; lng: number } | null {
+  const lat = geometry?.location?.lat;
+  const lng = geometry?.location?.lng;
+  if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+  return { lat, lng };
+}
+
+function lugarDesdeGeocode(
+  r: NonNullable<GeocodeGoogle["results"]>[number],
+  consulta: string
+): ResultadoBusquedaLugar | null {
+  const coords = coordenadasDeGeometry(r.geometry);
+  if (!coords) return null;
+  const { lat, lng } = coords;
+
+  const desdeConsulta = etiquetaGeocodeConConsulta(consulta, r);
+  const etiqueta =
+    desdeConsulta?.etiqueta ||
+    etiquetaLegibleGeocodeGoogle(r) ||
+    (r.formatted_address
+      ? formatearDireccionGoogle(r.formatted_address)
+      : consulta);
+
+  return {
+    lat,
+    lng,
+    etiqueta,
+    subtitulo: desdeConsulta?.subtitulo,
+    placeId: r.place_id?.trim(),
+  };
+}
+
+async function fetchGoogle<T>(url: URL): Promise<T | null> {
+  const res = await fetch(url.toString(), { cache: "no-store" });
+  if (!res.ok) return null;
+  return (await res.json()) as T;
+}
+
+/** Desplegable como Google Maps (Autocomplete). */
+async function buscarAutocomplete(
+  consulta: string,
+  key: string
+): Promise<ResultadoBusquedaLugar[]> {
+  const url = new URL(
+    "https://maps.googleapis.com/maps/api/place/autocomplete/json"
+  );
+  url.searchParams.set("input", consulta);
+  url.searchParams.set("components", "country:pe");
+  url.searchParams.set("key", key);
+  url.searchParams.set("language", "es");
+
+  const data = await fetchGoogle<PlacesAutocomplete>(url);
+  if (data?.status !== "OK" || !data.predictions?.length) return [];
+
+  const resultados: ResultadoBusquedaLugar[] = [];
+  for (const p of data.predictions.slice(0, 6)) {
+    const placeId = p.place_id?.trim();
+    if (!placeId) continue;
+
+    resultados.push({
+      placeId,
+      etiqueta:
+        p.structured_formatting?.main_text?.trim() ||
+        p.description?.trim() ||
+        consulta,
+      subtitulo: limpiarSubtituloAutocomplete(
+        p.structured_formatting?.secondary_text?.trim() ?? ""
+      ),
+    });
+  }
+  return resultados;
+}
+
+/** Respaldo para direcciones cuando Autocomplete no encuentra nada. */
+async function buscarGeocode(
+  consulta: string,
+  key: string
+): Promise<ResultadoBusquedaLugar[]> {
+  const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+  url.searchParams.set("address", consulta);
+  url.searchParams.set("components", "country:PE");
+  url.searchParams.set("key", key);
+  url.searchParams.set("language", "es");
+  url.searchParams.set("region", "pe");
+
+  const data = await fetchGoogle<GeocodeGoogle>(url);
+  if (data?.status !== "OK" || !data.results?.length) return [];
+
+  return data.results
+    .map((r) => lugarDesdeGeocode(r, consulta))
+    .filter((r): r is ResultadoBusquedaLugar => r != null)
+    .filter((r) => resultadoGooglePareceUtil(consulta, r))
+    .slice(0, 6);
+}
+
+async function geocodePorPlaceId(
+  placeId: string,
+  key: string,
+  pista?: PistaLugar
+): Promise<ResultadoBusquedaLugar | null> {
+  const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
+  url.searchParams.set("place_id", placeId);
+  url.searchParams.set("key", key);
+  url.searchParams.set("language", "es");
+
+  const data = await fetchGoogle<GeocodeGoogle>(url);
+  const r = data?.results?.[0];
+  if (data?.status !== "OK" || !r) return null;
+
+  const coords = coordenadasDeGeometry(r.geometry);
+  if (!coords) return null;
+  const { lat, lng } = coords;
+
+  const { etiqueta, subtitulo } = etiquetaYNombreDesdeGoogle(
+    null,
+    r.formatted_address,
+    pista
+  );
+
+  return { lat, lng, etiqueta, subtitulo, placeId };
+}
+
+export async function resolverLugarGoogle(
+  placeId: string,
+  pista?: PistaLugar
+): Promise<ResultadoBusquedaLugar | null> {
+  const key = claveGoogleMaps();
+  const id = placeId.trim();
+  if (!key || !id) return null;
+
+  const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
+  url.searchParams.set("place_id", id);
+  url.searchParams.set("fields", "geometry,name,formatted_address");
+  url.searchParams.set("key", key);
+  url.searchParams.set("language", "es");
+
+  const data = await fetchGoogle<PlaceDetails>(url);
+  if (data?.status === "OK" && data.result) {
+    const coords = coordenadasDeGeometry(data.result.geometry);
+    if (coords) {
+      const { etiqueta, subtitulo } = etiquetaYNombreDesdeGoogle(
+        data.result.name,
+        data.result.formatted_address,
+        pista
+      );
+      return { ...coords, etiqueta, subtitulo, placeId: id };
+    }
+  }
+
+  return geocodePorPlaceId(id, key, pista);
+}
 
 export async function reverseGeocodeGoogle(
   lat: number,
@@ -37,13 +221,16 @@ export async function reverseGeocodeGoogle(
   url.searchParams.set("language", "es");
   url.searchParams.set("region", "pe");
 
-  const res = await fetch(url.toString(), { cache: "no-store" });
-  if (!res.ok) return null;
+  const data = await fetchGoogle<GeocodeGoogle>(url);
+  const r = data?.results?.[0];
+  if (data?.status !== "OK" || !r) return null;
 
-  const data = (await res.json()) as GeocodeGoogle;
-  if (data.status !== "OK" || !data.results?.[0]) return null;
-
-  return data.results[0].formatted_address?.trim() || null;
+  return (
+    etiquetaLegibleGeocodeGoogle(r) ||
+    (r.formatted_address
+      ? formatearDireccionGoogle(r.formatted_address)
+      : null)
+  );
 }
 
 export async function buscarLugaresGoogle(
@@ -52,122 +239,50 @@ export async function buscarLugaresGoogle(
   const key = claveGoogleMaps();
   if (!key) return [];
 
-  const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
-  url.searchParams.set("address", consulta);
-  url.searchParams.set("components", "country:PE");
-  url.searchParams.set("key", key);
-  url.searchParams.set("language", "es");
-  url.searchParams.set("region", "pe");
+  const autocomplete = await buscarAutocomplete(consulta, key);
+  if (autocomplete.length > 0) return autocomplete;
 
-  const res = await fetch(url.toString(), { cache: "no-store" });
+  return buscarGeocode(consulta, key);
+}
+
+async function buscarNominatim(consulta: string): Promise<ResultadoBusquedaLugar[]> {
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("q", consulta);
+  url.searchParams.set("format", "json");
+  url.searchParams.set("accept-language", "es");
+  url.searchParams.set("countrycodes", "pe");
+  url.searchParams.set("limit", "6");
+  url.searchParams.set("addressdetails", "1");
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      "User-Agent": "PawPatroll/1.0 (app mascotas perdidas)",
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
   if (!res.ok) return [];
 
-  const data = (await res.json()) as GeocodeGoogle;
-  if (data.status !== "OK" || !data.results?.length) return [];
-
-  return data.results
-    .map((r) => {
-      const lat = r.geometry?.location?.lat;
-      const lng = r.geometry?.location?.lng;
-      if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-        return null;
-      }
-      return {
-        lat,
-        lng,
-        etiqueta: r.formatted_address?.trim() || consulta,
-      };
-    })
-    .filter((r): r is ResultadoBusquedaLugar => r != null)
-    .slice(0, 6);
+  const data = (await res.json()) as ItemNominatim[];
+  return data
+    .map((item) => lugarDesdeNominatim(item))
+    .filter((r): r is ResultadoBusquedaLugar => r != null);
 }
 
-export type ResultadoGeolocalizarGoogle =
-  | { ok: true; lat: number; lng: number; precisionMetros: number }
-  | { ok: false; error: string; detalle?: string };
-
-function mensajeGeolocalizacionGoogle(
-  statusHttp: number,
-  cuerpo: { error?: { message?: string; status?: string } }
-): string {
-  const msg = cuerpo.error?.message ?? "";
-  const estado = cuerpo.error?.status ?? "";
-
-  if (
-    estado === "PERMISSION_DENIED" ||
-    msg.includes("referer") ||
-    msg.includes("referrer")
-  ) {
-    return "La API key tiene restricción de sitio web. Para Ubicarme en el servidor, quita «Referentes HTTP» o usa una key solo para backend (restricción por IP o sin restricción de app).";
-  }
-  if (
-    msg.includes("not enabled") ||
-    msg.includes("has not been used") ||
-    msg.includes("Geolocation")
-  ) {
-    return "Activa Geolocation API en Google Cloud y espera 1–2 minutos.";
-  }
-  if (msg.includes("billing") || msg.includes("Billing")) {
-    return "Activa la facturación en tu proyecto de Google Cloud (Maps requiere cuenta de facturación).";
-  }
-  if (msg.includes("API key not valid") || msg.includes("invalid")) {
-    return "GOOGLE_MAPS_API_KEY no es válida. Revisa la clave en .env.local.";
-  }
-  if (statusHttp === 403) {
-    return "Google rechazó la key (403). Revisa APIs habilitadas y restricciones.";
-  }
-  if (msg) return msg;
-  return "Google no pudo estimar tu ubicación.";
-}
-
-/**
- * @deprecated En Vercel Google ve la IP del servidor (suele ser EE. UU.).
- * Usar geolocalizarPorIpCliente con la IP del visitante.
- */
-export async function geolocalizarGoogleRespaldo(): Promise<ResultadoGeolocalizarGoogle> {
-  const key = claveGoogleMaps();
-  if (!key) {
-    return { ok: false, error: "Falta GOOGLE_MAPS_API_KEY en el servidor." };
+/** Google Autocomplete → Geocoding → OpenStreetMap. */
+export async function buscarLugares(
+  consulta: string
+): Promise<{ resultados: ResultadoBusquedaLugar[]; proveedor: string }> {
+  const google = await buscarLugaresGoogle(consulta);
+  if (google.length > 0) {
+    return { resultados: google, proveedor: "google" };
   }
 
-  const res = await fetch(
-    `https://www.googleapis.com/geolocation/v1/geolocate?key=${encodeURIComponent(key)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ considerIp: true }),
-      cache: "no-store",
-    }
-  );
-
-  const data = (await res.json()) as {
-    location?: { lat?: number; lng?: number };
-    accuracy?: number;
-    error?: { message?: string; status?: string };
-  };
-
-  if (!res.ok || data.error) {
-    return {
-      ok: false,
-      error: mensajeGeolocalizacionGoogle(res.status, data),
-      detalle: data.error?.message,
-    };
+  const nominatim = await buscarNominatim(consulta);
+  if (nominatim.length > 0) {
+    return { resultados: nominatim, proveedor: "nominatim" };
   }
 
-  const lat = data.location?.lat;
-  const lng = data.location?.lng;
-  if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return {
-      ok: false,
-      error: "Google respondió sin coordenadas válidas.",
-      detalle: JSON.stringify(data),
-    };
-  }
-
-  return {
-    ok: true,
-    lat,
-    lng,
-    precisionMetros: Math.max(data.accuracy ?? 500, 100),
-  };
+  return { resultados: [], proveedor: "ninguno" };
 }

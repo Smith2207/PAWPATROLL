@@ -18,8 +18,7 @@ import { rolParticipante } from "@/lib/chat/roles";
 import { horaRelativaChat } from "@/lib/chat/tiempo";
 import { mapEventosParaAvistamiento, type EventoCasoTimeline } from "@/lib/chat/timeline";
 import type { Avistamiento, EventoCaso, MensajeAvistamiento, Mascota } from "@/lib/db/schema";
-import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
-import { useTiempoReal } from "@/hooks/useTiempoReal";
+import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 
 export type MascotaCaso = Mascota & { fotoPrincipal: string | null };
 
@@ -150,36 +149,39 @@ export function PanelChatsCaso({
     [mascota.id, seleccionadoId]
   );
 
-  const { conectado: wsConectado } = useTiempoReal([`mascota:${mascota.id}`], (ev) => {
-    if (
-      ev.tipo === "mensaje:nuevo" &&
-      "mascotaId" in ev &&
-      ev.mascotaId === mascota.id
-    ) {
-      void sincronizarPanel(ev.avistamientoId);
-      return;
-    }
-    if (ev.tipo === "chat:leido") {
-      void sincronizarPanel(ev.avistamientoId);
-      return;
-    }
-    if (
-      ev.tipo === "caso:actualizado" ||
-      ev.tipo === "avistamiento:actualizado"
-    ) {
+  useTiempoRealConRespaldo(
+    [`mascota:${mascota.id}`],
+    (ev) => {
       if (
-        ev.tipo === "caso:actualizado" &&
-        ev.mascotaId !== mascota.id
+        ev.tipo === "mensaje:nuevo" &&
+        "mascotaId" in ev &&
+        ev.mascotaId === mascota.id
       ) {
+        void sincronizarPanel(ev.avistamientoId);
         return;
       }
+      if (ev.tipo === "chat:leido") {
+        void sincronizarPanel(ev.avistamientoId);
+        return;
+      }
+      if (
+        ev.tipo === "caso:actualizado" ||
+        ev.tipo === "avistamiento:actualizado"
+      ) {
+        if (
+          ev.tipo === "caso:actualizado" &&
+          ev.mascotaId !== mascota.id
+        ) {
+          return;
+        }
+        void sincronizarPanel();
+      }
+    },
+    () => {
       void sincronizarPanel();
-    }
-  });
-
-  useRespaldoActualizacion(() => {
-    void sincronizarPanel();
-  }, wsConectado, 12_000);
+    },
+    12_000
+  );
 
   useEffect(() => {
     if (!seleccionadoId && ordenados[0]) {

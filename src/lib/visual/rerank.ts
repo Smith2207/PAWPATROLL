@@ -1,4 +1,4 @@
-import { umbralesClip } from "@/lib/visual/config";
+import { umbralesVisual } from "@/lib/visual/config";
 
 export type FiltrosBusquedaVisual = {
   tipoMascota?: string;
@@ -55,7 +55,7 @@ export function puntuacionConRerank(
 ): number {
   if (!filtros) return coseno;
 
-  const u = umbralesClip();
+  const u = umbralesVisual();
   let bonus = 0;
 
   if (

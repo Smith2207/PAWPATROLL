@@ -1,35 +1,16 @@
 import type { DatosAvistamiento } from "@/actions/avistamientos";
+import { crearApiBorrador } from "@/lib/borrador/crear-borrador-cliente";
 import {
   SESSION_BORRADOR_AVISTAMIENTO,
   SESSION_EXITO_AVISTAMIENTO,
   SESSION_PENDIENTE_AUTH_AVISTAMIENTO,
 } from "@/lib/claves-session-cliente";
-import {
-  guardarExitoSession,
-  guardarJsonSession,
-  hayPendienteAuth,
-  leerJsonSession,
-  leerYQuitarExitoSession,
-  limpiarJsonSession,
-  limpiarPendienteAuth,
-  marcarPendienteAuth,
-} from "@/lib/borrador/session-storage";
 
-const CLAVE_BORRADOR = SESSION_BORRADOR_AVISTAMIENTO;
-const CLAVE_EXITO = SESSION_EXITO_AVISTAMIENTO;
-const CLAVE_PENDIENTE_AUTH = SESSION_PENDIENTE_AUTH_AVISTAMIENTO;
-
-export function marcarAvistamientoPendienteAuth() {
-  marcarPendienteAuth(CLAVE_PENDIENTE_AUTH);
-}
-
-export function hayAvistamientoPendienteAuth(): boolean {
-  return hayPendienteAuth(CLAVE_PENDIENTE_AUTH);
-}
-
-export function limpiarAvistamientoPendienteAuth() {
-  limpiarPendienteAuth(CLAVE_PENDIENTE_AUTH);
-}
+const api = crearApiBorrador<BorradorAvistamiento, ExitoAvistamientoPendiente>({
+  borrador: SESSION_BORRADOR_AVISTAMIENTO,
+  exito: SESSION_EXITO_AVISTAMIENTO,
+  pendienteAuth: SESSION_PENDIENTE_AUTH_AVISTAMIENTO,
+});
 
 export type BorradorAvistamiento = {
   datos: DatosAvistamiento;
@@ -41,27 +22,18 @@ export type ExitoAvistamientoPendiente = {
   numeroReporte?: number;
 };
 
+export const marcarAvistamientoPendienteAuth = api.marcarPendienteAuth;
+export const hayAvistamientoPendienteAuth = api.hayPendienteAuth;
+export const limpiarAvistamientoPendienteAuth = api.limpiarPendienteAuth;
+
 export function guardarBorradorAvistamiento(datos: DatosAvistamiento): boolean {
-  const payload: BorradorAvistamiento = {
+  return api.guardarBorrador({
     datos,
     guardadoEn: new Date().toISOString(),
-  };
-  return guardarJsonSession(CLAVE_BORRADOR, payload);
+  });
 }
 
-export function leerBorradorAvistamiento(): BorradorAvistamiento | null {
-  return leerJsonSession<BorradorAvistamiento>(CLAVE_BORRADOR);
-}
-
-export function limpiarBorradorAvistamiento() {
-  limpiarJsonSession(CLAVE_BORRADOR);
-  limpiarAvistamientoPendienteAuth();
-}
-
-export function guardarExitoAvistamiento(exito: ExitoAvistamientoPendiente) {
-  guardarExitoSession(CLAVE_EXITO, exito);
-}
-
-export function leerYQuitarExitoAvistamiento(): ExitoAvistamientoPendiente | null {
-  return leerYQuitarExitoSession<ExitoAvistamientoPendiente>(CLAVE_EXITO);
-}
+export const leerBorradorAvistamiento = api.leerBorrador;
+export const limpiarBorradorAvistamiento = api.limpiarBorrador;
+export const guardarExitoAvistamiento = api.guardarExito;
+export const leerYQuitarExitoAvistamiento = api.leerYQuitarExito;

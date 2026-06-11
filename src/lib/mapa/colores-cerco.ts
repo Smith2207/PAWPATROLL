@@ -32,6 +32,3 @@ export function mapaEstilosPorMascota(
   });
   return mapa;
 }
-
-/** @deprecated usar estiloFamiliaPorIndice */
-export const estiloCercoPorIndice = estiloFamiliaPorIndice;

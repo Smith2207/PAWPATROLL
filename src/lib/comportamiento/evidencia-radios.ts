@@ -31,6 +31,18 @@ export function estimarRadioConEvidencia(perfil: {
   };
 }
 
+/** Radio de búsqueda en metros (mapa y reportes de pérdida). */
+export function estimarRadioBusquedaMetros(perfil: {
+  tipo?: string | null;
+  tamano?: string | null;
+  edad?: string | null;
+  accesoExterior?: string | null;
+  descripcion?: string | null;
+  senasParticulares?: string | null;
+}): number {
+  return estimarRadioConEvidencia(perfil).radioBaseMetros;
+}
+
 /** Expansión diaria y tope según evidencia y acceso al exterior. */
 export function parametrosExpansionTemporal(
   contexto: ContextoBusqueda,

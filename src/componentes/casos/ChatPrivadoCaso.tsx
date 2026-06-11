@@ -34,8 +34,7 @@ import {
   type EventoCasoTimeline,
 } from "@/lib/chat/timeline";
 import type { CanalTiempoReal } from "@/lib/tiempo-real/tipos";
-import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
-import { useTiempoReal } from "@/hooks/useTiempoReal";
+import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
 import {
   ACCEPT_INPUT_IMAGEN,
@@ -302,7 +301,7 @@ export function ChatPrivadoCaso({
 
   const canales: CanalTiempoReal[] = [`avistamiento:${avistamientoId}`];
   if (mascotaId) canales.push(`mascota:${mascotaId}`);
-  const { conectado: wsConectado, enviar: enviarWs } = useTiempoReal(canales, (ev) => {
+  const { enviar: enviarWs } = useTiempoRealConRespaldo(canales, (ev) => {
     if (ev.tipo === "mensaje:nuevo" && ev.avistamientoId === avistamientoId) {
       void sincronizarChat();
       return;
@@ -334,7 +333,9 @@ export function ChatPrivadoCaso({
         }, 4000);
       }
     }
-  });
+  }, () => {
+    void sincronizarChat();
+  }, 8_000);
 
   const emitirPresenciaEscribiendo = useCallback(
     (activo: boolean) => {
@@ -368,11 +369,6 @@ export function ChatPrivadoCaso({
       emitirPresenciaEscribiendo(false);
     }
   }
-
-  /** En Vercel no hay WS embebido: refresco periódico si no hay WebSocket. */
-  useRespaldoActualizacion(() => {
-    void sincronizarChat();
-  }, wsConectado, 8_000);
 
   useEffect(() => {
     queueMicrotask(() => setMensajes(mensajesIniciales));

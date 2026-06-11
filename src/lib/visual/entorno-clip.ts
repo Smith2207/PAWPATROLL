@@ -36,11 +36,6 @@ export function parcheReleaseParaOnnxWeb(): () => void {
   };
 }
 
-/** @deprecated Usar parcheReleaseParaOnnxWeb */
-export function parcheReleaseParaWasmEnServerless(): () => void {
-  return esEntornoServerless() ? parcheReleaseParaOnnxWeb() : () => {};
-}
-
 export function carpetaCacheClip(): string {
   if (esEntornoServerless()) {
     return join(tmpdir(), "pawpatroll-clip-cache");

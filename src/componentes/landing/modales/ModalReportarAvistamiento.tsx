@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import {
-  BotonCerrarModal,
-  ModalContenedor,
-} from "@/componentes/landing/modales/ModalContenedor";
-import { SelectorUbicacionMapa } from "@/componentes/landing/ui/SelectorUbicacionMapa";
+import { ModalContenedor } from "@/componentes/landing/modales/ModalContenedor";
+import { AccionesWizardReporteConIcono } from "@/componentes/landing/modales/ui/AccionesWizardReporte";
+import { AvisoLoginAntesPublicar } from "@/componentes/landing/modales/ui/AvisoLoginAntesPublicar";
+import { EncabezadoModalReporte } from "@/componentes/landing/modales/ui/EncabezadoModalReporte";
+import { FormularioWizardReporte } from "@/componentes/landing/modales/ui/FormularioWizardReporte";
+import { SeccionUbicacionReporte } from "@/componentes/landing/modales/ui/SeccionUbicacionReporte";
 import {
   crearAvistamiento,
   type DatosAvistamiento,
@@ -22,17 +23,19 @@ import { Icono } from "@/componentes/ui/Icono";
 import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 import { parsearRaza } from "@/lib/mascotas/razas";
-import {
-  DIRECCIONES_MOVIMIENTO,
-  PLACEHOLDER_UBICACION,
-} from "@/lib/mascotas/catalogos";
+import { DIRECCIONES_MOVIMIENTO } from "@/lib/mascotas/catalogos";
 import { CampoRaza } from "@/componentes/formulario/CampoRaza";
 import { CampoTamano } from "@/componentes/formulario/CampoTamano";
 import { CampoTipoMascota } from "@/componentes/formulario/CampoTipoMascota";
 import { useRazaPorTipo } from "@/hooks/useRazaPorTipo";
+import { useUbicacionReporte } from "@/hooks/useUbicacionReporte";
 import { useWizardReporte } from "@/hooks/useWizardReporte";
-import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
+import {
+  MSG_UBICACION_AVISTAMIENTO,
+  MSG_UBICACION_CORTA_AVISTAMIENTO,
+  errorSiSinUbicacion,
+} from "@/lib/reportes/validaciones";
 import { useModales } from "@/contexto/ContextoModales";
 import { IdentificacionPorFoto } from "@/componentes/visual/IdentificacionPorFoto";
 import { SubirFotoAvistamiento } from "@/componentes/avistamientos/SubirFotoAvistamiento";
@@ -41,8 +44,6 @@ import type { CaracteristicasVisuales } from "@/lib/visual/extraer-caracteristic
 import { TAMANOS } from "@/lib/mascotas/catalogos";
 import { CampoFechaHora } from "@/componentes/formulario/CampoFechaHora";
 import { valorDatetimeLocalActual } from "@/lib/fechas/datetime-local";
-import { PasosWizard } from "@/componentes/landing/modales/PasosWizard";
-import { AvisoBorradorReporte } from "@/componentes/landing/modales/AvisoBorradorReporte";
 import { PanelExitoReporte } from "@/componentes/landing/modales/PanelExitoReporte";
 
 const PASOS_AVISTAMIENTO = [
@@ -55,6 +56,9 @@ const PASOS_FICHA = [
   { id: 1, titulo: "Dónde la viste" },
   { id: 2, titulo: "Publicar" },
 ] as const;
+
+const AVISO_LOGIN =
+  "Al publicar, guardaremos tu reporte y te pediremos iniciar sesión.";
 
 type Props = {
   mascotasPerdidas?: { id: string; nombre: string; slug: string }[];
@@ -89,8 +93,8 @@ export function ModalReportarAvistamiento({
     razaCompuesta,
   } = useRazaPorTipo();
   const [color, setColor] = useState("");
-  const [ubicacion, setUbicacion] = useState<UbicacionSeleccionada | null>(null);
-  const [direccion, setDireccion] = useState("");
+  const { ubicacion, setUbicacion, direccion, setDireccion, limpiarUbicacion } =
+    useUbicacionReporte();
   const [identificadaPorFoto, setIdentificadaPorFoto] =
     useState<CoincidenciaVisual | null>(null);
   const [fotoAvistamiento, setFotoAvistamiento] = useState<string | null>(null);
@@ -199,15 +203,12 @@ export function ModalReportarAvistamiento({
   ]);
 
   function validarPasoActual(): string | null {
-    if (avistamientoDesdeFicha) {
-      if (paso === 1 && !coordenadasValidas(ubicacion)) {
-        return "Marca en el mapa dónde la viste (busca la dirección o usa Ubicarme).";
-      }
-      return null;
+    if (avistamientoDesdeFicha && paso === 1) {
+      return errorSiSinUbicacion(ubicacion, MSG_UBICACION_AVISTAMIENTO);
     }
 
-    if (paso === 2 && !coordenadasValidas(ubicacion)) {
-      return "Marca en el mapa dónde la viste (busca la dirección o usa Ubicarme).";
+    if (!avistamientoDesdeFicha && paso === 2) {
+      return errorSiSinUbicacion(ubicacion, MSG_UBICACION_AVISTAMIENTO);
     }
 
     if (paso === pasoFinal && !tipo.trim()) {
@@ -282,8 +283,12 @@ export function ModalReportarAvistamiento({
       return;
     }
 
-    if (!coordenadasValidas(ubicacion)) {
-      setError("Marca en el mapa dónde la viste.");
+    const errUbicacion = errorSiSinUbicacion(
+      ubicacion,
+      MSG_UBICACION_CORTA_AVISTAMIENTO
+    );
+    if (errUbicacion) {
+      setError(errUbicacion);
       setPaso(avistamientoDesdeFicha ? 1 : 2);
       return;
     }
@@ -331,16 +336,13 @@ export function ModalReportarAvistamiento({
         `Avistamiento #${resultado.numeroReporte} registrado.`
     );
     setMetaExito({ numeroReporte: resultado.numeroReporte });
-    setUbicacion(null);
-    setDireccion("");
+    limpiarUbicacion();
     setFotoAvistamiento(null);
   }
 
   if (exito) {
     return (
-      <>
-        <OverlayPublicando visible={publicando} />
-        <PanelExitoReporte
+      <PanelExitoReporte
           tipo="sighting"
           titulo="Avistamiento publicado"
           subtitulo="Gracias por ayudar. El reporte ya está visible en el mapa."
@@ -349,7 +351,6 @@ export function ModalReportarAvistamiento({
           onVerMapa={verMapaYCerrar}
           onCerrar={cerrarModal}
         />
-      </>
     );
   }
 
@@ -359,12 +360,12 @@ export function ModalReportarAvistamiento({
         visible={publicando}
         mensaje="Publicando tu avistamiento…"
       />
-      <div className="modal-header">
-        <div className="modal-header-accent modal-header-accent--mint" />
-        <BotonCerrarModal tipo="sighting" />
-        <div className="modal-title">Vi una mascota</div>
-        <div className="modal-sub">
-          {avistamientoDesdeFicha && mascotaFijada ? (
+      <EncabezadoModalReporte
+        tipo="sighting"
+        accent="mint"
+        titulo="Vi una mascota"
+        subtitulo={
+          avistamientoDesdeFicha && mascotaFijada ? (
             <>
               Reporte rápido para <strong>{mascotaFijada.nombre}</strong>. Marca
               dónde la viste y publica en menos de un minuto.
@@ -377,21 +378,18 @@ export function ModalReportarAvistamiento({
               {paso === 3 &&
                 "Revisa y publica. Los detalles extra son opcionales."}
             </>
-          )}
-        </div>
-      </div>
-      <form ref={formRef} className="modal-body" noValidate onSubmit={enviar}>
-        <AvisoBorradorReporte visible={avisoBorrador} />
-        {error && (
-          <p className="auth-alerta auth-alerta--error">{error}</p>
-        )}
-
-        <PasosWizard
-          pasos={pasos}
-          pasoActivo={paso}
-          etiqueta="Progreso del avistamiento"
-        />
-
+          )
+        }
+      />
+      <FormularioWizardReporte
+        formRef={formRef}
+        onSubmit={enviar}
+        avisoBorrador={avisoBorrador}
+        error={error}
+        pasos={pasos}
+        pasoActivo={paso}
+        etiquetaPasos="Progreso del avistamiento"
+      >
         {avistamientoDesdeFicha && mascotaFijada && (
           <div className="pp-avistamiento-ficha-fijada" role="status">
             <span className="pp-avistamiento-ficha-fijada-icono">
@@ -454,28 +452,26 @@ export function ModalReportarAvistamiento({
               : "pp-wizard-oculto"
           }
         >
-          <div className="section-divider">
-            <Icono nombre="ubicacion" size={16} className="pp-icon--btn" /> Ubicación donde la viste
-          </div>
-          <SelectorUbicacionMapa
+          <SeccionUbicacionReporte
+            tituloSeccion="Ubicación donde la viste"
             etiqueta="¿Dónde la viste? *"
             idInput="sighting-location"
             icono="ojo"
-            placeholder={PLACEHOLDER_UBICACION}
             valor={ubicacion}
             onChange={setUbicacion}
-            direccionTexto={direccion}
+            direccion={direccion}
             onDireccionChange={setDireccion}
-          />
-          {avistamientoDesdeFicha && (
-            <>
-              <div className="section-divider">Foto del avistamiento (opcional)</div>
-              <SubirFotoAvistamiento
-                foto={fotoAvistamiento}
-                onChange={setFotoAvistamiento}
-              />
-            </>
-          )}
+          >
+            {avistamientoDesdeFicha && (
+              <>
+                <div className="section-divider">Foto del avistamiento (opcional)</div>
+                <SubirFotoAvistamiento
+                  foto={fotoAvistamiento}
+                  onChange={setFotoAvistamiento}
+                />
+              </>
+            )}
+          </SeccionUbicacionReporte>
         </div>
 
         {/* Paso final: confirmar y publicar */}
@@ -583,40 +579,22 @@ export function ModalReportarAvistamiento({
           )}
         </div>
 
-        {paso === pasoFinal && !sesionActiva && (
-          <p className="auth-alerta auth-alerta--info" role="note">
-            Al publicar, guardaremos tu reporte y te pediremos iniciar sesión.
-          </p>
-        )}
+        <AvisoLoginAntesPublicar
+          visible={paso === pasoFinal && !sesionActiva}
+          mensaje={AVISO_LOGIN}
+        />
 
-        <div className="auth-pasos-acciones">
-          {paso > 1 && (
-            <button
-              type="button"
-              className="btn-mascota btn-mascota--secundario"
-              onClick={irAtras}
-              disabled={publicando}
-            >
-              Atrás
-            </button>
-          )}
-          <button
-            type="submit"
-            className="submit-btn submit-btn-blue"
-            disabled={publicando}
-          >
-            {publicando
-              ? "Publicando..."
-              : paso < pasoFinal
-                ? "Continuar"
-                : (
-                  <>
-                    <Icono nombre="ojo" size={18} className="pp-icon--btn" /> Publicar avistamiento
-                  </>
-                )}
-          </button>
-        </div>
-      </form>
+        <AccionesWizardReporteConIcono
+          paso={paso}
+          pasoFinal={pasoFinal}
+          publicando={publicando}
+          irAtras={irAtras}
+          textoCargando="Publicando..."
+          textoEnviar="Publicar avistamiento"
+          iconoEnviar="ojo"
+          classNameSubmit="submit-btn submit-btn-blue"
+        />
+      </FormularioWizardReporte>
     </ModalContenedor>
   );
 }

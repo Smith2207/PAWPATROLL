@@ -8,8 +8,7 @@ import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { BotonReportarAvistamiento } from "@/componentes/mascotas/BotonReportarAvistamiento";
-import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
-import { useTiempoReal } from "@/hooks/useTiempoReal";
+import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 import { listarDatosMapaMascota } from "@/actions/mapa";
 import { LightboxMapaFicha } from "@/componentes/mascotas/LightboxMapaFicha";
 import { Icono } from "@/componentes/ui/Icono";
@@ -63,22 +62,24 @@ export function MapaMascotaFicha({
     router.refresh();
   }, [mascotaId, router]);
 
-  const { conectado: wsConectado } = useTiempoReal([`mascota:${mascotaId}`], (evento) => {
-    if (
-      evento.tipo === "avistamiento:nuevo" ||
-      evento.tipo === "avistamiento:actualizado"
-    ) {
-      if (evento.mascotaId && evento.mascotaId !== mascotaId) return;
+  useTiempoRealConRespaldo(
+    [`mascota:${mascotaId}`],
+    (evento) => {
+      if (
+        evento.tipo === "avistamiento:nuevo" ||
+        evento.tipo === "avistamiento:actualizado"
+      ) {
+        if (evento.mascotaId && evento.mascotaId !== mascotaId) return;
+        void actualizarMapa();
+      }
+      if (evento.tipo === "mensaje:nuevo" && evento.mascotaId === mascotaId) {
+        void actualizarMapa();
+      }
+    },
+    () => {
       void actualizarMapa();
     }
-    if (evento.tipo === "mensaje:nuevo" && evento.mascotaId === mascotaId) {
-      void actualizarMapa();
-    }
-  });
-
-  useRespaldoActualizacion(() => {
-    void actualizarMapa();
-  }, wsConectado);
+  );
 
   const tieneZonaPerdida = datosMapa.perdidas.length > 0;
   const totalAvistamientos = datosMapa.avistamientos.length;

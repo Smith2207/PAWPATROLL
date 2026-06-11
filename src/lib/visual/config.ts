@@ -36,6 +36,3 @@ export function umbralesVisual() {
     bonusCercaMedio: 0.02,
   };
 }
-
-/** @deprecated Usar umbralesVisual */
-export const umbralesClip = umbralesVisual;

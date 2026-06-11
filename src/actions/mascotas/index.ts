@@ -9,6 +9,11 @@ export {
 } from "@/actions/mascotas/consultas";
 
 export {
+  obtenerResumenCasosNav,
+  type ResumenCasosNav,
+} from "@/actions/mascotas/consultas-nav";
+
+export {
   crearMascota,
   actualizarMascota,
   cambiarEstadoMascota,

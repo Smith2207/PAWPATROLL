@@ -1,23 +1,16 @@
 import type { DatosFichaMascota } from "@/lib/db/schema";
+import { crearApiBorrador } from "@/lib/borrador/crear-borrador-cliente";
 import {
   SESSION_BORRADOR_PERDIDA,
   SESSION_EXITO_PERDIDA,
   SESSION_PENDIENTE_AUTH_PERDIDA,
 } from "@/lib/claves-session-cliente";
-import {
-  guardarExitoSession,
-  guardarJsonSession,
-  hayPendienteAuth,
-  leerJsonSession,
-  leerYQuitarExitoSession,
-  limpiarJsonSession,
-  limpiarPendienteAuth,
-  marcarPendienteAuth,
-} from "@/lib/borrador/session-storage";
 
-const CLAVE_BORRADOR = SESSION_BORRADOR_PERDIDA;
-const CLAVE_EXITO = SESSION_EXITO_PERDIDA;
-const CLAVE_PENDIENTE_AUTH = SESSION_PENDIENTE_AUTH_PERDIDA;
+const api = crearApiBorrador<BorradorReportePerdida, ExitoPerdidaPendiente>({
+  borrador: SESSION_BORRADOR_PERDIDA,
+  exito: SESSION_EXITO_PERDIDA,
+  pendienteAuth: SESSION_PENDIENTE_AUTH_PERDIDA,
+});
 
 export type DatosPerdidaBorrador = {
   lugarPerdida: string;
@@ -44,35 +37,11 @@ export type ExitoPerdidaPendiente = {
   slug?: string;
 };
 
-export function marcarPerdidaPendienteAuth() {
-  marcarPendienteAuth(CLAVE_PENDIENTE_AUTH);
-}
-
-export function hayPerdidaPendienteAuth(): boolean {
-  return hayPendienteAuth(CLAVE_PENDIENTE_AUTH);
-}
-
-export function limpiarPerdidaPendienteAuth() {
-  limpiarPendienteAuth(CLAVE_PENDIENTE_AUTH);
-}
-
-export function guardarBorradorPerdida(borrador: BorradorReportePerdida): boolean {
-  return guardarJsonSession(CLAVE_BORRADOR, borrador);
-}
-
-export function leerBorradorPerdida(): BorradorReportePerdida | null {
-  return leerJsonSession<BorradorReportePerdida>(CLAVE_BORRADOR);
-}
-
-export function limpiarBorradorPerdida() {
-  limpiarJsonSession(CLAVE_BORRADOR);
-  limpiarPerdidaPendienteAuth();
-}
-
-export function guardarExitoPerdida(exito: ExitoPerdidaPendiente) {
-  guardarExitoSession(CLAVE_EXITO, exito);
-}
-
-export function leerYQuitarExitoPerdida(): ExitoPerdidaPendiente | null {
-  return leerYQuitarExitoSession<ExitoPerdidaPendiente>(CLAVE_EXITO);
-}
+export const marcarPerdidaPendienteAuth = api.marcarPendienteAuth;
+export const hayPerdidaPendienteAuth = api.hayPendienteAuth;
+export const limpiarPerdidaPendienteAuth = api.limpiarPendienteAuth;
+export const guardarBorradorPerdida = api.guardarBorrador;
+export const leerBorradorPerdida = api.leerBorrador;
+export const limpiarBorradorPerdida = api.limpiarBorrador;
+export const guardarExitoPerdida = api.guardarExito;
+export const leerYQuitarExitoPerdida = api.leerYQuitarExito;

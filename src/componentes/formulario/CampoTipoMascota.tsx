@@ -1,4 +1,4 @@
-import { OPCIONES_TIPO_CON_EMOJI } from "@/lib/mascotas/tipos";
+import { OPCIONES_TIPO } from "@/lib/mascotas/tipos";
 
 type Props = {
   name?: string;
@@ -36,7 +36,7 @@ export function CampoTipoMascota({
         disabled={deshabilitado}
       >
         <option value="">Seleccionar...</option>
-        {OPCIONES_TIPO_CON_EMOJI.map((o) => (
+        {OPCIONES_TIPO.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>

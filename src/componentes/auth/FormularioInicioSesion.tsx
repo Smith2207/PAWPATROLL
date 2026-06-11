@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useModales } from "@/contexto/ContextoModales";
-import { hayPublicacionPendienteAuth } from "@/lib/publicacion-pendiente-auth";
+import { hayPublicacionPendienteAuth } from "@/lib/borrador/publicacion-pendiente";
 
 type Props = {
   enModal?: boolean;

@@ -17,15 +17,21 @@ import {
   iconoUbicacionUsuario,
   TAMANO_MARCADOR_FOTO,
 } from "@/lib/geo/leaflet-iconos";
-import { tituloPopupMapa } from "@/lib/geo/iconos-mapa-html";
 import { Icono } from "@/componentes/ui/Icono";
 import {
   agruparMarcadoresCercanos,
   centroideGrupo,
 } from "@/lib/geo/agrupar-marcadores";
 import { distanciaMetros } from "@/lib/geo/distancia";
-import { emojiPorTipo } from "@/lib/mascotas/tipos";
-import { pareceCoordenadas } from "@/lib/geo/etiqueta-ubicacion";
+import { fallbackMarcadorPorTipo } from "@/lib/mascotas/tipos";
+import {
+  popupGrupoAvistamientos,
+  popupPerdida,
+  popupPerdidaComunidad,
+  popupRefugioProbable,
+  popupUbicacionUsuario,
+  popupZonaBusqueda,
+} from "@/lib/mapa/popups-leaflet";
 import {
   CENTRO_MAPA_DEFECTO,
   coordenadasValidas,
@@ -43,11 +49,6 @@ import {
   contenedorMapaVisible,
   invalidarTamanoMapaSeguro,
 } from "@/lib/mapa/leaflet-utilidades";
-
-function textoDireccion(direccion: string | null): string {
-  if (!direccion || pareceCoordenadas(direccion)) return "Zona reportada";
-  return direccion;
-}
 
 function observarHastaCapaCalor(
   mapa: L.Map,
@@ -149,69 +150,6 @@ function calcularCentro(datos: DatosMapaPublico | undefined): Coordenadas {
   const lat = puntos.reduce((s, p) => s + p.lat, 0) / puntos.length;
   const lng = puntos.reduce((s, p) => s + p.lng, 0) / puntos.length;
   return { lat, lng };
-}
-
-function miniaturaPopup(foto: string | null, nombre: string): string {
-  if (!foto?.startsWith("data:image/") && !foto?.startsWith("http")) {
-    return "";
-  }
-  const src = foto.replace(/"/g, "&quot;");
-  return `<div class="pp-popup-foto"><img src="${src}" alt="${nombre}" /></div>`;
-}
-
-function popupPerdida(p: MarcadorPerdidaMapa, esMapaIndividual: boolean): string {
-  const enlace = esMapaIndividual
-    ? ""
-    : `<a class="pp-popup-link" href="/mascota/${p.slug}">Ver mascota <span class="pp-popup-flecha">›</span></a>`;
-  const cerco = p.prediccion?.cerco;
-  const lineaCerco = cerco
-    ? `Cerco: ~${(p.radioMetros / 1000).toFixed(1)} km — ${cerco.motivoAjuste}`
-    : `Cerco de búsqueda: ~${(p.radioMetros / 1000).toFixed(1)} km (raza, tamaño y tiempo perdido)`;
-  const perfil = p.prediccion?.perfilConductual.etiqueta
-    ? `<div class="pp-popup-meta">${p.prediccion.perfilConductual.etiqueta}</div>`
-    : "";
-  return `
-    ${miniaturaPopup(p.fotoPrincipal, p.nombre)}
-    <div class="pp-popup-titulo">${tituloPopupMapa("ubicacion", `Se perdió aquí — ${p.nombre}`)}</div>
-    <div class="pp-popup-meta">${p.tipo}${p.lugarPerdida ? ` · ${p.lugarPerdida}` : ""}</div>
-    ${perfil}
-    <div class="pp-popup-meta">${lineaCerco}</div>
-    <div class="pp-popup-meta">${p.totalAvistamientos} avistamiento(s) registrados</div>
-    ${enlace}
-  `;
-}
-
-function popupPerdidaComunidad(p: MarcadorPerdidaMapa): string {
-  return `
-    ${miniaturaPopup(p.fotoPrincipal, p.nombre)}
-    <div class="pp-popup-titulo">${tituloPopupMapa("ubicacion", `Se perdió aquí — ${p.nombre}`)}</div>
-    <div class="pp-popup-meta">${p.tipo}${p.lugarPerdida ? ` · ${p.lugarPerdida}` : ""}</div>
-    <a class="pp-popup-link" href="/mascota/${p.slug}">Ver mascota con mapa detallado <span class="pp-popup-flecha">›</span></a>
-  `;
-}
-
-function popupAvistamiento(a: MarcadorAvistamientoMapa): string {
-  const titulo = a.nombreMascota
-    ? `${a.nombreMascota} — Avistamiento #${a.numeroReporte}`
-    : `Avistamiento #${a.numeroReporte}`;
-  const foto = a.fotoAvistamiento ?? a.fotoMascota;
-  return `
-    ${miniaturaPopup(foto, a.nombreMascota ?? "Mascota")}
-    <div class="pp-popup-titulo">${titulo}</div>
-    <div class="pp-popup-meta">${textoDireccion(a.direccion)}</div>
-    ${a.slugMascota ? `<a class="pp-popup-link" href="/mascota/${a.slugMascota}">Ver mascota <span class="pp-popup-flecha">›</span></a>` : ""}
-  `;
-}
-
-function popupGrupoAvistamientos(grupo: MarcadorAvistamientoMapa[]): string {
-  if (grupo.length === 1) return popupAvistamiento(grupo[0]);
-
-  return grupo
-    .map(
-      (a, i) =>
-        `${i > 0 ? '<div class="pp-popup-separador"></div>' : ""}${popupAvistamiento(a)}`
-    )
-    .join("");
 }
 
 function agruparAvistamientosPorMascota(
@@ -483,9 +421,7 @@ export function MapaPawPatrol({
             weight: 2,
             dashArray: "6 4",
           })
-            .bindPopup(
-              `<div class="pp-popup-titulo">Zona de búsqueda — ${p.nombre}</div><div class="pp-popup-meta">~${(radio / 1000).toFixed(1)} km${desplazado ? " · centro ajustado por avistamientos" : " desde donde se perdió"}</div>`
-            )
+            .bindPopup(popupZonaBusqueda(p.nombre, radio, desplazado))
             .addTo(capas);
 
           if (p.rutaAvistamientos.length > 0) {
@@ -507,7 +443,7 @@ export function MapaPawPatrol({
         L.marker([p.lat, p.lng], {
           icon: iconoFoto(p.fotoPrincipal, {
             clase: "pp-marcador--perdida",
-            fallbackContenido: emojiPorTipo(p.tipo),
+            fallbackContenido: fallbackMarcadorPorTipo(p.tipo),
             tamano: TAMANO_MARCADOR_FOTO,
             colorFamilia: cercoColorPorPerdida
               ? estiloFamilia.color
@@ -538,9 +474,7 @@ export function MapaPawPatrol({
           fillOpacity: 0.2,
           weight: 1,
         })
-          .bindPopup(
-            `<div class="pp-popup-titulo">${tituloPopupMapa("casa", "Refugio probable")}</div><div class="pp-popup-meta">${z.etiqueta} · ${Math.round(z.probabilidad * 100)}%</div>`
-          )
+          .bindPopup(popupRefugioProbable(z.etiqueta, z.probabilidad))
           .addTo(capas);
 
         L.marker([z.lat, z.lng], {
@@ -600,7 +534,7 @@ export function MapaPawPatrol({
 
         const icon = iconoFoto(fotoPin, {
           clase: "pp-marcador--avistamiento",
-          fallbackContenido: emojiPorTipo(tipoAv),
+          fallbackContenido: fallbackMarcadorPorTipo(tipoAv),
           badges: numerosReporte,
           tamano: TAMANO_MARCADOR_FOTO,
           colorFamilia: colorAv,
@@ -713,9 +647,7 @@ export function MapaPawPatrol({
         icon: iconoUbicacionUsuario(),
         zIndexOffset: 1000,
       })
-        .bindPopup(
-          `<div class="pp-popup-titulo">${tituloPopupMapa("ubicacion", "Estás aquí")}</div><div class="pp-popup-meta">${etiquetaPopup}</div>`
-        )
+        .bindPopup(popupUbicacionUsuario(etiquetaPopup))
         .addTo(mapa);
     } catch {
       /* mapa sin layout */

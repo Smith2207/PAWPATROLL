@@ -1,8 +1,10 @@
-export type ResultadoBusquedaLugar = {
-  lat: number;
-  lng: number;
-  etiqueta: string;
-};
+import {
+  lugarBusquedaConCoordenadas,
+  lugarBusquedaUtilizable,
+  type ResultadoBusquedaLugar,
+} from "@/lib/geo/lugares";
+
+export type { ResultadoBusquedaLugar };
 
 /** Busca una dirección escrita (ej. Jr. Lima, Puno) y devuelve coincidencias. */
 export async function buscarLugaresPorTexto(
@@ -17,11 +19,36 @@ export async function buscarLugaresPorTexto(
     );
     if (!res.ok) return [];
     const data = (await res.json()) as { resultados?: ResultadoBusquedaLugar[] };
-    return (data.resultados ?? []).filter(
-      (r) => Number.isFinite(r.lat) && Number.isFinite(r.lng)
-    );
+    return (data.resultados ?? []).filter(lugarBusquedaUtilizable);
   } catch {
     return [];
+  }
+}
+
+/** Obtiene coordenadas de una sugerencia de Autocomplete (place_id). */
+export async function resolverLugarPorPlaceId(
+  placeId: string,
+  pista?: Pick<ResultadoBusquedaLugar, "etiqueta" | "subtitulo">
+): Promise<ResultadoBusquedaLugar | null> {
+  const id = placeId.trim();
+  if (!id) return null;
+
+  try {
+    const params = new URLSearchParams({ place_id: id });
+    if (pista?.etiqueta?.trim()) {
+      params.set("etiqueta", pista.etiqueta.trim());
+    }
+    if (pista?.subtitulo?.trim()) {
+      params.set("subtitulo", pista.subtitulo.trim());
+    }
+    const res = await fetch(`/api/geo/lugar?${params.toString()}`);
+    if (!res.ok) return null;
+    const data = (await res.json()) as { lugar?: ResultadoBusquedaLugar };
+    const lugar = data.lugar;
+    if (!lugar || !lugarBusquedaConCoordenadas(lugar)) return null;
+    return lugar;
+  } catch {
+    return null;
   }
 }
 

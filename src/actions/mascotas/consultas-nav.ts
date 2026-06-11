@@ -1,9 +1,9 @@
 "use server";
 
 import { and, count, desc, eq, inArray } from "drizzle-orm";
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { avistamientos, mascotas } from "@/lib/db/schema";
+import { obtenerSesion } from "@/lib/auth/sesion-servidor";
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 
 export type ResumenCasosNav = {
@@ -15,7 +15,7 @@ export type ResumenCasosNav = {
 
 /** Destino inteligente para «Mis mascotas» en nav (sin cargar fotos base64). */
 export async function obtenerResumenCasosNav(): Promise<ResumenCasosNav> {
-  const sesion = await auth();
+  const sesion = await obtenerSesion();
   const userId = sesion?.user?.id;
   if (!userId) {
     return { href: "/mis-mascotas", pendientes: 0, perdidas: 0 };

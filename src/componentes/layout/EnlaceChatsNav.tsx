@@ -7,8 +7,7 @@ import { useSession } from "next-auth/react";
 import { contarChatsNoLeidos } from "@/actions/casos";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import { Icono } from "@/componentes/ui/Icono";
-import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
-import { useTiempoReal } from "@/hooks/useTiempoReal";
+import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 
 function rutaChatsActiva(pathname: string) {
   if (
@@ -47,7 +46,7 @@ export function EnlaceChatsNav({ pathname, onNavigate }: Props) {
   }, [status]);
 
   const userId = sesion?.user?.id;
-  const { conectado: wsConectado } = useTiempoReal(
+  useTiempoRealConRespaldo(
     userId ? [`usuario:${userId}`] : [],
     (ev) => {
       if (
@@ -57,12 +56,12 @@ export function EnlaceChatsNav({ pathname, onNavigate }: Props) {
       ) {
         void recargar();
       }
-    }
+    },
+    () => {
+      if (status === "authenticated") void recargar();
+    },
+    12_000
   );
-
-  useRespaldoActualizacion(() => {
-    if (status === "authenticated") void recargar();
-  }, wsConectado, 12_000);
 
   if (status !== "authenticated") return null;
 

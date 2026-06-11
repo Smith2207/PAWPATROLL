@@ -1,16 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { listarDatosMapaPublico, type DatosMapaPublico } from "@/actions/mapa";
 import { FiltrosMapa } from "@/componentes/mapa/FiltrosMapa";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
-import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
-import { useTiempoReal } from "@/hooks/useTiempoReal";
+import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
-import { EVENTO_CENTRAR_MAPA_USUARIO } from "@/lib/eventos-cliente";
 import { LeyendaMapaColapsable } from "@/componentes/mapa/LeyendaMapaColapsable";
 
 const MapaPawPatrol = dynamic(
@@ -46,15 +44,6 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
     obtenerUbicacion: geo.obtenerUbicacion,
   });
 
-  useEffect(() => {
-    const centrar = () => {
-      void geo.obtenerUbicacion();
-    };
-    window.addEventListener(EVENTO_CENTRAR_MAPA_USUARIO, centrar);
-    return () =>
-      window.removeEventListener(EVENTO_CENTRAR_MAPA_USUARIO, centrar);
-  }, [geo]);
-
   const actualizar = useCallback(async (f: FiltrosMapaPublico = filtros) => {
     setDatos(await listarDatosMapaPublico(f));
   }, [filtros]);
@@ -67,19 +56,21 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
     [actualizar]
   );
 
-  const { conectado: wsConectado } = useTiempoReal(["mapa"], (evento) => {
-    if (
-      evento.tipo === "mapa:actualizado" ||
-      evento.tipo === "avistamiento:nuevo" ||
-      evento.tipo === "avistamiento:actualizado"
-    ) {
+  useTiempoRealConRespaldo(
+    ["mapa"],
+    (evento) => {
+      if (
+        evento.tipo === "mapa:actualizado" ||
+        evento.tipo === "avistamiento:nuevo" ||
+        evento.tipo === "avistamiento:actualizado"
+      ) {
+        void actualizar();
+      }
+    },
+    () => {
       void actualizar();
     }
-  });
-
-  useRespaldoActualizacion(() => {
-    void actualizar();
-  }, wsConectado);
+  );
 
   const datosMapa = useMemo(
     (): DatosMapaPublico => ({

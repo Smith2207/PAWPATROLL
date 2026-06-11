@@ -10,8 +10,7 @@ import {
 } from "@/actions/casos";
 import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
 import { horaRelativaChat } from "@/lib/chat/tiempo";
-import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
-import { useTiempoReal } from "@/hooks/useTiempoReal";
+import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 
 function previewHub(texto: string | null, fallback: string) {
   if (!texto?.trim()) return fallback;
@@ -46,7 +45,7 @@ export function ContenedorHubChats({
   }, []);
 
   const userId = sesion?.user?.id;
-  const { conectado: wsConectado } = useTiempoReal(
+  useTiempoRealConRespaldo(
     userId ? [`usuario:${userId}`] : [],
     (ev) => {
       if (
@@ -56,12 +55,12 @@ export function ContenedorHubChats({
       ) {
         void recargar();
       }
-    }
+    },
+    () => {
+      if (status === "authenticated") void recargar();
+    },
+    12_000
   );
-
-  useRespaldoActualizacion(() => {
-    if (status === "authenticated") void recargar();
-  }, wsConectado, 12_000);
 
   const vacio = casosDueno.length === 0 && casosTestigo.length === 0;
 

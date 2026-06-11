@@ -8,7 +8,7 @@ import {
   mascotaFotos,
   mascotas,
 } from "@/lib/db/schema";
-import { estimarRadioBusquedaMetros } from "@/lib/geo/cerco-perimetrico";
+import { estimarRadioBusquedaMetros } from "@/lib/comportamiento/evidencia-radios";
 import { calcularPrediccionComportamiento } from "@/lib/comportamiento/prediccion";
 import type { PrediccionComportamiento } from "@/lib/comportamiento/prediccion";
 import { parsearCoordenada, type Coordenadas } from "@/lib/geo/tipos";

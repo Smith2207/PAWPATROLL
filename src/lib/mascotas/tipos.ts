@@ -1,4 +1,4 @@
-/** PawPatrol solo registra perros y gatos. */
+/** PawPatroll solo registra perros y gatos. */
 export const TIPOS_MASCOTA = ["Perro", "Gato"] as const;
 
 export type TipoMascota = (typeof TIPOS_MASCOTA)[number];
@@ -21,11 +21,3 @@ export const OPCIONES_TIPO = [
   { value: "Perro", label: "Perro" },
   { value: "Gato", label: "Gato" },
 ] as const;
-
-/** @deprecated Usar iconoPorTipoMascota en UI o fallbackMarcadorPorTipo en mapa */
-export function emojiPorTipo(tipo: string): string {
-  return fallbackMarcadorPorTipo(tipo);
-}
-
-/** @deprecated Usar OPCIONES_TIPO */
-export const OPCIONES_TIPO_CON_EMOJI = OPCIONES_TIPO;

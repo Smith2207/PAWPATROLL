@@ -24,8 +24,6 @@ export type MascotaPublicaTarjeta = {
 
 type Props = {
   mascotas: MascotaPublicaTarjeta[];
-  /** @deprecated Usar mensajeVacio */
-  mensajeBusqueda?: string | null;
   sinEncabezadoSeccion?: boolean;
   modoPaginaCasos?: boolean;
   busquedaActiva?: boolean;
@@ -44,7 +42,6 @@ function tiempoRelativo(fecha: Date) {
 
 export function SeccionMascotasRecientes({
   mascotas,
-  mensajeBusqueda,
   sinEncabezadoSeccion = false,
   modoPaginaCasos = false,
   busquedaActiva = false,
@@ -53,8 +50,7 @@ export function SeccionMascotasRecientes({
 }: Props) {
   const { abrirModal } = useModales();
   const lista = mascotas.filter((m) => esTipoMascotaPermitido(m.tipo));
-  const textoVacio =
-    mensajeVacio ?? mensajeBusqueda ?? "No hay casos para mostrar.";
+  const textoVacio = mensajeVacio ?? "No hay casos para mostrar.";
 
   return (
     <div className="section-wrap" id="casos-activos" style={{ paddingTop: 0 }}>

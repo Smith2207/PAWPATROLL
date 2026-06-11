@@ -282,7 +282,7 @@
   border-radius: 10px;
   overflow: hidden;
   background: white;
-  max-height: 180px;
+  max-height: 240px;
   overflow-y: auto;
 }
 
@@ -291,6 +291,9 @@
 }
 
 .pp-sugerencias-direccion button {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
   width: 100%;
   text-align: left;
   padding: 0.55rem 0.65rem;
@@ -302,6 +305,27 @@
   color: var(--navy, #0f1923);
   cursor: pointer;
   line-height: 1.35;
+}
+
+.pp-sugerencia-direccion-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.pp-sugerencia-direccion-principal {
+  font-weight: 700;
+  color: var(--navy, #0f1923);
+}
+
+.pp-sugerencia-direccion-secundaria {
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pp-sugerencias-direccion button:hover {

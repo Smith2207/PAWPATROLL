@@ -56,8 +56,6 @@ export type OpcionesIconoFoto = {
   clase?: string;
   /** Texto o SVG cuando no hay foto */
   fallbackContenido?: string;
-  /** @deprecated Usar fallbackContenido */
-  fallbackEmoji?: string;
   /** Un solo número en el pin */
   badge?: string | number;
   /** Varios números (ej. avistamientos #3 y #4 en el mismo punto) */
@@ -100,7 +98,6 @@ export function iconoFoto(
   const estiloFamilia = estiloFamiliaAttr(opciones.colorFamilia);
   const fallback =
     opciones.fallbackContenido ??
-    opciones.fallbackEmoji ??
     svgIconoMapa("huella", 20, "pp-svg-mapa pp-svg-mapa--pin");
   const badgesHtml = htmlBadgesPin(numerosPin(opciones));
 

@@ -4,7 +4,15 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
-import { buscarLugaresPorTexto } from "@/lib/geo/geocodificar";
+import {
+  buscarLugaresPorTexto,
+  resolverLugarPorPlaceId,
+  type ResultadoBusquedaLugar,
+} from "@/lib/geo/geocodificar";
+import {
+  etiquetaCompletaLugar,
+  lugarBusquedaConCoordenadas,
+} from "@/lib/geo/lugares";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
@@ -49,9 +57,7 @@ export function SelectorUbicacionMapa({
   });
 
   const [buscandoDireccion, setBuscandoDireccion] = useState(false);
-  const [sugerencias, setSugerencias] = useState<
-    { lat: number; lng: number; etiqueta: string }[]
-  >([]);
+  const [sugerencias, setSugerencias] = useState<ResultadoBusquedaLugar[]>([]);
   const [listaAbierta, setListaAbierta] = useState(false);
   const [avisoBusqueda, setAvisoBusqueda] = useState<string | null>(null);
   const omitirBusquedaRef = useRef(false);
@@ -60,16 +66,47 @@ export function SelectorUbicacionMapa({
   const ubicacionLista = coordenadasValidas(ubicacionActiva);
   const ubicando = geo.cargando;
 
-  const aplicarLugar = useCallback(
-    (lugar: { lat: number; lng: number; etiqueta: string }) => {
+  const confirmarLugar = useCallback(
+    (lugar: ResultadoBusquedaLugar & { lat: number; lng: number }) => {
       omitirBusquedaRef.current = true;
-      onDireccionChange?.(lugar.etiqueta);
-      onChange?.(ubicacionConEtiqueta(lugar, lugar.etiqueta));
+      const texto = etiquetaCompletaLugar(lugar);
+      onDireccionChange?.(texto);
+      onChange?.(ubicacionConEtiqueta(lugar, texto));
       setSugerencias([]);
       setListaAbierta(false);
       setAvisoBusqueda(null);
     },
     [onChange, onDireccionChange]
+  );
+
+  const aplicarLugar = useCallback(
+    async (lugar: ResultadoBusquedaLugar) => {
+      setBuscandoDireccion(true);
+      setAvisoBusqueda(null);
+
+      let resuelto: ResultadoBusquedaLugar = lugar;
+      if (!lugarBusquedaConCoordenadas(lugar) && lugar.placeId) {
+        const coords = await resolverLugarPorPlaceId(lugar.placeId, {
+          etiqueta: lugar.etiqueta,
+          subtitulo: lugar.subtitulo,
+        });
+        if (!coords) {
+          setAvisoBusqueda("No pudimos ubicar ese lugar. Prueba otra opción.");
+          setBuscandoDireccion(false);
+          return;
+        }
+        resuelto = coords;
+      }
+
+      if (!lugarBusquedaConCoordenadas(resuelto)) {
+        setBuscandoDireccion(false);
+        return;
+      }
+
+      confirmarLugar(resuelto);
+      setBuscandoDireccion(false);
+    },
+    [confirmarLugar]
   );
 
   useEffect(() => {
@@ -107,7 +144,7 @@ export function SelectorUbicacionMapa({
     setBuscandoDireccion(false);
 
     if (resultados.length > 0) {
-      aplicarLugar(resultados[0]);
+      await aplicarLugar(resultados[0]);
       return;
     }
 
@@ -161,15 +198,24 @@ export function SelectorUbicacionMapa({
         {listaAbierta && sugerencias.length > 0 && (
           <ul className="pp-sugerencias-direccion" role="listbox">
             {sugerencias.map((s, i) => (
-              <li key={`${s.lat}-${s.lng}-${i}`}>
+              <li key={s.placeId ?? `${s.lat ?? "x"}-${s.lng ?? "y"}-${i}`}>
                 <button
                   type="button"
                   role="option"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => aplicarLugar(s)}
+                  onClick={() => void aplicarLugar(s)}
                 >
-                  <Icono nombre="ubicacion" size={14} className="pp-icon--btn" />{" "}
-                  {s.etiqueta}
+                  <Icono nombre="ubicacion" size={14} className="pp-icon--btn" />
+                  <span className="pp-sugerencia-direccion-texto">
+                    <span className="pp-sugerencia-direccion-principal">
+                      {s.etiqueta}
+                    </span>
+                    {s.subtitulo ? (
+                      <span className="pp-sugerencia-direccion-secundaria">
+                        {s.subtitulo}
+                      </span>
+                    ) : null}
+                  </span>
                 </button>
               </li>
             ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { obtenerResumenCasosNav } from "@/actions/resumen-casos-nav";
+import { obtenerResumenCasosNav } from "@/actions/mascotas/consultas-nav";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
