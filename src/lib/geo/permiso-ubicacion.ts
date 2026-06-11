@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: permiso-ubicacion.
+ */
 export type EstadoPermisoUbicacion =
   | "granted"
   | "prompt"

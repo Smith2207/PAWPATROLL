@@ -7,6 +7,8 @@ import type {
 type Props = {
   actividad: ActividadComunidad[];
   colaboradores: ColaboradorDestacado[];
+  /** Columna junto al mapa en /comunidad */
+  lateral?: boolean;
 };
 
 function badgeTexto(badge: ColaboradorDestacado["badge"]) {
@@ -26,7 +28,81 @@ function tiempoRelativo(fecha: Date) {
   return `hace ${d} d`;
 }
 
-export function SeccionFeedComunidad({ actividad, colaboradores }: Props) {
+function ListaActividad({ actividad }: { actividad: ActividadComunidad[] }) {
+  if (actividad.length === 0) {
+    return (
+      <p className="pp-feed-vacio">
+        Aún no hay avistamientos publicados. Sé el primero en reportar uno.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="pp-feed-lista">
+      {actividad.map((a) => (
+        <li key={a.id} className={`pp-feed-item pp-feed-item--${a.tipo}`}>
+          <div className="pp-feed-item-cuerpo">
+            <strong>{a.titulo}</strong>
+            <span>{a.subtitulo}</span>
+            <time dateTime={a.fecha.toISOString()}>{tiempoRelativo(a.fecha)}</time>
+          </div>
+          {a.slug && (
+            <Link href={`/mascota/${a.slug}`} className="pp-feed-link">
+              Ver mascota
+            </Link>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PanelColaboradores({ colaboradores }: { colaboradores: ColaboradorDestacado[] }) {
+  if (colaboradores.length === 0) return null;
+
+  return (
+    <aside className="pp-colaboradores-panel">
+      <h3 className="pp-colaboradores-titulo">Top colaboradores</h3>
+      <ul className="pp-colaboradores-lista">
+        {colaboradores.map((c, i) => (
+          <li key={c.userId} className="pp-colaborador-item">
+            <span className="pp-colaborador-rank">{i + 1}</span>
+            <div className="pp-colaborador-cuerpo">
+              <p className="pp-colaborador-meta">
+                <strong>{c.nombre}</strong>
+                <span className="pp-colaborador-conteo">
+                  {c.avistamientosVerificados} avistamiento
+                  {c.avistamientosVerificados === 1 ? "" : "s"}
+                </span>
+              </p>
+              {c.badge && (
+                <span className={`pp-badge-colaborador pp-badge-colaborador--${c.badge}`}>
+                  {badgeTexto(c.badge)}
+                </span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+export function SeccionFeedComunidad({
+  actividad,
+  colaboradores,
+  lateral = false,
+}: Props) {
+  if (lateral) {
+    return (
+      <aside className="pp-feed-comunidad pp-feed-comunidad--lateral" aria-label="Actividad de la comunidad">
+        <p className="section-eyebrow pp-feed-eyebrow">Actividad reciente</p>
+        <ListaActividad actividad={actividad} />
+        <PanelColaboradores colaboradores={colaboradores} />
+      </aside>
+    );
+  }
+
   return (
     <section className="section-wrap pp-feed-comunidad" aria-labelledby="feed-comunidad-titulo">
       <div className="pp-feed-comunidad-grid">
@@ -37,57 +113,9 @@ export function SeccionFeedComunidad({ actividad, colaboradores }: Props) {
               Lo que hace la comunidad
             </h2>
           </div>
-          {actividad.length === 0 ? (
-            <p className="pp-feed-vacio">
-              Aún no hay avistamientos publicados. Sé el primero en reportar uno.
-            </p>
-          ) : (
-            <ul className="pp-feed-lista">
-              {actividad.map((a) => (
-                <li key={a.id} className={`pp-feed-item pp-feed-item--${a.tipo}`}>
-                  <div className="pp-feed-item-cuerpo">
-                    <strong>{a.titulo}</strong>
-                    <span>{a.subtitulo}</span>
-                    <time dateTime={a.fecha.toISOString()}>
-                      {tiempoRelativo(a.fecha)}
-                    </time>
-                  </div>
-                  {a.slug && (
-                    <Link href={`/mascota/${a.slug}`} className="pp-feed-link">
-                      Ver mascota
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+          <ListaActividad actividad={actividad} />
         </div>
-
-        {colaboradores.length > 0 && (
-          <aside className="pp-colaboradores-panel">
-            <h3 className="pp-colaboradores-titulo">Top colaboradores</h3>
-            <ul className="pp-colaboradores-lista">
-              {colaboradores.map((c, i) => (
-                <li key={c.userId} className="pp-colaborador-item">
-                  <span className="pp-colaborador-rank">{i + 1}</span>
-                  <div>
-                    <strong>{c.nombre}</strong>
-                    <span>
-                      {c.avistamientosVerificados} avistamiento
-                      {c.avistamientosVerificados === 1 ? "" : "s"} verificado
-                      {c.avistamientosVerificados === 1 ? "" : "s"}
-                    </span>
-                    {c.badge && (
-                      <span className={`pp-badge-colaborador pp-badge-colaborador--${c.badge}`}>
-                        {badgeTexto(c.badge)}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        )}
+        <PanelColaboradores colaboradores={colaboradores} />
       </div>
     </section>
   );

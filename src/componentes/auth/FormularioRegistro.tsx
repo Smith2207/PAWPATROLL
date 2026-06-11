@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Formulario: registro.
+ */
+/**
+ * [auth] Formulario: registro.
+ */
 import { registrarUsuario } from "@/actions/autenticacion";
 import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
 import { Icono } from "@/componentes/ui/Icono";

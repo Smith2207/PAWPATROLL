@@ -3584,6 +3584,113 @@ footer.ficha-publica-pie {
   color: rgba(255, 255, 255, 0.45);
 }
 
+/* Página /comunidad — mapa + actividad en fila */
+.pp-comunidad-pagina {
+  width: 100%;
+}
+
+.pp-comunidad-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  gap: 0.85rem 1.1rem;
+  align-items: start;
+  max-width: min(78rem, calc(100% - 1rem));
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem 3.25rem;
+}
+
+.pp-comunidad-cuerpo .seccion-mapa-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0.25rem 0 0;
+}
+
+.pp-comunidad-cuerpo .seccion-mapa-wrap--centrado {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pp-feed-comunidad--lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0;
+  min-width: 0;
+}
+
+.pp-feed-comunidad--lateral .pp-feed-eyebrow {
+  margin: 0 0 0.15rem;
+}
+
+.pp-feed-comunidad--lateral .pp-feed-lista {
+  gap: 0.55rem;
+}
+
+.pp-feed-comunidad--lateral .pp-feed-item {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.pp-feed-comunidad--lateral .pp-feed-item-cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-feed-comunidad--lateral .pp-feed-item-cuerpo strong {
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.pp-feed-comunidad--lateral .pp-feed-item-cuerpo span {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.pp-feed-comunidad--lateral .pp-feed-item-cuerpo time {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.pp-feed-comunidad--lateral .pp-feed-link {
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pp-feed-comunidad--lateral .pp-colaboradores-panel {
+  margin-top: 0.35rem;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.85rem 0.9rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.pp-feed-comunidad--lateral .pp-colaboradores-titulo {
+  font-size: 0.92rem;
+  margin-bottom: 0.55rem;
+}
+
+.pp-feed-comunidad--lateral .pp-colaborador-item {
+  padding: 0.55rem 0;
+}
+
+@media (max-width: 960px) {
+  .pp-comunidad-cuerpo {
+    grid-template-columns: 1fr;
+    padding: 0 var(--padding-pagina) 2rem;
+  }
+}
+
 /* Feed comunidad */
 .pp-feed-comunidad-grid {
   display: grid;
@@ -3654,6 +3761,36 @@ footer.ficha-publica-pie {
   padding: 0;
 }
 
+.pp-colaborador-cuerpo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.pp-colaborador-meta {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: baseline;
+  gap: 1.25rem;
+  margin: 0;
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.pp-colaborador-meta strong {
+  flex-shrink: 0;
+}
+
+.pp-colaborador-conteo {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .pp-colaborador-item {
   display: flex;
   gap: 0.75rem;
@@ -3681,7 +3818,7 @@ footer.ficha-publica-pie {
 
 .pp-badge-colaborador {
   display: inline-block;
-  margin-top: 0.25rem;
+  flex-shrink: 0;
   font-size: 0.65rem;
   font-weight: 800;
   padding: 0.15rem 0.45rem;

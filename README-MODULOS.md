@@ -16,7 +16,9 @@ Referencia de **todos los módulos funcionales** del proyecto, con sus métodos 
 
 ## M1 — Autenticación y usuarios
 
-Registro, inicio de sesión (correo + Google), verificación de cuenta, recuperación de contraseña, perfil y roles.
+Registro, inicio de sesión (correo + Google), verificación de cuenta, recuperación de contraseña y perfil.
+
+**Roles de cuenta:** `USUARIO` (todos) y `ADMINISTRADOR` (solo soporte). Dueño/testigo son papeles por caso, no roles de BD — ver [MODELO-ACTORES-Y-PERMISOS.md](./docs/MODELO-ACTORES-Y-PERMISOS.md).
 
 ### Rutas
 
@@ -70,7 +72,7 @@ Callbacks relevantes: sincronización de rol admin, bloqueo de cuentas desactiva
 | Archivo | Funciones / utilidades |
 |---------|------------------------|
 | `admin.ts` | `esCorreoAdmin`, `rolParaNuevoUsuario`, `normalizarCorreo`, `CORREO_ADMIN_SOPORTE` |
-| `roles.ts` | `esAdministrador`, etiquetas de rol |
+| `roles.ts` | `etiquetaRol` — USUARIO o ADMINISTRADOR |
 | `verificar-cuenta.ts` | Lógica de tokens de verificación |
 | `recuperar-contrasena.ts` | Tokens de recuperación |
 | `validacion-correo.ts` | `esCorreoValido`, `mensajeCorreoInvalido` |
@@ -103,7 +105,7 @@ CRUD de fichas, fotos, estados del ciclo de vida y ficha pública compartible.
 | `/mis-mascotas` | Listado de mis fichas |
 | `/mis-mascotas/ficha` | Crear nueva ficha |
 | `/mis-mascotas/[id]` | Editar, cambiar estado, eliminar |
-| `/mis-mascotas/[id]/caso` | Caso de búsqueda (M6) |
+| `/mis-mascotas/[id]/caso` | Panel de coordinación (M6) |
 | `/mascota/[slug]` | Ficha pública (`PERDIDA` / `ENCONTRADA`) |
 | `/casos-activos` | Listado público de pérdidas activas |
 | `/buscar` | Redirige a `/casos-activos` |
@@ -340,19 +342,19 @@ Reportes de avistamiento, verificación por el dueño, chat privado por avistami
 | `gestionarEstadoAvistamiento` | `PENDIENTE` → `VERIFICADO` / `DESCARTADO` |
 | `enviarMensajeAvistamiento` | Mensaje en chat del avistamiento |
 | `listarMascotasPerdidasParaSelector` | Selector al reportar |
-| `puedeGestionarAvistamientos` | Permiso del dueño |
+| `esDuenoDeFicha` | ¿Sesión participa como dueña del caso? |
 
 ### Server Actions — `src/actions/casos.ts`
 
 | Función | Descripción |
 |---------|-------------|
-| `puedeAccederCasoBusqueda` | Dueño o admin |
-| `puedeAccederChatAvistamiento` | Dueño, reportante o admin |
-| `obtenerCasoBusqueda` | Resumen del caso + avistamientos + chats |
+| `puedeAccederPanelCoordinacionMascota` | Dueño o admin |
+| `puedeAccederChatAvistamiento` | Dueño (todos los hilos) o autor del reporte o admin |
+| `obtenerPanelCoordinacion` | Panel del dueño: reportes + conversaciones |
 | `obtenerChatPrivadoAvistamiento` | Mensajes de un avistamiento |
 | `marcarChatLeido` | Marca lecturas |
 | `reportarComportamientoSospechoso` | Reporte de abuso → admin (M7) |
-| `listarMisCasosComoTestigo` | Casos donde reporté avistamiento |
+| `listarConversaciones` | Chats accesibles (una fila por reporte) |
 
 ### Server Actions — `src/actions/notificaciones.ts`
 
@@ -407,7 +409,7 @@ Reportes de avistamiento, verificación por el dueño, chat privado por avistami
 |------------|-----|
 | `PanelChatsCaso.tsx` | Lista + chat (layout WhatsApp) |
 | `ChatPrivadoCaso.tsx` | Burbujas, envío, reportar abuso |
-| `VistaCasoBusqueda.tsx` | Página caso de búsqueda |
+| `VistaCoordinacion.tsx` | Panel de coordinación del dueño |
 | `TimelineAvistamientos.tsx` | Línea de tiempo ficha pública |
 | `CampanaNotificaciones.tsx` | Dropdown campana |
 

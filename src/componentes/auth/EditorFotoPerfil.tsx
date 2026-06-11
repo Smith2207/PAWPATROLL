@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Editor: foto perfil.
+ */
+/**
+ * [auth] Editor: foto perfil.
+ */
 import { actualizarImagenPerfil } from "@/actions/autenticacion";
 import {
   ACCEPT_INPUT_IMAGEN,

@@ -1,3 +1,6 @@
+/**
+ * Utilidades de API (rate limit, etc.): rate-limit.test.
+ */
 import { describe, expect, it } from "vitest";
 import { rateLimit } from "@/lib/api/rate-limit";
 

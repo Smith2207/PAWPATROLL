@@ -1,3 +1,6 @@
+/**
+ * Server Actions (mascotas › helpers): operaciones de servidor invocadas desde la UI.
+ */
 import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";

@@ -1,3 +1,6 @@
+/**
+ * Esquema Drizzle ORM: tablas, enums y relaciones de PostgreSQL (Neon).
+ */
 import type { AdapterAccount } from "next-auth/adapters";
 import {
   boolean,
@@ -10,12 +13,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-/** CIUDADANO = miembro de la comunidad. DUENO queda en el enum solo por compatibilidad. */
-export const rolEnum = pgEnum("rol", [
-  "CIUDADANO",
-  "DUENO",
-  "ADMINISTRADOR",
-]);
+/** USUARIO = cualquier miembro (reporta, avistamientos, fichas). ADMINISTRADOR = único soporte. */
+export const rolEnum = pgEnum("rol", ["USUARIO", "ADMINISTRADOR"]);
 
 export const estadoMascotaEnum = pgEnum("estado_mascota", [
   "EN_CASA",
@@ -57,6 +56,7 @@ export const eventoCasoTipoEnum = pgEnum("evento_caso_tipo", [
   "COINCIDENCIA_IA",
   "ESTADO_CAMBIADO",
   "MASCOTA_RECUPERADA",
+  "REPORTE_ABUSO",
 ]);
 
 export const users = pgTable("user", {
@@ -68,7 +68,7 @@ export const users = pgTable("user", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   passwordHash: text("password_hash"),
-  rol: rolEnum("rol").default("CIUDADANO").notNull(),
+  rol: rolEnum("rol").default("USUARIO").notNull(),
   bienvenidaCompletada: boolean("bienvenida_completada").default(true).notNull(),
   telefono: text("telefono"),
   ciudad: text("ciudad"),
@@ -127,6 +127,7 @@ export const mascotas = pgTable("mascota", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
+  /** Dueño de la ficha (mascota.user_id; no es un rol de cuenta en user.rol). */
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -205,6 +206,7 @@ export const avistamientos = pgTable("avistamiento", {
   mascotaId: text("mascota_id").references(() => mascotas.id, {
     onDelete: "set null",
   }),
+  /** Usuario que reportó el avistamiento (testigo en el chat; no es un rol de cuenta). */
   userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
   /** Número secuencial de avistamiento para la mascota (1, 2, 3…) */
   numeroReporte: integer("numero_reporte").notNull(),

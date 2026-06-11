@@ -1,3 +1,6 @@
+/**
+ * [mascotas] Ficha: publica mascota.
+ */
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import { CarruselFotosPublica } from "@/componentes/mascotas/CarruselFotosPublica";
 import { MapaMascotaFicha } from "@/componentes/mascotas/MapaMascotaFicha";
@@ -25,6 +28,7 @@ export function FichaPublicaMascota({
   datos: DatosPublicos;
   datosMapa?: DatosMapaMascota | null;
   avistamientos?: AvistamientoConMensajes[];
+  /** Sesión actual es propietaria de la ficha (mascota.user_id) */
   esDueno?: boolean;
 }) {
   const { mascota, duenoNombre, fotos } = datos;

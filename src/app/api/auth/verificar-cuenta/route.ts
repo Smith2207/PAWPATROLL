@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/auth/verificar-cuenta): endpoint auth › verificar-cuenta.
+ */
 import { NextResponse } from "next/server";
 import {
   consultarEstadoVerificacion,

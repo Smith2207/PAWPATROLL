@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [admin] Mapa: admin panel.
+ */
+/**
+ * [admin] Mapa: admin panel.
+ */
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet.heat";

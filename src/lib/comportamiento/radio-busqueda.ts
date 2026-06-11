@@ -1,3 +1,6 @@
+/**
+ * Comportamiento predictivo (M5): radio-busqueda.
+ */
 import type { PerfilConductual } from "@/lib/comportamiento/conocimiento";
 import {
   estimarRadioConEvidencia,

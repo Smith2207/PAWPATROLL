@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): config.
+ */
 import { join } from "path";
 import { cwd } from "process";
 

@@ -1,3 +1,6 @@
+/**
+ * [landing] Sección: caracteristicas.
+ */
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 
 const CARACTERISTICAS: {

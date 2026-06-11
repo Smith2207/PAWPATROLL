@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Modal: contenedor.
+ */
+/**
+ * [landing] Modal: contenedor.
+ */
 import { useModales, type TipoModal } from "@/contexto/ContextoModales";
 import { Icono } from "@/componentes/ui/Icono";
 import type { ReactNode } from "react";

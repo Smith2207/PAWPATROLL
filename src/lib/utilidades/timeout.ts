@@ -1,3 +1,6 @@
+/**
+ * Librería (utilidades): timeout.
+ */
 export function conTimeout<T>(promesa: Promise<T>, ms = 8000): Promise<T> {
   return Promise.race([
     promesa,

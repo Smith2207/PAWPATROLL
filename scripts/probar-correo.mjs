@@ -1,3 +1,6 @@
+/**
+ * Script de mantenimiento: probar-correo.
+ */
 import { config } from "dotenv";
 import nodemailer from "nodemailer";
 

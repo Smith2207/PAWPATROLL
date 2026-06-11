@@ -1,3 +1,6 @@
+/**
+ * Correo transaccional (SMTP): plantillas.
+ */
 import { urlBaseApp } from "@/lib/url-app";
 
 function escaparHtml(texto: string) {

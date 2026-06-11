@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: formatear-ubicacion.
+ */
 const PALABRAS_MINUSCULAS = new Set([
   "de",
   "del",

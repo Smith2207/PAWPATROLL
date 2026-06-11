@@ -1,3 +1,6 @@
+/**
+ * Tiempo real (WebSocket / hub): token-ws.
+ */
 import type { CanalTiempoReal } from "@/lib/tiempo-real/tipos";
 import {
   crearTokenSuscripcionWs as crearTokenCompartido,

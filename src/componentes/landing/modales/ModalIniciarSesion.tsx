@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Modal: iniciar sesion.
+ */
+/**
+ * [landing] Modal: iniciar sesion.
+ */
 import { FormularioInicioSesion } from "@/componentes/auth/FormularioInicioSesion";
 import {
   BotonCerrarModal,

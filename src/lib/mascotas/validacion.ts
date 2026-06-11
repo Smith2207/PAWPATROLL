@@ -1,3 +1,6 @@
+/**
+ * Dominio mascotas (fichas, estados, validación): validacion.
+ */
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 
 const MAX_FOTOS = 5;

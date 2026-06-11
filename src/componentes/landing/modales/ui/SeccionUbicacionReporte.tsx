@@ -1,3 +1,6 @@
+/**
+ * [landing] Sección: ubicacion reporte.
+ */
 import { SelectorUbicacionMapa } from "@/componentes/landing/ui/SelectorUbicacionMapa";
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { PLACEHOLDER_UBICACION } from "@/lib/mascotas/catalogos";

@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * Hook React: fotos mascota.
+ */
+/**
+ * Hook React: fotos mascota.
+ */
 import { useCallback, useRef, useState } from "react";
 import { preprocesarImagenesCliente } from "@/lib/imagen/preprocesar-cliente";
 import {

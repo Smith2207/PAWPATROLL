@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: leaflet-iconos.
+ */
 import L from "leaflet";
 import { svgIconoMapa, type TipoIconoMapaHtml } from "@/lib/geo/iconos-mapa-html";
 

@@ -1,3 +1,6 @@
+/**
+ * Comportamiento predictivo (M5): contexto-busqueda.
+ */
 import { EVIDENCIA } from "@/lib/comportamiento/fuentes";
 
 export type AccesoExterior =

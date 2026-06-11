@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * Hook React: raza por tipo.
+ */
+/**
+ * Hook React: raza por tipo.
+ */
 import { useCallback, useState } from "react";
 import {
   componerRaza,

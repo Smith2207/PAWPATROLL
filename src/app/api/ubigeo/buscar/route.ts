@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/ubigeo/buscar): endpoint ubigeo › buscar.
+ */
 import { buscarUbicacionesPeru } from "@/lib/geo/ubigeo-peru";
 import { NextResponse } from "next/server";
 

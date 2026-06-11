@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Modal: bienvenida.
+ */
+/**
+ * [auth] Modal: bienvenida.
+ */
 import { completarBienvenida } from "@/actions/autenticacion";
 import { CampoCiudad } from "@/componentes/formulario/CampoCiudad";
 import { Icono } from "@/componentes/ui/Icono";

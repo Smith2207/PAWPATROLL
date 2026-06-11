@@ -1,8 +1,17 @@
 "use server";
 
+
+
+/**
+ * Server Actions (mascotas › mutaciones): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (mascotas › mutaciones): operaciones de servidor invocadas desde la UI.
+ */
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  historialEstadoMascota,
   mascotas,
   type DatosFichaMascota,
   type EstadoMascota,
@@ -223,6 +232,16 @@ export async function cambiarEstadoMascota(
         ? null
         : actual.radioBusquedaMetros;
 
+  if (estadoNuevo !== actual.estado) {
+    await db.insert(historialEstadoMascota).values({
+      mascotaId: id,
+      estadoAnterior: actual.estado,
+      estadoNuevo,
+      notas: opciones?.notas?.trim() || null,
+      userId,
+    });
+  }
+
   await db
     .update(mascotas)
     .set({
@@ -262,7 +281,7 @@ export async function cambiarEstadoMascota(
       tipo: "CASO_RECUPERADO",
       prioridad: "NORMAL",
       titulo: `Caso cerrado: ${actual.nombre} reunida`,
-      cuerpo: "Felicitaciones. El caso de búsqueda quedó archivado.",
+      cuerpo: "Felicitaciones. La coordinación de avistamientos quedó archivada.",
       enlace: `/mis-mascotas/${id}`,
       mascotaId: id,
       grupoClave: `recuperada:${id}`,

@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [mascotas] Galería: fotos mascota.
+ */
+/**
+ * [mascotas] Galería: fotos mascota.
+ */
 import { useRef } from "react";
 import { Icono } from "@/componentes/ui/Icono";
 import { ACCEPT_INPUT_IMAGEN } from "@/lib/imagen/validar-archivo";

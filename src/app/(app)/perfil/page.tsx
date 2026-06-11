@@ -1,8 +1,11 @@
+/**
+ * Ruta /perfil. Página principal de la ruta.
+ */
 import { obtenerDatosPerfil } from "@/actions/autenticacion";
 import { listarMisMascotas } from "@/actions/mascotas";
 import { EditorFotoPerfil } from "@/componentes/auth/EditorFotoPerfil";
 import { FormularioPerfil } from "@/componentes/auth/FormularioPerfil";
-import { ResumenCasosDueno } from "@/componentes/mascotas/ResumenCasosDueno";
+import { ResumenMisCasosPerdida } from "@/componentes/mascotas/ResumenMisCasosPerdida";
 import { Icono } from "@/componentes/ui/Icono";
 import { etiquetaRol } from "@/lib/auth/roles";
 import Link from "next/link";
@@ -41,7 +44,9 @@ export default async function PaginaPerfil() {
             </div>
             <div className="perfil-hero-lateral">
               <div className="perfil-hero-badges">
-                <span className="badge-rol">{etiquetaRol(perfil.rol)}</span>
+                {perfil.rol === "ADMINISTRADOR" && (
+                  <span className="badge-rol">{etiquetaRol(perfil.rol)}</span>
+                )}
                 {perfil.emailVerificado ? (
                   <span className="perfil-badge perfil-badge--ok">
                     <Icono nombre="checkCirculo" size={14} className="pp-icon--btn" />
@@ -121,7 +126,7 @@ export default async function PaginaPerfil() {
 
         <aside className="perfil-layout-lateral">
           {perfil.mascotasPerdidas > 0 && (
-            <ResumenCasosDueno mascotas={mascotas} />
+            <ResumenMisCasosPerdida mascotas={mascotas} />
           )}
 
           <section className="tarjeta-panel perfil-tarjeta perfil-resumen">

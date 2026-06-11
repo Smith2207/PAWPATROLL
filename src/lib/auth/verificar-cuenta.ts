@@ -1,3 +1,6 @@
+/**
+ * Autenticación y autorización: verificar-cuenta.
+ */
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, verificationTokens } from "@/lib/db/schema";

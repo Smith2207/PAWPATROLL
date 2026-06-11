@@ -1,3 +1,6 @@
+/**
+ * Chat por avistamiento: ubicacion-mensaje.
+ */
 export type UbicacionChat = {
   lat: number;
   lng: number;

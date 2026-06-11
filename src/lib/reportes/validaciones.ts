@@ -1,3 +1,6 @@
+/**
+ * Permisos y acceso a reportes de avistamiento: validaciones.
+ */
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
 

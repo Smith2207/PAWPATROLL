@@ -1,3 +1,6 @@
+/**
+ * [ui] Icono: icono.
+ */
 import {
   AlertTriangle,
   Bell,

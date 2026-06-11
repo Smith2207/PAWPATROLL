@@ -1,6 +1,9 @@
+/**
+ * Ruta /mis-mascotas. Página principal de la ruta.
+ */
 import { auth } from "@/auth";
 import { listarMisMascotas } from "@/actions/mascotas";
-import { AvisoSmtpDueño } from "@/componentes/mascotas/AvisoSmtpDueño";
+import { AvisoSmtpMascotasPerdidas } from "@/componentes/mascotas/AvisoSmtpMascotasPerdidas";
 import { TarjetaMascotaLista } from "@/componentes/mascotas/TarjetaMascotaLista";
 import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";
@@ -54,13 +57,13 @@ export default async function PaginaMisMascotas() {
           )}
         </header>
 
-        <AvisoSmtpDueño hayMascotaPerdida={perdidas > 0} />
+        <AvisoSmtpMascotasPerdidas hayMascotaPerdida={perdidas > 0} />
 
         {avistamientosPendientes > 0 && (
           <p className="mascotas-alerta-pendientes" role="status">
             Tienes <strong>{avistamientosPendientes}</strong> avistamiento
             {avistamientosPendientes === 1 ? "" : "s"} por revisar. Abre el{" "}
-            <strong>caso de búsqueda</strong> de cada mascota para enviar mensajes y
+            <strong>centro de coordinación</strong> de cada mascota para revisar reportes y
             marcar como verificado o descartado.
           </p>
         )}

@@ -1,3 +1,6 @@
+/**
+ * Chat por avistamiento: lectura-servidor.
+ */
 import { and, desc, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -79,7 +82,11 @@ export async function obtenerUltimaLecturaInterlocutor(
   duenoUserId: string,
   reportanteUserId: string | null
 ): Promise<Date | null> {
-  const otroUserId = idInterlocutorChat(miUserId, duenoUserId, reportanteUserId);
+  const otroUserId = idInterlocutorChat(
+    miUserId,
+    duenoUserId,
+    reportanteUserId
+  );
   if (!otroUserId) return null;
 
   const [fila] = await db

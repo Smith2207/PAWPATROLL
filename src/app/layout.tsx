@@ -1,3 +1,6 @@
+/**
+ * Landing pública (inicio). Layout compartido de la ruta (estructura y providers).
+ */
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AbrirLoginDesdeUrl } from "@/componentes/auth/AbrirLoginDesdeUrl";

@@ -1,18 +1,27 @@
 "use client";
 
+
+
+/**
+ * [casos] Panel: chats caso.
+ */
+/**
+ * [casos] Panel: chats caso.
+ */
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { gestionarEstadoAvistamiento } from "@/actions/avistamientos";
 import {
   listarMensajesChatAvistamiento,
-  reportarComportamientoSospechoso,
   sincronizarResumenChatsMascota,
   type ResumenChatAvistamiento,
-} from "@/actions/casos";
+} from "@/actions/chat";
+import { reportarComportamientoSospechoso } from "@/actions/casos";
+import { CabeceraCoordinacion } from "@/componentes/casos/CabeceraCoordinacion";
 import { ChatPrivadoCaso } from "@/componentes/casos/ChatPrivadoCaso";
-import { EtiquetaRolParticipante } from "@/componentes/casos/EtiquetaRolParticipante";
+import { MetaParticipanteChat } from "@/componentes/casos/MetaParticipanteChat";
 import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
-import { resolverConversacionAvistamiento } from "@/lib/chat/conversacion";
+import { resolverConversacionAvistamiento } from "@/lib/chat/participantes";
 import { previewMensajeChat } from "@/lib/chat/mensaje";
 import { rolParticipante } from "@/lib/chat/roles";
 import { horaRelativaChat } from "@/lib/chat/tiempo";
@@ -35,10 +44,18 @@ export type AvistamientoCaso = Avistamiento & {
   ultimoLeidoInterlocutorAt?: Date | null;
 };
 
+type ResumenCabecera = {
+  totalAvistamientos: number;
+  ultimoAvistamientoDireccion: string | null;
+};
+
 type Props = {
   mascota: MascotaCaso;
   avistamientos: AvistamientoCaso[];
   miUserId: string;
+  resumen: ResumenCabecera;
+  onMarcarEncontrado?: () => void;
+  marcando?: boolean;
   onAbrirContexto?: () => void;
 };
 
@@ -90,6 +107,9 @@ export function PanelChatsCaso({
   mascota,
   avistamientos: avistamientosIniciales,
   miUserId,
+  resumen,
+  onMarcarEncontrado,
+  marcando,
   onAbrirContexto,
 }: Props) {
   const router = useRouter();
@@ -219,7 +239,11 @@ export function PanelChatsCaso({
   }, [activo, miUserId, mascota.nombre, mascota.tipo]);
 
   const rolOtro = convActiva
-    ? rolParticipante(convActiva.otro.userId, activo!.duenoUserId)
+    ? rolParticipante(
+        convActiva.otro.userId,
+        activo!.duenoUserId,
+        activo!.reportanteUserId
+      )
     : null;
 
   function seleccionar(id: string) {
@@ -262,9 +286,18 @@ export function PanelChatsCaso({
   }
 
   return (
-    <div
-      className={`pp-coord-chat-grid${vistaMovil === "chat" ? " pp-coord-chat-grid--chat-activo" : ""}`}
-    >
+    <div className="pp-coord-chat-stack">
+      {mascota.estado === "PERDIDA" && (
+        <CabeceraCoordinacion
+          mascota={mascota}
+          resumen={resumen}
+          onMarcarEncontrado={onMarcarEncontrado}
+          marcando={marcando}
+        />
+      )}
+      <div
+        className={`pp-coord-chat-grid${vistaMovil === "chat" ? " pp-coord-chat-grid--chat-activo" : ""}`}
+      >
       <aside className="pp-coord-lista" aria-label="Casos activos">
         <div className="pp-coord-lista-cabecera">
           <strong>Casos activos</strong>
@@ -320,7 +353,10 @@ export function PanelChatsCaso({
                       </span>
                     </span>
                     <span className="pp-coord-lista-participante">
-                      {conv.otro.nombre}
+                      <span>{conv.otro.nombre}</span>
+                      <span className="pp-coord-avistamiento-ref">
+                        Avistamiento #{av.numeroReporte}
+                      </span>
                     </span>
                     <span className="pp-coord-lista-preview">{previewLista(av)}</span>
                   </span>
@@ -362,9 +398,14 @@ export function PanelChatsCaso({
                     {convActiva.otro.nombre.slice(0, 1).toUpperCase()}
                   </span>
                 )}
-                <div>
+                <div className="pp-coord-chat-header-identidad">
                   <strong>{convActiva.otro.nombre}</strong>
-                  {rolOtro && <EtiquetaRolParticipante rol={rolOtro} />}
+                  {rolOtro && (
+                    <MetaParticipanteChat
+                      rol={rolOtro}
+                      numeroReporte={activo.numeroReporte}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -462,6 +503,7 @@ export function PanelChatsCaso({
             />
           </>
         )}
+      </div>
       </div>
     </div>
   );

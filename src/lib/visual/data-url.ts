@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): data-url.
+ */
 export function dataUrlABuffer(dataUrl: string): {
   buffer: Buffer;
   mime: string;

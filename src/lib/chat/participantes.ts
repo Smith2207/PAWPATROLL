@@ -1,4 +1,4 @@
-/** Lógica unificada de títulos y avatares en conversaciones de chat. */
+/** Participantes y títulos en conversaciones de chat (sin BD — usable en cliente). */
 
 export const NOMBRE_USUARIO_ANONIMO = "Usuario";
 
@@ -32,7 +32,6 @@ export function crearParticipante(
   };
 }
 
-/** Excluye al usuario autenticado y devuelve el otro participante. */
 export function resolverOtroParticipante(
   miUserId: string,
   dueno: ParticipanteConversacion,
@@ -87,13 +86,9 @@ export function resolverConversacionAvistamiento(
     datos.tipoMascota
   );
 
-  return {
-    otro,
-    mascotaLinea,
-  };
+  return { otro, mascotaLinea };
 }
 
-/** Título de notificación de mensaje: el remitente es «el otro» para quien recibe. */
 export function tituloNotificacionMensaje(
   nombreRemitente: string | null | undefined,
   nombreMascota?: string | null,

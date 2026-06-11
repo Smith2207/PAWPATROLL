@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * Hook React: respaldo actualizacion.
+ */
+/**
+ * Hook React: respaldo actualizacion.
+ */
 import { useEffect } from "react";
 
 /** Actualiza datos cada N ms cuando el WebSocket no está conectado (p. ej. en Vercel). */

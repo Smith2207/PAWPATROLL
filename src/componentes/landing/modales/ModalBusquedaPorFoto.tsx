@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Modal: busqueda por foto.
+ */
+/**
+ * [landing] Modal: busqueda por foto.
+ */
 import { ModalContenedor } from "@/componentes/landing/modales/ModalContenedor";
 import { EncabezadoModalReporte } from "@/componentes/landing/modales/ui/EncabezadoModalReporte";
 import { Icono } from "@/componentes/ui/Icono";

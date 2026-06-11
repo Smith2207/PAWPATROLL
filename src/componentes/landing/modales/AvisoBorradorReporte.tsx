@@ -1,3 +1,6 @@
+/**
+ * [landing] Componente React: aviso borrador reporte.
+ */
 type Props = {
   visible?: boolean;
 };

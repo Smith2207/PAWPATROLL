@@ -1,3 +1,6 @@
+/**
+ * Librería (borrador): crear-borrador-cliente.
+ */
 import {
   guardarExitoSession,
   guardarJsonSession,

@@ -1,3 +1,6 @@
+/**
+ * [landing] Encabezado: modal reporte.
+ */
 import {
   BotonCerrarModal,
 } from "@/componentes/landing/modales/ModalContenedor";

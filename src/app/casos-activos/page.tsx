@@ -1,3 +1,6 @@
+/**
+ * Ruta /casos-activos. Página principal de la ruta.
+ */
 import { listarMascotasPerdidasPublicas } from "@/actions/mascotas";
 import { ContenedorPublico } from "@/componentes/landing/ContenedorPublico";
 import { PaginaCasosActivos } from "@/componentes/landing/PaginaCasosActivos";

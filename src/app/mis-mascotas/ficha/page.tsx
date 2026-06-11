@@ -1,3 +1,6 @@
+/**
+ * Ruta /mis-mascotas/ficha. Página principal de la ruta.
+ */
 import { obtenerContactoPerfil } from "@/actions/autenticacion";
 import { auth } from "@/auth";
 import { EncabezadoModuloMascotas } from "@/componentes/mascotas/EncabezadoModuloMascotas";

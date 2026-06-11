@@ -1,3 +1,6 @@
+/**
+ * [formulario] Campo: acceso exterior.
+ */
 import {
   ayudaCampoAccesoExterior,
   etiquetaCampoAccesoExterior,

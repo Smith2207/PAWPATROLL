@@ -1,6 +1,6 @@
 -- Ejecutar en Neon SQL Editor o con: npm run db:push
 
-CREATE TYPE "public"."rol" AS ENUM('CIUDADANO', 'DUENO', 'ADMINISTRADOR');
+CREATE TYPE "public"."rol" AS ENUM('USUARIO', 'ADMINISTRADOR');
 
 CREATE TABLE IF NOT EXISTS "user" (
   "id" text PRIMARY KEY NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS "user" (
   "emailVerified" timestamp,
   "image" text,
   "password_hash" text,
-  "rol" "rol" DEFAULT 'CIUDADANO' NOT NULL
+  "rol" "rol" DEFAULT 'USUARIO' NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "account" (

@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Componente React: selector ubicacion mapa.
+ */
+/**
+ * [landing] Componente React: selector ubicacion mapa.
+ */
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";

@@ -1,5 +1,13 @@
 "use server";
 
+
+
+/**
+ * Server Actions (casos › abuso): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (casos › abuso): operaciones de servidor invocadas desde la UI.
+ */
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -14,7 +22,7 @@ import {
   registrarEventoCaso,
 } from "@/lib/casos/servicio-caso";
 import { sesionUsuario } from "@/lib/auth/sesion-servidor";
-import { puedeAccederChatAvistamiento } from "@/actions/casos/acceso";
+import { puedeAccederChatAvistamiento } from "@/actions/chat/acceso";
 
 export async function reportarComportamientoSospechoso(
   avistamientoId: string,
@@ -59,7 +67,7 @@ export async function reportarComportamientoSospechoso(
     await registrarEventoCaso({
       mascotaId: av.mascotaId,
       avistamientoId,
-      tipo: "MENSAJE_ENVIADO",
+      tipo: "REPORTE_ABUSO",
       titulo: "Reporte de comportamiento enviado a moderación",
       actorUserId: userId,
     });

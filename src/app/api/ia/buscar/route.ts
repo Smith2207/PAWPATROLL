@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/ia/buscar): endpoint ia › buscar.
+ */
 import type { FiltrosBusquedaVisual } from "@/lib/visual/rerank";
 import {
   validarArchivoImagen,

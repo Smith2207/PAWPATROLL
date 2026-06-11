@@ -1,5 +1,13 @@
 "use server";
 
+
+
+/**
+ * Server Actions (avistamientos): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (avistamientos): operaciones de servidor invocadas desde la UI.
+ */
 import { and, asc, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -22,10 +30,15 @@ import {
   registrarEventoCaso,
   usuarioAceptaNotificacionesEmail,
 } from "@/lib/casos/servicio-caso";
-import { tituloNotificacionMensaje } from "@/lib/chat/conversacion";
+import { tituloNotificacionMensaje } from "@/lib/chat/participantes";
+import { listarReportesConMensajesPorMascota } from "@/lib/avistamientos/consultas";
+import {
+  puedeAccederReporte,
+  puedeGestionarReporte,
+} from "@/lib/reportes/acceso";
 import { ETIQUETA_MENSAJE_FOTO } from "@/lib/chat/mensaje";
 import { esAdjuntoChatValido } from "@/lib/storage/blob-chat";
-import { esDuenoMascota, sesionUsuario } from "@/lib/auth/sesion-servidor";
+import { sesionUsuario } from "@/lib/auth/sesion-servidor";
 
 export type DatosAvistamiento = {
   mascotaId?: string;
@@ -298,44 +311,9 @@ export async function crearAvistamiento(
 
 export async function listarAvistamientosPorMascota(
   mascotaId: string,
-  opciones?: { incluirDescartados?: boolean; dueno?: boolean }
+  opciones?: { incluirDescartados?: boolean; vistaDueno?: boolean }
 ) {
-  const condiciones = [eq(avistamientos.mascotaId, mascotaId)];
-  if (!opciones?.incluirDescartados && !opciones?.dueno) {
-    condiciones.push(ne(avistamientos.estado, "DESCARTADO"));
-  }
-
-  const lista = await db
-    .select()
-    .from(avistamientos)
-    .where(and(...condiciones))
-    .orderBy(desc(avistamientos.numeroReporte));
-
-  if (lista.length === 0) return [];
-
-  const incluirMensajes = Boolean(opciones?.dueno);
-  if (!incluirMensajes) {
-    return lista.map((av) => ({ ...av, mensajes: [] }));
-  }
-
-  const ids = lista.map((a) => a.id);
-  const mensajes = await db
-    .select()
-    .from(mensajesAvistamiento)
-    .where(inArray(mensajesAvistamiento.avistamientoId, ids))
-    .orderBy(asc(mensajesAvistamiento.createdAt));
-
-  const porAvistamiento = new Map<string, typeof mensajes>();
-  for (const m of mensajes) {
-    const arr = porAvistamiento.get(m.avistamientoId) ?? [];
-    arr.push(m);
-    porAvistamiento.set(m.avistamientoId, arr);
-  }
-
-  return lista.map((av) => ({
-    ...av,
-    mensajes: porAvistamiento.get(av.id) ?? [],
-  }));
+  return listarReportesConMensajesPorMascota(mascotaId, opciones);
 }
 
 export async function gestionarEstadoAvistamiento(
@@ -356,9 +334,11 @@ export async function gestionarEstadoAvistamiento(
     return { ok: false, error: "Avistamiento no encontrado." };
   }
 
-  const dueno = await esDuenoMascota(av.mascotaId, userId);
-  if (!dueno) {
-    return { ok: false, error: "Solo el dueño puede gestionar avistamientos." };
+  if (!(await puedeGestionarReporte(avistamientoId, userId))) {
+    return {
+      ok: false,
+      error: "Solo el dueño de la mascota puede verificar o descartar reportes.",
+    };
   }
 
   await db
@@ -476,16 +456,15 @@ export async function enviarMensajeAvistamiento(
     return { ok: false, error: "Avistamiento no encontrado." };
   }
 
-  const esDueno = userId === av.mascotaUserId;
-  const esReportante = userId != null && av.av.userId === userId;
-
-  if (!esDueno && !esReportante) {
+  if (!(await puedeAccederReporte(avistamientoId, userId))) {
     return {
       ok: false,
-      error: "Solo el dueño y quien reportó pueden usar estos mensajes privados.",
+      error:
+        "Solo el dueño de la mascota o quien hizo el reporte puede usar este chat.",
     };
   }
 
+  const esDueno = userId === av.mascotaUserId;
   const destinatarioUserId = esDueno
     ? (av.av.userId ?? undefined)
     : (av.mascotaUserId ?? undefined);
@@ -632,8 +611,3 @@ export async function listarMascotasPerdidasParaSelector() {
     .limit(50);
 }
 
-export async function puedeGestionarAvistamientos(mascotaId: string) {
-  const userId = await sesionUsuario();
-  if (!userId) return false;
-  return esDuenoMascota(mascotaId, userId);
-}

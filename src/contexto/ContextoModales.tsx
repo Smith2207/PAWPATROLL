@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * Contexto React global: contexto modales.
+ */
+/**
+ * Contexto React global: contexto modales.
+ */
 import {
   createContext,
   useCallback,

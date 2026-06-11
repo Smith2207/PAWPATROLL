@@ -1,10 +1,18 @@
 "use client";
 
+
+
+/**
+ * [layout] Componente React: enlace chats nav.
+ */
+/**
+ * [layout] Componente React: enlace chats nav.
+ */
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { contarChatsNoLeidos } from "@/actions/casos";
+import { contarChatsNoLeidos } from "@/actions/chat";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import { Icono } from "@/componentes/ui/Icono";
 import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";

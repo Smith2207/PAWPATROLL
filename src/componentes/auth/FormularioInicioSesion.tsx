@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Formulario: inicio sesion.
+ */
+/**
+ * [auth] Formulario: inicio sesion.
+ */
 import { signIn, useSession } from "next-auth/react";
 import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
 import { Icono } from "@/componentes/ui/Icono";

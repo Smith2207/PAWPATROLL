@@ -1,3 +1,6 @@
+/**
+ * [landing] Componente React: aviso login antes publicar.
+ */
 type Props = {
   visible: boolean;
   mensaje: string;

@@ -1,3 +1,6 @@
+/**
+ * Script auxiliar (CLI): preprocesar-imagen.
+ */
 const TAMANO = 224;
 
 export function parseDataUrl(dataUrl) {

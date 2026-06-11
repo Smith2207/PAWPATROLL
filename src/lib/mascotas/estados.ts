@@ -1,3 +1,6 @@
+/**
+ * Dominio mascotas (fichas, estados, validación): estados.
+ */
 import type { EstadoMascota } from "@/lib/db/schema";
 import type { NombreIcono } from "@/componentes/ui/Icono";
 

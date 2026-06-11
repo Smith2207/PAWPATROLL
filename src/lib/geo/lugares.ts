@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: lugares.
+ */
 import { subtituloDesdePartes } from "@/lib/geo/partes-ubicacion";
 
 /** Resultado de búsqueda de dirección o lugar (Google Autocomplete o Nominatim). */

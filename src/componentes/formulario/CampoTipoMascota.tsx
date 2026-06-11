@@ -1,3 +1,6 @@
+/**
+ * [formulario] Campo: tipo mascota.
+ */
 import { OPCIONES_TIPO } from "@/lib/mascotas/tipos";
 
 type Props = {

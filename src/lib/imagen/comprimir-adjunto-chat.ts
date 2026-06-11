@@ -1,3 +1,6 @@
+/**
+ * Procesamiento y validación de imágenes: comprimir-adjunto-chat.
+ */
 import sharp from "sharp";
 
 const MAX_BYTES = 850_000;

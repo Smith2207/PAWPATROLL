@@ -1,3 +1,6 @@
+/**
+ * Ruta /registro. Página principal de la ruta.
+ */
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 

@@ -1,3 +1,6 @@
+/**
+ * Comportamiento predictivo (M5): zonas-refugio.
+ */
 import type { Coordenadas } from "@/lib/geo/tipos";
 import type { PerfilConductual } from "@/lib/comportamiento/conocimiento";
 

@@ -1,5 +1,8 @@
 "use server";
 
+/**
+ * Server Actions (comunidad): feed de actividad y ranking de colaboradores.
+ */
 import { db } from "@/lib/db";
 import { avistamientos, mascotas, users } from "@/lib/db/schema";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
@@ -28,7 +31,7 @@ function nombrePublico(nombre: string | null | undefined): string {
 }
 
 export async function listarActividadComunidad(
-  limite = 8
+  limite = 3
 ): Promise<ActividadComunidad[]> {
   const filas = await db
     .select({
@@ -67,7 +70,7 @@ export async function listarActividadComunidad(
     .from(mascotas)
     .where(eq(mascotas.estado, "REUNIDA"))
     .orderBy(desc(mascotas.updatedAt))
-    .limit(3);
+    .limit(limite);
 
   for (const m of reunidas) {
     actividades.push({

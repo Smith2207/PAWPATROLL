@@ -1,3 +1,6 @@
+/**
+ * Dominio mascotas (fichas, estados, validación): razas.
+ */
 const RAZAS_PERRO = [
   "Mestizo",
   "Labrador Retriever",

@@ -1,3 +1,6 @@
+/**
+ * Consultas de avistamientos: borrador-cliente.
+ */
 import type { DatosAvistamiento } from "@/actions/avistamientos";
 import { crearApiBorrador } from "@/lib/borrador/crear-borrador-cliente";
 import {

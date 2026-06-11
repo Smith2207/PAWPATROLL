@@ -1,3 +1,6 @@
+/**
+ * [mascotas] Línea de tiempo: avistamientos.
+ */
 import type { AvistamientoConMensajes } from "@/actions/avistamientos";
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 

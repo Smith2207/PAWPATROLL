@@ -1,3 +1,6 @@
+/**
+ * Comportamiento predictivo (M5): evidencia-radios.
+ */
 import {
   radioBaseEvidencia,
   resolverContextoBusqueda,

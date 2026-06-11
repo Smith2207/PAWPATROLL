@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: geocodificar.
+ */
 import {
   lugarBusquedaConCoordenadas,
   lugarBusquedaUtilizable,

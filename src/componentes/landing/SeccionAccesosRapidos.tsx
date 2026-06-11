@@ -1,3 +1,6 @@
+/**
+ * [landing] Sección: accesos rapidos.
+ */
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import Link from "next/link";

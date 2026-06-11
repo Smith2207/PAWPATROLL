@@ -1,3 +1,6 @@
+/**
+ * Configuración de Drizzle Kit para migraciones y push a Neon.
+ */
 import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 

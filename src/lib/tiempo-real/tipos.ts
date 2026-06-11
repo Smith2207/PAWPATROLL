@@ -1,3 +1,6 @@
+/**
+ * Tiempo real (WebSocket / hub): tipos.
+ */
 export type CanalTiempoReal =
   | `mascota:${string}`
   | "mapa"

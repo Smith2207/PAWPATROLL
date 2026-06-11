@@ -1,3 +1,6 @@
+/**
+ * Tiempo real (WebSocket / hub): canales-usuario.
+ */
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { avistamientos, mascotas } from "@/lib/db/schema";

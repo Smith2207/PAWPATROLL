@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Sección: mascotas recientes.
+ */
+/**
+ * [landing] Sección: mascotas recientes.
+ */
 import { useModales } from "@/contexto/ContextoModales";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";

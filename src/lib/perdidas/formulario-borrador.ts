@@ -1,3 +1,6 @@
+/**
+ * Librería (perdidas): formulario-borrador.
+ */
 import type { DatosFichaMascota } from "@/lib/db/schema";
 import { etiquetaVisibleUbicacion } from "@/lib/geo/etiqueta-ubicacion";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";

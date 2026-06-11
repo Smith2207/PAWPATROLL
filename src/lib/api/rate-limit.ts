@@ -1,3 +1,6 @@
+/**
+ * Utilidades de API (rate limit, etc.): rate-limit.
+ */
 type Bucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, Bucket>();

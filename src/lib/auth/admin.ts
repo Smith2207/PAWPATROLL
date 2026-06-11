@@ -1,3 +1,6 @@
+/**
+ * Autenticación y autorización: admin.
+ */
 import type { RolUsuario } from "@/lib/db/schema";
 
 /** Único administrador y correo de soporte del sistema */
@@ -11,8 +14,8 @@ export function esCorreoAdmin(email: string) {
   return normalizarCorreo(email) === CORREO_ADMIN_SOPORTE;
 }
 
-/** Solo el correo de soporte es administrador; el resto son miembros de la comunidad. */
+/** Solo el correo de soporte es administrador; el resto son usuarios con las mismas funciones. */
 export function rolParaNuevoUsuario(email: string): RolUsuario {
   if (esCorreoAdmin(email)) return "ADMINISTRADOR";
-  return "CIUDADANO";
+  return "USUARIO";
 }

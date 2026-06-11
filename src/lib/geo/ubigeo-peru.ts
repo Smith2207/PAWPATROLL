@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: ubigeo-peru.
+ */
 import {
   etiquetaUbicacionPeru,
   formatearNombreUbicacion,

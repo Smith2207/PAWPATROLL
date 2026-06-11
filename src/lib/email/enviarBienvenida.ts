@@ -1,3 +1,6 @@
+/**
+ * Correo transaccional (SMTP): enviar bienvenida.
+ */
 import { ETIQUETAS_ROL } from "@/lib/auth/roles";
 import type { RolUsuario } from "@/lib/db/schema";
 import { plantillaBienvenida } from "@/lib/email/plantillas";

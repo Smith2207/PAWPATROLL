@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Barra: busqueda.
+ */
+/**
+ * [landing] Barra: busqueda.
+ */
 import { useEffect, useState } from "react";
 import { useModales } from "@/contexto/ContextoModales";
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";

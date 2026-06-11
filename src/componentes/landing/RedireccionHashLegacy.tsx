@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Componente React: redireccion hash legacy.
+ */
+/**
+ * [landing] Componente React: redireccion hash legacy.
+ */
 import { HASH_A_RUTA } from "@/lib/landing/rutas";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

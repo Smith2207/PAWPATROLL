@@ -1,3 +1,6 @@
+/**
+ * Librería (borrador): publicacion-pendiente.
+ */
 import { hayAvistamientoPendienteAuth } from "@/lib/avistamientos/borrador-cliente";
 import { hayPerdidaPendienteAuth } from "@/lib/perdidas/borrador-cliente";
 

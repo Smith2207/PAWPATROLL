@@ -1,3 +1,6 @@
+/**
+ * [mascotas] Componente React: badge estado mascota.
+ */
 import { Icono } from "@/componentes/ui/Icono";
 import type { EstadoMascota } from "@/lib/db/schema";
 import { BADGE_ESTADO, ETIQUETAS_ESTADO } from "@/lib/mascotas/estados";

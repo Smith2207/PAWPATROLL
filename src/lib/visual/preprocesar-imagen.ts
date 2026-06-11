@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): preprocesar-imagen.
+ */
 import { dataUrlABuffer } from "@/lib/visual/data-url";
 
 /** Entrada estándar ViT-B/32 (CLIP) */

@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Formulario: restablecer contrasena.
+ */
+/**
+ * [auth] Formulario: restablecer contrasena.
+ */
 import { restablecerContrasenaConToken } from "@/actions/autenticacion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

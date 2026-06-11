@@ -1,3 +1,6 @@
+/**
+ * [casos] Burbuja: ubicacion chat.
+ */
 import {
   urlAbrirUbicacionEnMaps,
   urlMapaEstaticoChat,

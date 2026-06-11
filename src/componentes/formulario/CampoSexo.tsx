@@ -1,3 +1,6 @@
+/**
+ * [formulario] Campo: sexo.
+ */
 import { SEXOS } from "@/lib/mascotas/catalogos";
 
 type Props = {

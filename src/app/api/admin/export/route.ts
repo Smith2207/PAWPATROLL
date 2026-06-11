@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/admin/export): endpoint admin › export.
+ */
 import { NextRequest } from "next/server";
 import { exportarCsvAdmin } from "@/actions/admin";
 

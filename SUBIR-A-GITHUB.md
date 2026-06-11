@@ -41,7 +41,7 @@ git push -u origin main
 - **No** se sube `.env.local` (está en `.gitignore`).
 - Solo se versiona `.env.example` como plantilla.
 
-## Commits sin co-autor de IA
+## Commits solo con tu autoría
 
 Activa los hooks del repo (una sola vez por clon):
 
@@ -50,4 +50,4 @@ git config core.hooksPath .githooks
 chmod +x .githooks/prepare-commit-msg
 ```
 
-En Cursor: **Settings → Agent → desactiva la atribución de co-autor en commits** (evita que aparezcan terceros en Contributors de GitHub).
+En el editor con agente de IA: **Settings → Agent → Attribution** → desactiva **Commit Attribution** y **PR Attribution** (evita trailers de co-autor en commits y PRs).

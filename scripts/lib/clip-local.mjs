@@ -1,3 +1,6 @@
+/**
+ * Script auxiliar (CLI): clip-local.
+ */
 import { mkdir, unlink, writeFile } from "fs/promises";
 import { join } from "path";
 import { cwd } from "process";

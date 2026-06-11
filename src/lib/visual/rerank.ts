@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): rerank.
+ */
 import { umbralesVisual } from "@/lib/visual/config";
 
 export type FiltrosBusquedaVisual = {

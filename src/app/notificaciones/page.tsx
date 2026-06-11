@@ -1,3 +1,6 @@
+/**
+ * Ruta /notificaciones. Página principal de la ruta.
+ */
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 import { ListaNotificacionesPagina } from "@/componentes/notificaciones/ListaNotificacionesPagina";
 

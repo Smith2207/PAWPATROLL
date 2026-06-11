@@ -1,3 +1,6 @@
+/**
+ * Landing pública (inicio). Página principal de la ruta.
+ */
 import { obtenerEstadisticasLanding } from "@/actions/estadisticas";
 import { listarDatosMapaPublico } from "@/actions/mapa";
 import { ContenedorPublico } from "@/componentes/landing/ContenedorPublico";

@@ -1,3 +1,6 @@
+/**
+ * [mascotas] Acceso: coordinacion.
+ */
 import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
 import Link from "next/link";
 
@@ -48,21 +51,19 @@ function textoPreview(
   avistamientosPendientes: number
 ) {
   if (totalAvistamientos === 0) {
-    return "Sin avistamientos aún — te avisamos cuando llegue uno";
+    return "Sin reportes aún — te avisamos cuando llegue uno";
   }
   const partes: string[] = [];
   partes.push(
-    `${totalAvistamientos} avistamiento${totalAvistamientos === 1 ? "" : "s"}`
+    `${totalAvistamientos} reporte${totalAvistamientos === 1 ? "" : "s"}`
   );
   if (avistamientosPendientes > 0) {
-    partes.push(
-      `${avistamientosPendientes} por revisar`
-    );
+    partes.push(`${avistamientosPendientes} por revisar`);
   }
   return partes.join(" · ");
 }
 
-export function AccesoCasoBusqueda({
+export function AccesoCoordinacion({
   mascotaId,
   nombreMascota,
   tipo,
@@ -84,7 +85,7 @@ export function AccesoCasoBusqueda({
             size={28}
           />
         </span>
-        Mensajes de {nombreMascota}
+        Coordinar {nombreMascota}
         {avistamientosPendientes > 0 && (
           <span className="acceso-caso-badge">{avistamientosPendientes}</span>
         )}
@@ -108,7 +109,7 @@ export function AccesoCasoBusqueda({
         )}
       </span>
       <span className="acceso-caso-texto">
-        <span className="acceso-caso-nombre">Mensajes de {nombreMascota}</span>
+        <span className="acceso-caso-nombre">Coordinar {nombreMascota}</span>
         <span className="acceso-caso-preview">
           {textoPreview(totalAvistamientos, avistamientosPendientes)}
         </span>

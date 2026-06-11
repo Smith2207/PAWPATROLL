@@ -1,3 +1,4 @@
+/* Estilos de login, registro, recuperación y formularios de cuenta. */
 .auth-pagina {
   min-height: calc(100vh - 68px);
   display: flex;

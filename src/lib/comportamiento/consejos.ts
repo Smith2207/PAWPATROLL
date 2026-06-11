@@ -1,3 +1,6 @@
+/**
+ * Comportamiento predictivo (M5): consejos.
+ */
 import type { PerfilConductual } from "@/lib/comportamiento/conocimiento";
 import type { CercoDinamico, PuntoAvistamientoCerco } from "@/lib/comportamiento/cerco-dinamico";
 import { etiquetaAcceso } from "@/lib/comportamiento/contexto-busqueda";

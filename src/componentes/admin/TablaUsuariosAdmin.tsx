@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [admin] Componente React: tabla usuarios admin.
+ */
+/**
+ * [admin] Componente React: tabla usuarios admin.
+ */
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
@@ -99,7 +107,7 @@ export function TablaUsuariosAdmin({ usuariosIniciales }: Props) {
                 <tr key={u.id}>
                   <td>{u.name ?? "—"}</td>
                   <td>{u.email}</td>
-                  <td>{u.rol}</td>
+                  <td>{u.rol === "ADMINISTRADOR" ? "Administrador" : "Usuario"}</td>
                   <td className="admin-tabla-num">{u.totalMascotas}</td>
                   <td className="admin-tabla-num">{u.totalAvistamientos}</td>
                   <td>

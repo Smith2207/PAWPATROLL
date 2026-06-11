@@ -1,3 +1,6 @@
+/**
+ * Chat por avistamiento: mensaje.
+ */
 import type { MensajeAvistamiento } from "@/lib/db/schema";
 import { esUrlAdjuntoMensaje } from "@/lib/chat/adjunto-mensaje";
 import { esMensajeUbicacion } from "@/lib/chat/ubicacion-mensaje";

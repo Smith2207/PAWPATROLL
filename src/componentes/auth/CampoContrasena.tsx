@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Campo: contrasena.
+ */
+/**
+ * [auth] Campo: contrasena.
+ */
 import { useState, type ReactNode } from "react";
 import { Icono } from "@/componentes/ui/Icono";
 

@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/auth/verificar-correo): endpoint auth › verificar-correo.
+ */
 import { NextResponse } from "next/server";
 import { verificarCorreoConToken } from "@/actions/autenticacion";
 import { urlBaseApp } from "@/lib/url-app";

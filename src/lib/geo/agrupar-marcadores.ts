@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: agrupar-marcadores.
+ */
 import { distanciaMetros } from "@/lib/geo/distancia";
 
 type ConCoordenadas = { id: string; lat: number; lng: number };

@@ -1,8 +1,17 @@
 "use client";
 
+
+
+/**
+ * [casos] Chat: privado caso.
+ */
+/**
+ * [casos] Chat: privado caso.
+ */
 import { useEffect, useMemo, useRef, useState, useTransition, useCallback, type ReactNode } from "react";
 import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
-import { marcarChatLeido, listarMensajesChatAvistamiento, reportarComportamientoSospechoso } from "@/actions/casos";
+import { marcarChatLeido, listarMensajesChatAvistamiento } from "@/actions/chat";
+import { reportarComportamientoSospechoso } from "@/actions/casos";
 import type { MensajeAvistamiento } from "@/lib/db/schema";
 import {
   esContenidoFotoPlaceholder,

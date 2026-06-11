@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: geolocalizar-ip.
+ */
 import { estaEnPeru } from "@/lib/geo/bounds-peru";
 
 export type ResultadoGeolocalizarIp =

@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: etiqueta-ubicacion.
+ */
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 
 export const ETIQUETA_GPS = "Tu ubicación actual";

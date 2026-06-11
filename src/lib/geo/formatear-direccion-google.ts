@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: formatear-direccion-google.
+ */
 import { normalizarTextoBusqueda } from "@/lib/geo/formatear-ubicacion";
 import { subtituloDesdePartes } from "@/lib/geo/partes-ubicacion";
 

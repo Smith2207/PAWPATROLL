@@ -1,3 +1,6 @@
+/**
+ * Ruta /verificar-correo. Página principal de la ruta.
+ */
 import { FormularioReenviarVerificacion } from "@/componentes/auth/FormularioReenviarVerificacion";
 import { Icono } from "@/componentes/ui/Icono";
 import Link from "next/link";

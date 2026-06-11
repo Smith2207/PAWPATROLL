@@ -1,3 +1,6 @@
+/**
+ * Librería (landing): mensajes-busqueda.
+ */
 import type { FiltrosBusquedaMascotasPublicas } from "@/actions/mascotas";
 
 export function hayFiltrosBusqueda(f: FiltrosBusquedaMascotasPublicas): boolean {

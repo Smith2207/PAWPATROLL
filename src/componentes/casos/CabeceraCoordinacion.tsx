@@ -1,9 +1,21 @@
 "use client";
 
-import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
-import type { Mascota } from "@/lib/db/schema";
 
-type MascotaCaso = Mascota & { fotoPrincipal: string | null };
+
+/**
+ * [casos] Componente React: cabecera coordinacion.
+ */
+/**
+ * [casos] Componente React: cabecera coordinacion.
+ */
+import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
+
+export type MascotaCabeceraCoordinacion = {
+  nombre: string;
+  tipo: string;
+  slug: string;
+  fotoPrincipal: string | null;
+};
 
 type Resumen = {
   totalAvistamientos: number;
@@ -11,7 +23,7 @@ type Resumen = {
 };
 
 type Props = {
-  mascota: MascotaCaso;
+  mascota: MascotaCabeceraCoordinacion;
   resumen: Resumen;
   onMarcarEncontrado?: () => void;
   marcando?: boolean;
@@ -85,7 +97,11 @@ export function CabeceraCoordinacion({
         <a href={urlMapa} className="pp-coord-btn">
           Ver mapa
         </a>
-        <button type="button" className="pp-coord-btn" onClick={compartir}>
+        <button
+          type="button"
+          className="pp-coord-btn pp-coord-btn--compartir"
+          onClick={compartir}
+        >
           Compartir
         </button>
         {onMarcarEncontrado && (

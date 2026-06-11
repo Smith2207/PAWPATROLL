@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/geo/buscar): endpoint geo › buscar.
+ */
 import { NextResponse } from "next/server";
 import { buscarLugares } from "@/lib/geo/proveedor-maps";
 import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";

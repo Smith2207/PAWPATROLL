@@ -1,3 +1,6 @@
+/**
+ * Cliente de base de datos Drizzle conectado a Neon.
+ */
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";

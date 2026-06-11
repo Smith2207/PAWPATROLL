@@ -1,3 +1,6 @@
+/**
+ * Ruta /buscar. Página principal de la ruta.
+ */
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 import { redirect } from "next/navigation";
 

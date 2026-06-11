@@ -1,3 +1,6 @@
+/**
+ * Utilidades del mapa Leaflet: popups-leaflet.
+ */
 import type {
   MarcadorAvistamientoMapa,
   MarcadorPerdidaMapa,

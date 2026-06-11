@@ -1,9 +1,12 @@
-import { obtenerMascotaPublica } from "@/actions/mascotas";
-import { listarDatosMapaMascota } from "@/actions/mapa";
+/**
+ * Ruta /mascota/[slug]. Página principal de la ruta.
+ */
 import {
-  listarAvistamientosPorMascota,
-  puedeGestionarAvistamientos,
-} from "@/actions/avistamientos";
+  esDuenoDeFicha,
+  obtenerMascotaPublica,
+} from "@/actions/mascotas";
+import { listarDatosMapaMascota } from "@/actions/mapa";
+import { listarAvistamientosPorMascota } from "@/actions/avistamientos";
 import { FichaPublicaMascota } from "@/componentes/mascotas/FichaPublicaMascota";
 import { notFound } from "next/navigation";
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
@@ -34,11 +37,11 @@ export default async function PaginaFichaPublicaMascota({ params }: Props) {
     ? await listarDatosMapaMascota(datos.mascota.id)
     : null;
   const esDueno = esPerdida
-    ? await puedeGestionarAvistamientos(datos.mascota.id)
+    ? await esDuenoDeFicha(datos.mascota.id)
     : false;
   const avistamientos = esPerdida
     ? await listarAvistamientosPorMascota(datos.mascota.id, {
-        dueno: esDueno,
+        vistaDueno: esDueno,
         incluirDescartados: esDueno,
       })
     : [];

@@ -9,8 +9,6 @@ import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
-import { LeyendaMapaColapsable } from "@/componentes/mapa/LeyendaMapaColapsable";
-
 const MapaPawPatrol = dynamic(
   () =>
     import("@/componentes/mapa/MapaPawPatrol").then((m) => ({
@@ -29,9 +27,15 @@ const MapaPawPatrol = dynamic(
 type Props = {
   datos: DatosMapaPublico;
   sinEncabezado?: boolean;
+  /** Bloque del mapa más estrecho y centrado (p. ej. /comunidad) */
+  centrado?: boolean;
 };
 
-export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Props) {
+export function SeccionMapa({
+  datos: datosIniciales,
+  sinEncabezado = false,
+  centrado = false,
+}: Props) {
   const [datos, setDatos] = useState(datosIniciales);
   const [filtros, setFiltros] = useState<FiltrosMapaPublico>({});
   const [miUbicacion, setMiUbicacion] = useState<UbicacionSeleccionada | null>(
@@ -84,7 +88,10 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
   const totalPerdidas = datosMapa.perdidas.length;
 
   return (
-    <section className="seccion-mapa-wrap" id="mapa">
+    <section
+      className={`seccion-mapa-wrap${centrado ? " seccion-mapa-wrap--centrado" : ""}`}
+      id="mapa"
+    >
       {!sinEncabezado && (
         <div className="seccion-mapa-header">
           <h2>Mapa de la comunidad</h2>
@@ -96,34 +103,36 @@ export function SeccionMapa({ datos: datosIniciales, sinEncabezado = false }: Pr
         </div>
       )}
 
-      <FiltrosMapa filtros={filtros} onChange={aplicarFiltros} soloPerdidas />
-
-      <div className="pp-mapa-controles">
-        <LeyendaMapaColapsable
-          items={[
-            { color: "var(--orange)", texto: "Donde se perdió la mascota" },
-          ]}
+      <div className="pp-mapa-envoltorio-filtros">
+        <MapaPawPatrol
+          datos={datosMapa}
+          altura="seccion"
+          vista="solo-perdidas"
+          mostrarCalor={false}
+          mostrarCercos={false}
+          mostrarRefugios={false}
+          marcadorUsuario={miUbicacion}
+          centrarEnUsuario={miUbicacion ?? undefined}
+          mostrarBotonGeolocalizar
+          geolocalizando={geo.cargando}
+          onGeolocalizar={() => {
+            void solicitarUbicacion();
+          }}
         />
-        <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--muted)" }}>
-          {totalPerdidas} mascota{totalPerdidas === 1 ? "" : "s"} en el mapa
-        </span>
+        <div className="pp-mapa-filtros-flotante">
+          <FiltrosMapa
+            filtros={filtros}
+            onChange={aplicarFiltros}
+            soloPerdidas
+            variante="sobre-mapa"
+            conteo={
+              <>
+                {totalPerdidas} mascota{totalPerdidas === 1 ? "" : "s"} en el mapa
+              </>
+            }
+          />
+        </div>
       </div>
-
-      <MapaPawPatrol
-        datos={datosMapa}
-        altura="seccion"
-        vista="solo-perdidas"
-        mostrarCalor={false}
-        mostrarCercos={false}
-        mostrarRefugios={false}
-        marcadorUsuario={miUbicacion}
-        centrarEnUsuario={miUbicacion ?? undefined}
-        mostrarBotonGeolocalizar
-        geolocalizando={geo.cargando}
-        onGeolocalizar={() => {
-          void solicitarUbicacion();
-        }}
-      />
       {dialogoPermiso}
     </section>
   );

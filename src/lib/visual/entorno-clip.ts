@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): entorno-clip.
+ */
 import { join } from "path";
 import { tmpdir } from "os";
 

@@ -1,3 +1,6 @@
+/**
+ * Autenticación y autorización: validacion-imagen.
+ */
 const MAX_DATA_URL_BYTES = 900_000;
 
 export function validarImagenDataUrl(url: string | null) {

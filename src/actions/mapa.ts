@@ -1,5 +1,13 @@
 "use server";
 
+
+
+/**
+ * Server Actions (mapa): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (mapa): operaciones de servidor invocadas desde la UI.
+ */
 import { and, desc, eq, gte, inArray, ne } from "drizzle-orm";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
 import { db } from "@/lib/db";

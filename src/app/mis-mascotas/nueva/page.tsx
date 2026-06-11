@@ -1,3 +1,6 @@
+/**
+ * Ruta /mis-mascotas/nueva. Página principal de la ruta.
+ */
 import { redirect } from "next/navigation";
 
 /** Ruta antigua → nueva ficha */

@@ -1,4 +1,13 @@
-export type RolConversacion = "dueno" | "testigo" | "administrador";
+/**
+ * Etiquetas de participación en una conversación de reporte (no rol de cuenta).
+ * Cada conversación está ligada 1:1 a un avistamiento.
+ */
+import {
+  papelEnConversacion,
+  type PapelParticipacion,
+} from "@/lib/casos/papel";
+
+export type RolConversacion = PapelParticipacion | "administrador";
 
 export const ETIQUETA_ROL: Record<RolConversacion, string> = {
   dueno: "Dueño",
@@ -6,13 +15,14 @@ export const ETIQUETA_ROL: Record<RolConversacion, string> = {
   administrador: "Administrador",
 };
 
-/** Rol del participante según su userId en la conversación de avistamiento */
 export function rolParticipante(
   userId: string | null | undefined,
   duenoUserId: string,
+  reportanteUserId?: string | null,
   esAdmin?: boolean
 ): RolConversacion {
-  if (esAdmin) return "administrador";
-  if (userId && userId === duenoUserId) return "dueno";
-  return "testigo";
+  return (
+    papelEnConversacion(userId, duenoUserId, reportanteUserId, esAdmin) ??
+    "testigo"
+  );
 }

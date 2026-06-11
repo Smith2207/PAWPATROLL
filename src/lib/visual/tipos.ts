@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): tipos.
+ */
 export type { FiltrosBusquedaVisual } from "@/lib/visual/rerank";
 
 export type CoincidenciaVisual = {

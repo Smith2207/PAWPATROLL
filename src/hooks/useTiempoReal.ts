@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * Hook React: tiempo real.
+ */
+/**
+ * Hook React: tiempo real.
+ */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   CanalTiempoReal,

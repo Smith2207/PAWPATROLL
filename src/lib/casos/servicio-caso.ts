@@ -1,3 +1,6 @@
+/**
+ * Coordinación de casos (dueño/testigo): servicio-caso.
+ */
 import { and, eq, gte, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {

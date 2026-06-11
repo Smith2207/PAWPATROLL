@@ -1,5 +1,13 @@
 "use server";
 
+
+
+/**
+ * Server Actions (casos › panel-coordinacion): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (casos › panel-coordinacion): operaciones de servidor invocadas desde la UI.
+ */
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -7,29 +15,30 @@ import {
   eventosCaso,
   mascotaFotos,
   mascotas,
-  mensajesAvistamiento,
   users,
 } from "@/lib/db/schema";
 import { puedeAccederCentroCoordinacion } from "@/lib/mascotas/estados";
+import { agruparMensajesPorReporte } from "@/lib/avistamientos/consultas";
 import { mensajesConAdjuntoApi } from "@/lib/chat/adjunto-mensaje";
 import {
   mapNoLeidosPorAvistamiento,
   obtenerUltimaLecturaInterlocutor,
 } from "@/lib/chat/lectura-servidor";
+import { esDuenoFicha } from "@/lib/casos/participacion";
 import {
   esAdministrador,
-  esDuenoMascota,
   obtenerSesion,
 } from "@/lib/auth/sesion-servidor";
 
-export async function obtenerCasoBusqueda(mascotaId: string) {
+/** Panel del dueño: todos los reportes y conversaciones de una mascota. */
+export async function obtenerPanelCoordinacion(mascotaId: string) {
   const sesion = await obtenerSesion();
   const userId = sesion?.user?.id ?? null;
   if (!userId) return null;
 
   const esAdmin = esAdministrador(sesion);
-  const dueno = await esDuenoMascota(mascotaId, userId);
-  if (!dueno && !esAdmin) return null;
+  const esDueno = await esDuenoFicha(mascotaId, userId);
+  if (!esDueno && !esAdmin) return null;
 
   const [mascotaRow] = await db
     .select({
@@ -71,14 +80,7 @@ export async function obtenerCasoBusqueda(mascotaId: string) {
   };
 
   const ids = avistamientosLista.map((a) => a.id);
-  const mensajes =
-    ids.length > 0
-      ? await db
-          .select()
-          .from(mensajesAvistamiento)
-          .where(inArray(mensajesAvistamiento.avistamientoId, ids))
-          .orderBy(asc(mensajesAvistamiento.createdAt))
-      : [];
+  const mensajesPorAv = await agruparMensajesPorReporte(ids);
 
   const userIds = [
     ...new Set(
@@ -95,13 +97,6 @@ export async function obtenerCasoBusqueda(mascotaId: string) {
           .where(inArray(users.id, userIds))
       : [];
   const usuariosPorId = new Map(usuarios.map((u) => [u.id, u]));
-
-  const mensajesPorAv = new Map<string, typeof mensajes>();
-  for (const m of mensajes) {
-    const arr = mensajesPorAv.get(m.avistamientoId) ?? [];
-    arr.push(m);
-    mensajesPorAv.set(m.avistamientoId, arr);
-  }
 
   const duenoNombre = mascotaRow.duenoNombre?.trim() || "Usuario";
   const duenoImagen = mascotaRow.duenoImagen ?? null;

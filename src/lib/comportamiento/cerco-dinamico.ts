@@ -1,3 +1,6 @@
+/**
+ * Comportamiento predictivo (M5): cerco-dinamico.
+ */
 import { distanciaMetros } from "@/lib/geo/distancia";
 import type { Coordenadas } from "@/lib/geo/tipos";
 

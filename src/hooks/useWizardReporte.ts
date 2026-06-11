@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * Hook React: wizard reporte.
+ */
+/**
+ * Hook React: wizard reporte.
+ */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useModales, type TipoModal, type TipoPublicandoReporte } from "@/contexto/ContextoModales";

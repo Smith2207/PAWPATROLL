@@ -1,3 +1,6 @@
+/**
+ * [landing] Componente React: pasos wizard.
+ */
 import type { PasoWizard } from "@/hooks/useWizardReporte";
 
 type Props = {

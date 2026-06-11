@@ -1,3 +1,6 @@
+/**
+ * Landing pública (inicio). Estado de carga (skeleton) de la ruta.
+ */
 export default function Cargando() {
   return (
     <div

@@ -1,3 +1,6 @@
+/**
+ * Correo transaccional (SMTP): enviar verificacion.
+ */
 import { plantillaVerificacion } from "@/lib/email/plantillas";
 import {
   correoSoporteConfigurado,

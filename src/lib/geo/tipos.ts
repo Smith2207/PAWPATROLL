@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: tipos.
+ */
 export type Coordenadas = {
   lat: number;
   lng: number;

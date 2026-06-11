@@ -1,3 +1,6 @@
+/**
+ * Ruta /admin. Página principal de la ruta.
+ */
 import {
   listarAvistamientosAdmin,
   listarReportesAbusoAdmin,

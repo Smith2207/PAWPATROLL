@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Modal: reportar avistamiento.
+ */
+/**
+ * [landing] Modal: reportar avistamiento.
+ */
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { ModalContenedor } from "@/componentes/landing/modales/ModalContenedor";

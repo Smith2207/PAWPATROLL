@@ -1,6 +1,6 @@
 # Migraciones de base de datos — PawPatrol
 
-Neon PostgreSQL + Drizzle ORM. Los archivos SQL están en `drizzle/0000` … `drizzle/0012`.
+Neon PostgreSQL + Drizzle ORM. Los archivos SQL están en `drizzle/0000` … `drizzle/0013`.
 
 ## Entorno nuevo (recomendado)
 
@@ -29,6 +29,7 @@ Ejecuta las migraciones **en orden** (solo las que aún no hayas aplicado):
 | `db:migrate-notificaciones` | 0010 | Notificaciones + lecturas chat |
 | `db:migrate-usuario-activo` | 0011 | Usuario activo |
 | `db:migrate-chat-adjunto` | 0012 | Adjuntos chat en Vercel Blob |
+| `db:migrate-roles` | 0013 | Roles `USUARIO` / `ADMINISTRADOR` (elimina CIUDADANO y DUENO) |
 
 Cada script lee `DATABASE_URL` de `.env.local` y aplica el SQL correspondiente.
 

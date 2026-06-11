@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [mascotas] Botón: reportar avistamiento.
+ */
+/**
+ * [mascotas] Botón: reportar avistamiento.
+ */
 import { useModales } from "@/contexto/ContextoModales";
 import { Icono } from "@/componentes/ui/Icono";
 import type { ReactNode } from "react";

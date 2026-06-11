@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [mascotas] Componente React: lightbox mapa ficha.
+ */
+/**
+ * [mascotas] Componente React: lightbox mapa ficha.
+ */
 import { useEffect, type ReactNode } from "react";
 import { Icono } from "@/componentes/ui/Icono";
 

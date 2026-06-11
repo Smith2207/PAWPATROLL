@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Componente React: abrir login desde url.
+ */
+/**
+ * [auth] Componente React: abrir login desde url.
+ */
 import { useModales } from "@/contexto/ContextoModales";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";

@@ -1,5 +1,8 @@
+/**
+ * API REST (/api/chat/adjunto/[id]): endpoint chat › adjunto › [id].
+ */
 import { auth } from "@/auth";
-import { puedeAccederChatAvistamiento } from "@/actions/casos";
+import { puedeAccederChatAvistamiento } from "@/actions/chat";
 import { db } from "@/lib/db";
 import { mensajesAvistamiento } from "@/lib/db/schema";
 import { leerAdjuntoChatBlob, esUrlBlobChat } from "@/lib/storage/blob-chat";

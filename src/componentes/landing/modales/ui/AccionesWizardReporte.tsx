@@ -1,3 +1,6 @@
+/**
+ * [landing] Componente React: acciones wizard reporte.
+ */
 import { Icono } from "@/componentes/ui/Icono";
 
 type Props = {

@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): etiquetas-parecido.
+ */
 export type NivelParecido = "mucho" | "algo" | "poco";
 
 export function nivelParecido(similitud: number): NivelParecido {

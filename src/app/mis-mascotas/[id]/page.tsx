@@ -1,3 +1,6 @@
+/**
+ * Ruta /mis-mascotas/[id]. Página principal de la ruta.
+ */
 import { obtenerContactoPerfil } from "@/actions/autenticacion";
 import { auth } from "@/auth";
 import { obtenerMascotaPropia } from "@/actions/mascotas";

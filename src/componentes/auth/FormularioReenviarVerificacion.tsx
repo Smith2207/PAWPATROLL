@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Formulario: reenviar verificacion.
+ */
+/**
+ * [auth] Formulario: reenviar verificacion.
+ */
 import { reenviarCorreoVerificacion } from "@/actions/autenticacion";
 import { useState } from "react";
 

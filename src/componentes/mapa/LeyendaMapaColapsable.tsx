@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [mapa] Componente React: leyenda mapa colapsable.
+ */
+/**
+ * [mapa] Componente React: leyenda mapa colapsable.
+ */
 import { useState } from "react";
 
 type Item = { color: string; texto: string };

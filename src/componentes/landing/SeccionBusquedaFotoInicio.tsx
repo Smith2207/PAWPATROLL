@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Sección: busqueda foto inicio.
+ */
+/**
+ * [landing] Sección: busqueda foto inicio.
+ */
 import { useModales } from "@/contexto/ContextoModales";
 import { Icono } from "@/componentes/ui/Icono";
 

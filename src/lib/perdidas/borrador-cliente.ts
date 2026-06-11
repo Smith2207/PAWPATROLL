@@ -1,3 +1,6 @@
+/**
+ * Librería (perdidas): borrador-cliente.
+ */
 import type { DatosFichaMascota } from "@/lib/db/schema";
 import { crearApiBorrador } from "@/lib/borrador/crear-borrador-cliente";
 import {

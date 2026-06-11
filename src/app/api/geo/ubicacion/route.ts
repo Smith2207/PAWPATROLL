@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/geo/ubicacion): endpoint geo › ubicacion.
+ */
 import { NextResponse } from "next/server";
 import { geolocalizarPorIpCliente } from "@/lib/geo/geolocalizar-ip";
 import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";

@@ -1,5 +1,13 @@
 "use server";
 
+
+
+/**
+ * Server Actions (mascotas › consultas): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (mascotas › consultas): operaciones de servidor invocadas desde la UI.
+ */
 import { and, count, desc, eq, gte, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -14,6 +22,7 @@ import {
   esTipoMascotaPermitido,
   type TipoMascota,
 } from "@/lib/mascotas/tipos";
+import { esDuenoFicha } from "@/lib/casos/participacion";
 import { sesionUsuario } from "@/lib/auth/sesion-servidor";
 import {
   adjuntarFotoPrincipal,
@@ -111,11 +120,31 @@ export async function listarMisMascotas() {
       .map((r) => [r.mascotaId, Number(r.total)])
   );
 
+  const ultimosAvist = await db
+    .select({
+      mascotaId: avistamientos.mascotaId,
+      direccion: avistamientos.direccion,
+    })
+    .from(avistamientos)
+    .where(inArray(avistamientos.mascotaId, ids))
+    .orderBy(desc(avistamientos.createdAt));
+
+  const ultimoAvistPorMascota = new Map<string, string | null>();
+  for (const fila of ultimosAvist) {
+    if (fila.mascotaId && !ultimoAvistPorMascota.has(fila.mascotaId)) {
+      ultimoAvistPorMascota.set(
+        fila.mascotaId,
+        fila.direccion?.trim() || null
+      );
+    }
+  }
+
   return lista.map((m) => ({
     ...m,
     fotoPrincipal: fotoPrincipal.get(m.id) ?? null,
     avistamientosPendientes: pendientesPorMascota.get(m.id) ?? 0,
     totalAvistamientos: totalAvistPorMascota.get(m.id) ?? 0,
+    ultimoAvistamientoDireccion: ultimoAvistPorMascota.get(m.id) ?? null,
   }));
 }
 
@@ -255,4 +284,11 @@ export async function obtenerMascotaPublica(slug: string) {
     duenoNombre: fila.duenoNombre,
     fotos,
   };
+}
+
+/** ¿La sesión es dueña de la ficha? (vista completa y gestión de reportes) */
+export async function esDuenoDeFicha(mascotaId: string) {
+  const userId = await sesionUsuario();
+  if (!userId) return false;
+  return esDuenoFicha(mascotaId, userId);
 }

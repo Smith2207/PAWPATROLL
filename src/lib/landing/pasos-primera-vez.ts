@@ -1,3 +1,6 @@
+/**
+ * Librería (landing): pasos-primera-vez.
+ */
 import type { NombreIcono } from "@/componentes/ui/Icono";
 
 export const PASOS_PRIMERA_VEZ: {

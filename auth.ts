@@ -1,3 +1,6 @@
+/**
+ * Configuración Auth.js: proveedores, callbacks JWT y sesión.
+ */
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
@@ -14,6 +17,7 @@ import {
 } from "@/lib/db/schema";
 import type { RolUsuario } from "@/lib/db/schema";
 import { normalizarCorreo, rolParaNuevoUsuario, esCorreoAdmin } from "@/lib/auth/admin";
+import { normalizarRolCuenta } from "@/lib/auth/rol-cuenta";
 import { imagenParaJwt } from "@/lib/auth/imagen-token";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -129,7 +133,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!usuario) return;
 
-        const rol = esCorreoAdmin(correo) ? "ADMINISTRADOR" : usuario.rol;
+        const rol = normalizarRolCuenta(usuario.rol, correo);
         if (usuario.rol !== rol) {
           await db.update(users).set({ rol }).where(eq(users.id, usuario.id));
         }
@@ -166,7 +170,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (user) {
         token.id = user.id;
-        token.rol = (user as { rol?: RolUsuario }).rol ?? "CIUDADANO";
+        token.rol = normalizarRolCuenta(
+          (user as { rol?: RolUsuario }).rol,
+          user.email
+        );
         token.name = user.name;
         token.picture = imagenParaJwt(user.image);
       } else if (token.email) {

@@ -1,3 +1,6 @@
+/**
+ * [landing] Formulario: wizard reporte.
+ */
 import { AvisoBorradorReporte } from "@/componentes/landing/modales/AvisoBorradorReporte";
 import { PasosWizard } from "@/componentes/landing/modales/PasosWizard";
 import type { PasoWizard } from "@/hooks/useWizardReporte";

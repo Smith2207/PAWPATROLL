@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/ia/indexar): endpoint ia › indexar.
+ */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;

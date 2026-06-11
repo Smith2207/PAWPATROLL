@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: proveedor-maps.
+ */
 import {
   etiquetaGeocodeConConsulta,
   etiquetaLegibleGeocodeGoogle,

@@ -1,3 +1,6 @@
+/**
+ * [formulario] Campo: tamano.
+ */
 import { TAMANOS } from "@/lib/mascotas/catalogos";
 
 type Props = {

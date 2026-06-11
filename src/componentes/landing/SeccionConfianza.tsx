@@ -1,3 +1,6 @@
+/**
+ * [landing] Sección: confianza.
+ */
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 
 const PUNTOS: {

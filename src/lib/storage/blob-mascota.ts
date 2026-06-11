@@ -1,3 +1,6 @@
+/**
+ * Librería (storage): blob-mascota.
+ */
 import { put } from "@vercel/blob";
 
 const EXT_POR_MIME: Record<string, string> = {

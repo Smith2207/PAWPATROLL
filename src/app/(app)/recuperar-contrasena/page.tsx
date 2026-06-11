@@ -1,3 +1,6 @@
+/**
+ * Ruta /recuperar-contrasena. Página principal de la ruta.
+ */
 import { FormularioRecuperarContrasena } from "@/componentes/auth/FormularioRecuperarContrasena";
 import { Icono } from "@/componentes/ui/Icono";
 

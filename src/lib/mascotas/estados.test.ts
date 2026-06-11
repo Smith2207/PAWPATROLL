@@ -1,3 +1,6 @@
+/**
+ * Dominio mascotas (fichas, estados, validación): estados.test.
+ */
 import { describe, expect, it } from "vitest";
 import { puedeAccederCentroCoordinacion } from "@/lib/mascotas/estados";
 

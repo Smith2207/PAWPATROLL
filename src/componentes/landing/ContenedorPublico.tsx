@@ -1,3 +1,6 @@
+/**
+ * [landing] Contenedor: publico.
+ */
 import { BarraNavegacion } from "@/componentes/landing/BarraNavegacion";
 import { PiePagina } from "@/componentes/landing/PiePagina";
 

@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [mascotas] Mapa: mascota ficha.
+ */
+/**
+ * [mascotas] Mapa: mascota ficha.
+ */
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";

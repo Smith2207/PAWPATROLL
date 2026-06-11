@@ -1,3 +1,6 @@
+/**
+ * Utilidades del mapa Leaflet: filtrar-por-mascota.
+ */
 import type { DatosMapaPublico } from "@/actions/mapa";
 
 /** Garantiza que el mapa solo muestre datos de una mascota (defensa en cliente). */

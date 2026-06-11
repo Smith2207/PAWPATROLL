@@ -1,5 +1,13 @@
 "use server";
 
+
+
+/**
+ * Server Actions (autenticacion): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (autenticacion): operaciones de servidor invocadas desde la UI.
+ */
 import bcrypt from "bcryptjs";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";

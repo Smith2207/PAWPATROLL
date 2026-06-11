@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/avistamiento/mensaje): endpoint avistamiento › mensaje.
+ */
 import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
 import {
   adjuntoDataUrl,

@@ -1,3 +1,6 @@
+/**
+ * Ruta /perfil/cambiar-contrasena. Página principal de la ruta.
+ */
 import { obtenerDatosPerfil } from "@/actions/autenticacion";
 import { FormularioCambiarContrasena } from "@/componentes/auth/FormularioCambiarContrasena";
 import { Icono } from "@/componentes/ui/Icono";

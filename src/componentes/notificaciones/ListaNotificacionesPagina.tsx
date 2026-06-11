@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [notificaciones] Componente React: lista notificaciones pagina.
+ */
+/**
+ * [notificaciones] Componente React: lista notificaciones pagina.
+ */
 import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";

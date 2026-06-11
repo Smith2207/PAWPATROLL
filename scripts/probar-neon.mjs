@@ -1,3 +1,6 @@
+/**
+ * Script de mantenimiento: probar-neon.
+ */
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 

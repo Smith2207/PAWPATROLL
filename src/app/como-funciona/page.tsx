@@ -1,3 +1,6 @@
+/**
+ * Ruta /como-funciona. Página principal de la ruta.
+ */
 import { ContenedorPublico } from "@/componentes/landing/ContenedorPublico";
 import { EncabezadoPagina } from "@/componentes/landing/EncabezadoPagina";
 import { SeccionCaracteristicas } from "@/componentes/landing/SeccionCaracteristicas";

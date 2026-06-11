@@ -1,3 +1,6 @@
+/**
+ * Dominio mascotas (fichas, estados, validación): opciones-acceso-exterior.
+ */
 import type { AccesoExterior } from "@/lib/comportamiento/contexto-busqueda";
 
 type OpcionAcceso = { value: AccesoExterior; label: string };

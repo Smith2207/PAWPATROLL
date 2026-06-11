@@ -1,3 +1,6 @@
+/**
+ * Ruta /mascota/[slug]. Página 404 de la ruta.
+ */
 import Link from "next/link";
 import { EnvolturaPaginasApp } from "@/componentes/layout/EnvolturaPaginasApp";
 

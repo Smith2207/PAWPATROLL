@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Formulario: cambiar contrasena.
+ */
+/**
+ * [auth] Formulario: cambiar contrasena.
+ */
 import { cambiarContrasenaSesion } from "@/actions/autenticacion";
 import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
 import Link from "next/link";

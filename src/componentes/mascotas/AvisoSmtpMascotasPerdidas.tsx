@@ -1,10 +1,14 @@
+/**
+ * [mascotas] Componente React: aviso smtp mascotas perdidas.
+ */
 import { correoSoporteConfigurado } from "@/lib/email/transporte";
 
 type Props = {
   hayMascotaPerdida: boolean;
 };
 
-export function AvisoSmtpDueño({ hayMascotaPerdida }: Props) {
+/** Aviso en Mis mascotas cuando hay casos activos pero SMTP no está configurado. */
+export function AvisoSmtpMascotasPerdidas({ hayMascotaPerdida }: Props) {
   if (!hayMascotaPerdida || correoSoporteConfigurado()) return null;
 
   return (

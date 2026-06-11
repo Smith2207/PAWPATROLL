@@ -1,3 +1,6 @@
+/**
+ * Búsqueda visual por foto (embeddings Gemini/CLIP): indice-visual.
+ */
 import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
 import { neon } from "@neondatabase/serverless";
 import { db } from "@/lib/db";

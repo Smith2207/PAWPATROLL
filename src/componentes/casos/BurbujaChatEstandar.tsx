@@ -1,3 +1,6 @@
+/**
+ * [casos] Burbuja: chat estandar.
+ */
 import type { ReactNode } from "react";
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 

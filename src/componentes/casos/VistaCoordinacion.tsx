@@ -1,10 +1,17 @@
 "use client";
 
+
+
+/**
+ * [casos] Vista: coordinacion.
+ */
+/**
+ * [casos] Vista: coordinacion.
+ */
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cambiarEstadoMascota } from "@/actions/mascotas";
-import { CabeceraCoordinacion } from "@/componentes/casos/CabeceraCoordinacion";
 import { PanelChatsCaso, type AvistamientoCaso } from "@/componentes/casos/PanelChatsCaso";
 import { PanelContextualCaso } from "@/componentes/casos/PanelContextualCaso";
 import { Icono } from "@/componentes/ui/Icono";
@@ -28,7 +35,7 @@ type Props = {
   miUserId: string;
 };
 
-export function VistaCasoBusqueda({
+export function VistaCoordinacion({
   mascota,
   avistamientos,
   resumen,
@@ -60,19 +67,15 @@ export function VistaCasoBusqueda({
         </Link>
       </nav>
 
-      <CabeceraCoordinacion
-        mascota={mascota}
-        resumen={resumen}
-        onMarcarEncontrado={marcarEncontrado}
-        marcando={marcando}
-      />
-
       <div className="pp-coord-layout">
-        <section className="pp-coord-principal" aria-label="Centro de coordinación">
+        <section className="pp-coord-principal" aria-label="Conversaciones por reporte">
           <PanelChatsCaso
             mascota={mascota}
             avistamientos={avistamientos}
             miUserId={miUserId}
+            resumen={resumen}
+            onMarcarEncontrado={marcarEncontrado}
+            marcando={marcando}
             onAbrirContexto={() => setCtxMovil(true)}
           />
         </section>

@@ -1,3 +1,6 @@
+/**
+ * Tiempo real (WebSocket / hub): servidor-ws.
+ */
 import { WebSocketServer, type WebSocket } from "ws";
 import type { CanalTiempoReal, MensajeClienteWs, MensajeServidorWs } from "@/lib/tiempo-real/tipos";
 import { registrarEmisorWs } from "@/lib/tiempo-real/hub";

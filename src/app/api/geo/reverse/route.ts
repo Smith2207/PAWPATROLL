@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/geo/reverse): endpoint geo › reverse.
+ */
 import { NextResponse } from "next/server";
 import { reverseGeocodeGoogle } from "@/lib/geo/proveedor-maps";
 import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";

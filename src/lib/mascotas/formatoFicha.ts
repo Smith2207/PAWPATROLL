@@ -1,3 +1,6 @@
+/**
+ * Dominio mascotas (fichas, estados, validación): formato ficha.
+ */
 export type UnidadEdad = "años" | "meses";
 
 export function componerEdad(

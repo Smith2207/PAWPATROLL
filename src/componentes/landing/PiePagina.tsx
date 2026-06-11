@@ -1,3 +1,6 @@
+/**
+ * [landing] Componente React: pie pagina.
+ */
 import { Icono } from "@/componentes/ui/Icono";
 
 export function PiePagina() {

@@ -1,3 +1,6 @@
+/**
+ * Configuración de Next.js (imágenes, experimental, etc.).
+ */
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

@@ -1,3 +1,6 @@
+/**
+ * Correo transaccional (SMTP): enviar avistamiento.
+ */
 import { obtenerTransporte, remitentePorDefecto, correoSoporteConfigurado } from "@/lib/email/transporte";
 import {
   plantillaAvistamientoNuevo,

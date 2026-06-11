@@ -1,3 +1,6 @@
+/**
+ * Librería (notificaciones): navegador.
+ */
 const CLAVE_PERMISO_SOLICITADO = "pp-notif-navegador-solicitado";
 
 export function notificacionesNavegadorDisponibles(): boolean {

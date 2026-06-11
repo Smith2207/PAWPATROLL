@@ -1,3 +1,6 @@
+/**
+ * [landing] Panel: exito reporte.
+ */
 import { BotonCerrarModal, ModalContenedor } from "@/componentes/landing/modales/ModalContenedor";
 import { Icono } from "@/componentes/ui/Icono";
 import type { TipoModal } from "@/contexto/ContextoModales";

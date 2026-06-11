@@ -1,3 +1,6 @@
+/**
+ * Geolocalización y mapas: ciudades.
+ */
 import type { UbicacionPeru } from "@/lib/geo/ubigeo-peru";
 
 export type { UbicacionPeru };

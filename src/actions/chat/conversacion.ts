@@ -1,11 +1,20 @@
 "use server";
 
-import { asc, eq, inArray } from "drizzle-orm";
+
+
+/**
+ * Server Actions (chat › conversacion): operaciones de servidor invocadas desde la UI.
+ */
+/**
+ * Server Actions (chat › conversacion): operaciones de servidor invocadas desde la UI.
+ */
+import { asc, count, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   avistamientos,
   eventosCaso,
   lecturasChat,
+  mascotaFotos,
   mascotas,
   mensajesAvistamiento,
   users,
@@ -18,12 +27,14 @@ import {
   mapUltimoMensajePorAvistamiento,
   obtenerUltimaLecturaInterlocutor,
 } from "@/lib/chat/lectura-servidor";
-import { esDuenoMascota, sesionUsuario } from "@/lib/auth/sesion-servidor";
+import { esDuenoFicha } from "@/lib/casos/participacion";
+import { sesionUsuario } from "@/lib/auth/sesion-servidor";
 import {
-  puedeAccederCasoBusqueda,
   puedeAccederChatAvistamiento,
-} from "@/actions/casos/acceso";
+  puedeAccederPanelCoordinacionMascota,
+} from "@/actions/chat/acceso";
 
+/** Conversación 1:1 con un reporte de avistamiento. */
 export async function obtenerChatPrivadoAvistamiento(avistamientoId: string) {
   const userId = await sesionUsuario();
   if (!userId || !(await puedeAccederChatAvistamiento(avistamientoId))) {
@@ -37,6 +48,7 @@ export async function obtenerChatPrivadoAvistamiento(avistamientoId: string) {
       tipoMascota: mascotas.tipo,
       slug: mascotas.slug,
       mascotaId: mascotas.id,
+      mascotaEstado: mascotas.estado,
       duenoUserId: mascotas.userId,
       duenoNombre: users.name,
       duenoImagen: users.image,
@@ -56,7 +68,7 @@ export async function obtenerChatPrivadoAvistamiento(avistamientoId: string) {
     .orderBy(asc(mensajesAvistamiento.createdAt));
 
   const esDueno = av.mascotaId
-    ? await esDuenoMascota(av.mascotaId, userId)
+    ? await esDuenoFicha(av.mascotaId, userId)
     : false;
 
   let reportanteNombre = av.av.nombreReportante?.trim() || "Usuario";
@@ -92,11 +104,54 @@ export async function obtenerChatPrivadoAvistamiento(avistamientoId: string) {
     av.av.userId ?? null
   );
 
+  let fotoPrincipal: string | null = null;
+  let totalAvistamientos = 0;
+  let ultimoAvistamientoDireccion: string | null = null;
+
+  if (av.mascotaId) {
+    const [fotoRow] = await db
+      .select({ url: mascotaFotos.url })
+      .from(mascotaFotos)
+      .where(eq(mascotaFotos.mascotaId, av.mascotaId))
+      .orderBy(mascotaFotos.orden)
+      .limit(1);
+    fotoPrincipal = fotoRow?.url ?? null;
+
+    const [totalRow] = await db
+      .select({ n: count() })
+      .from(avistamientos)
+      .where(eq(avistamientos.mascotaId, av.mascotaId));
+    totalAvistamientos = Number(totalRow?.n ?? 0);
+
+    const [ultimoRow] = await db
+      .select({ direccion: avistamientos.direccion })
+      .from(avistamientos)
+      .where(eq(avistamientos.mascotaId, av.mascotaId))
+      .orderBy(desc(avistamientos.createdAt))
+      .limit(1);
+    ultimoAvistamientoDireccion = ultimoRow?.direccion?.trim() || null;
+  }
+
   return {
     avistamiento: av.av,
     nombreMascota: av.nombreMascota,
     tipoMascota: av.tipoMascota,
     slug: av.slug,
+    mascota:
+      av.mascotaId && av.nombreMascota && av.tipoMascota && av.slug
+        ? {
+            id: av.mascotaId,
+            nombre: av.nombreMascota,
+            tipo: av.tipoMascota,
+            slug: av.slug,
+            estado: av.mascotaEstado ?? "PERDIDA",
+            fotoPrincipal,
+          }
+        : null,
+    resumenCabecera: {
+      totalAvistamientos,
+      ultimoAvistamientoDireccion,
+    },
     mensajes: mensajesConAdjuntoApi(mensajes),
     eventos: mapEventosParaAvistamiento(eventosFiltrados, {
       id: av.av.id,
@@ -221,12 +276,14 @@ export type ResumenChatAvistamiento = {
   ultimoActividad: Date | null;
 };
 
-/** Actualiza badges y previews de la lista lateral del caso (cliente). */
+/** Resúmenes de conversaciones del panel de coordinación (dueño). */
 export async function sincronizarResumenChatsMascota(
   mascotaId: string
 ): Promise<ResumenChatAvistamiento[] | null> {
   const userId = await sesionUsuario();
-  if (!userId || !(await puedeAccederCasoBusqueda(mascotaId))) return null;
+  if (!userId || !(await puedeAccederPanelCoordinacionMascota(mascotaId))) {
+    return null;
+  }
 
   const [mascotaRow] = await db
     .select({ userId: mascotas.userId })
@@ -303,7 +360,9 @@ export async function marcarChatLeido(
     .limit(1);
 
   const destinatarioUserId =
-    av?.duenoUserId === userId ? av.reportanteUserId : av?.duenoUserId;
+    av?.duenoUserId === userId
+      ? av.reportanteUserId
+      : av?.duenoUserId;
 
   const { emitirTiempoReal } = await import("@/lib/tiempo-real/hub");
   emitirTiempoReal({

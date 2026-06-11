@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [landing] Mapa: vista hero.
+ */
+/**
+ * [landing] Mapa: vista hero.
+ */
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import type { DatosMapaPublico } from "@/actions/mapa";

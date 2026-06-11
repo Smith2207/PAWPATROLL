@@ -1,3 +1,6 @@
+/**
+ * [landing] Barra: navegacion.
+ */
 import { BarraNavegacionBase } from "@/componentes/layout/BarraNavegacionBase";
 
 export function BarraNavegacion() {

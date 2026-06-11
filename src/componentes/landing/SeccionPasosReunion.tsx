@@ -1,3 +1,6 @@
+/**
+ * [landing] Sección: pasos reunion.
+ */
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 
 const PASOS: {

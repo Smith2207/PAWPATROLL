@@ -4,9 +4,11 @@ Plataforma comunitaria para **reportar pérdidas**, **registrar avistamientos** 
 
 **Demo:** [pawpatroll.vercel.app](https://pawpatroll.vercel.app)
 
+> **Documentación del sistema (entrega académica):** [docs/DOCUMENTACION_DEL_SISTEMA.md](./docs/DOCUMENTACION_DEL_SISTEMA.md) — visión, arquitectura, BD, API, pruebas, seguridad y operación. **Word:** [docs/Documentacion_del_Sistema_PawPatrol.docx](./docs/Documentacion_del_Sistema_PawPatrol.docx) (`python3 scripts/md-a-word.py` para regenerar). **Lógica de actores:** [docs/MODELO-ACTORES-Y-PERMISOS.md](./docs/MODELO-ACTORES-Y-PERMISOS.md).
+
 > **Documentación de módulos:** ver [README-MODULOS.md](./README-MODULOS.md) — referencia completa **M1 a M7** (métodos, rutas, APIs y librerías).
 
-> **Migraciones BD:** [docs/MIGRACIONES.md](./docs/MIGRACIONES.md) · **Deploy y rutas legacy:** [docs/DEPLOY-Y-RUTAS.md](./docs/DEPLOY-Y-RUTAS.md)
+> **Migraciones BD:** [docs/MIGRACIONES.md](./docs/MIGRACIONES.md) · **Deploy y rutas legacy:** [docs/DEPLOY-Y-RUTAS.md](./docs/DEPLOY-Y-RUTAS.md) · **OpenAPI:** [docs/openapi.yaml](./docs/openapi.yaml)
 
 ## Stack
 
@@ -34,6 +36,7 @@ npm run db:migrate-gemini-768        # embeddings 768d (0009)
 npm run db:migrate-notificaciones    # notificaciones + lecturas chat (0010)
 npm run db:migrate-usuario-activo    # usuario activo (0011)
 npm run db:migrate-chat-adjunto      # adjuntos chat en blob (0012)
+npm run db:migrate-roles             # roles USUARIO / ADMINISTRADOR (0013)
 npm run test
 npm run dev
 ```
@@ -192,13 +195,29 @@ GEMINI_EMBEDDING_DIMENSION=768
 
 Respaldo sin Google: `VISUAL_PROVIDER=clip`.
 
-## Roles
+## Actores, roles y permisos
 
-| Rol | Permisos |
-|-----|----------|
-| `CIUDADANO` | Reportar pérdidas, avistamientos y gestionar sus fichas |
-| `DUENO` | Legado en BD; mismos permisos que `CIUDADANO` |
-| `ADMINISTRADOR` | `/admin`, export CSV, estadísticas |
+Guía completa: **[docs/MODELO-ACTORES-Y-PERMISOS.md](./docs/MODELO-ACTORES-Y-PERMISOS.md)**
+
+### Rol de cuenta (tabla `user.rol`)
+
+| Rol | Quién | Permisos |
+|-----|-------|----------|
+| `USUARIO` | Cualquier persona registrada | Fichas, pérdidas, avistamientos, chat, mapa, búsqueda por foto |
+| `ADMINISTRADOR` | Solo `paw.patrol.soporte@gmail.com` | Lo mismo + `/admin`, export CSV y moderación |
+
+Todos los usuarios registrados tienen **las mismas funciones de cuenta**. No hay rol «ciudadano» ni «dueño» en la BD.
+
+### Papel en un caso (dueño / testigo)
+
+En cada avistamiento, el sistema distingue **quién perdió la mascota** y **quién la reportó**:
+
+| Papel | Significado | En la BD |
+|-------|-------------|----------|
+| **Dueño** | Tiene la ficha de la mascota perdida | `mascota.user_id` |
+| **Testigo** | Reportó ese avistamiento | `avistamiento.user_id` |
+
+El chat muestra «Dueño» y «Testigo» según ese caso. La misma persona puede ser dueño en un caso y testigo en otro.
 
 ## Estructura del proyecto
 

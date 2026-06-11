@@ -1,3 +1,6 @@
+/**
+ * Autenticación y autorización: validacion-correo.
+ */
 export function esCorreoValido(correo: string): boolean {
   const limpio = correo.trim();
   if (!limpio.includes("@")) return false;

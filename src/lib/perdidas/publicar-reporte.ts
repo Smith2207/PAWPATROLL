@@ -1,3 +1,6 @@
+/**
+ * Librería (perdidas): publicar-reporte.
+ */
 import { crearMascota, cambiarEstadoMascota } from "@/actions/mascotas";
 import type { BorradorReportePerdida } from "@/lib/perdidas/borrador-cliente";
 

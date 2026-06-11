@@ -1,3 +1,6 @@
+/**
+ * Comportamiento predictivo (M5): prediccion.
+ */
 import { obtenerPerfilConductual } from "@/lib/comportamiento/conocimiento";
 import { calcularRadioBusquedaTemporal } from "@/lib/comportamiento/radio-busqueda";
 import {

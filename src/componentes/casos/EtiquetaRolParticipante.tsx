@@ -1,3 +1,6 @@
+/**
+ * [casos] Etiqueta: rol participante.
+ */
 import { ETIQUETA_ROL, type RolConversacion } from "@/lib/chat/roles";
 
 type Props = {

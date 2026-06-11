@@ -1,6 +1,8 @@
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { mascotas } from "@/lib/db/schema";
+/**
+ * Autenticación y autorización: sesion-servidor.
+ */
+import { esDuenoFicha } from "@/lib/casos/participacion";
+import { esRolAdministrador } from "@/lib/auth/rol-cuenta";
 
 /** ID del usuario autenticado o null si no hay sesión. */
 export async function sesionUsuario(): Promise<string | null> {
@@ -15,21 +17,10 @@ export async function obtenerSesion() {
   return auth();
 }
 
-export async function esDuenoMascota(
-  mascotaId: string,
-  userId: string | null
-): Promise<boolean> {
-  if (!userId) return false;
-  const [m] = await db
-    .select({ userId: mascotas.userId })
-    .from(mascotas)
-    .where(eq(mascotas.id, mascotaId))
-    .limit(1);
-  return m?.userId === userId;
-}
+export { esDuenoFicha };
 
 export function esAdministrador(
   sesion: Awaited<ReturnType<typeof obtenerSesion>>
 ): boolean {
-  return sesion?.user?.rol === "ADMINISTRADOR";
+  return esRolAdministrador(sesion?.user?.rol);
 }

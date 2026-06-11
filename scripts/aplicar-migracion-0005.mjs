@@ -1,3 +1,6 @@
+/**
+ * Script: aplica la migración SQL 0005 en Neon.
+ */
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 import { readFileSync } from "fs";

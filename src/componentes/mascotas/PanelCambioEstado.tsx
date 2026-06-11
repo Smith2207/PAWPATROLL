@@ -1,8 +1,16 @@
 "use client";
 
+
+
+/**
+ * [mascotas] Panel: cambio estado.
+ */
+/**
+ * [mascotas] Panel: cambio estado.
+ */
 import { cambiarEstadoMascota } from "@/actions/mascotas";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
-import { AccesoCasoBusqueda } from "@/componentes/mascotas/AccesoCasoBusqueda";
+import { AccesoCoordinacion } from "@/componentes/mascotas/AccesoCoordinacion";
 import type { EstadoMascota, Mascota } from "@/lib/db/schema";
 import {
   ETIQUETAS_ESTADO,
@@ -143,7 +151,7 @@ export function PanelCambioEstado({ mascota }: Props) {
 
       {mascota.estado === "PERDIDA" && (
         <div style={{ marginBottom: "1rem" }}>
-          <AccesoCasoBusqueda
+          <AccesoCoordinacion
             mascotaId={mascota.id}
             nombreMascota={mascota.nombre}
             tipo={mascota.tipo}

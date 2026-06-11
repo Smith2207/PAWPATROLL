@@ -1,3 +1,6 @@
+/**
+ * Middleware (proxy): protege rutas autenticadas y /admin.
+ */
 import { authConfig } from "../auth.config";
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";

@@ -1,3 +1,6 @@
+/**
+ * [comportamiento] Panel: comportamiento.
+ */
 import type { PrediccionComportamiento } from "@/lib/comportamiento/prediccion";
 import { Icono } from "@/componentes/ui/Icono";
 

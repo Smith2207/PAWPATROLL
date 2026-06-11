@@ -1,3 +1,6 @@
+/**
+ * Correo transaccional (SMTP): verificacion.
+ */
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";

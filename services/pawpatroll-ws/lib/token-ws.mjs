@@ -1,3 +1,6 @@
+/**
+ * Servicio WS: token-ws.
+ */
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export function secretoWs() {

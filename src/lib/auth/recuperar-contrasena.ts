@@ -1,3 +1,6 @@
+/**
+ * Autenticación y autorización: recuperar-contrasena.
+ */
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";

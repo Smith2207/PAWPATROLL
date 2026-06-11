@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [avistamientos] Componente React: subir foto avistamiento.
+ */
+/**
+ * [avistamientos] Componente React: subir foto avistamiento.
+ */
 import { useEffect, useRef } from "react";
 import { Icono } from "@/componentes/ui/Icono";
 import { useCamaraReporte } from "@/hooks/useCamaraReporte";

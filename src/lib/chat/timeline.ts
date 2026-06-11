@@ -1,3 +1,6 @@
+/**
+ * Chat por avistamiento: timeline.
+ */
 import type { EventoCaso, EventoCasoTipo, MensajeAvistamiento } from "@/lib/db/schema";
 import type { UbicacionChat } from "@/lib/chat/ubicacion-mensaje";
 
@@ -135,6 +138,8 @@ export function nombreIconoEventoTimeline(tipo: EventoCasoTipo): NombreIcono {
       return "check";
     case "AVISTAMIENTO_DESCARTADO":
       return "xCirculo";
+    case "REPORTE_ABUSO":
+      return "alerta";
     default:
       return "info";
   }
@@ -149,13 +154,15 @@ export function tituloEventoTimeline(ev: EventoCasoTimeline): string {
     case "FOTO_AGREGADA":
       return "Nueva fotografía agregada";
     case "ALERTA_ACTIVADA":
-      return "Caso de búsqueda activado";
+      return "Mascota marcada como perdida";
     case "MASCOTA_RECUPERADA":
       return "Mascota encontrada";
     case "AVISTAMIENTO_VERIFICADO":
       return "Avistamiento verificado";
     case "AVISTAMIENTO_DESCARTADO":
       return "Avistamiento descartado";
+    case "REPORTE_ABUSO":
+      return "Reporte enviado a moderación";
     case "ESTADO_CAMBIADO":
       return ev.titulo || "Estado del caso actualizado";
     default:

@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [visual] Componente React: identificacion por foto.
+ */
+/**
+ * [visual] Componente React: identificacion por foto.
+ */
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { Icono } from "@/componentes/ui/Icono";

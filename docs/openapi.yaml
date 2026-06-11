@@ -1,0 +1,259 @@
+openapi: 3.0.3
+info:
+  title: PawPatrol API
+  description: |
+    Endpoints REST del proyecto PAWPATROLL.
+    La mayoría de mutaciones usan Server Actions de Next.js (no listadas aquí).
+  version: 0.1.0
+  contact:
+    name: PawPatrol
+    url: https://pawpatroll.vercel.app
+
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+  - url: https://pawpatroll.vercel.app
+    description: Producción
+
+tags:
+  - name: auth
+    description: Verificación de cuenta
+  - name: geo
+    description: Geocodificación y lugares
+  - name: ia
+    description: Búsqueda visual por foto
+  - name: chat
+    description: Mensajes y adjuntos
+  - name: admin
+    description: Panel administrativo
+
+paths:
+  /api/auth/verificar-correo:
+    get:
+      tags: [auth]
+      summary: Verificar correo desde enlace del email
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+        - name: email
+          in: query
+          required: true
+          schema: { type: string, format: email }
+      responses:
+        "302":
+          description: Redirección tras verificación
+        "400":
+          description: Token inválido o expirado
+
+  /api/auth/verificar-cuenta:
+    get:
+      tags: [auth]
+      summary: Consultar o verificar cuenta (JSON)
+      parameters:
+        - name: email
+          in: query
+          schema: { type: string }
+        - name: token
+          in: query
+          schema: { type: string }
+        - name: estado
+          in: query
+          schema: { type: integer, enum: [1] }
+          description: "1 = solo consultar si ya está verificado"
+      responses:
+        "200":
+          description: Estado de verificación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verificado: { type: boolean }
+    post:
+      tags: [auth]
+      summary: Verificar cuenta (JSON body)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, token]
+              properties:
+                email: { type: string }
+                token: { type: string }
+      responses:
+        "200":
+          description: Resultado de verificación
+
+  /api/geo/buscar:
+    get:
+      tags: [geo]
+      summary: Autocomplete de lugares (Perú)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+      responses:
+        "200":
+          description: Lista de sugerencias
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resultados:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        placeId: { type: string }
+                        titulo: { type: string }
+                        subtitulo: { type: string }
+
+  /api/geo/lugar:
+    get:
+      tags: [geo]
+      summary: Resolver Place ID a coordenadas
+      parameters:
+        - name: place_id
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Coordenadas y dirección formateada
+
+  /api/geo/reverse:
+    get:
+      tags: [geo]
+      summary: Geocodificación inversa
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema: { type: number }
+        - name: lng
+          in: query
+          required: true
+          schema: { type: number }
+      responses:
+        "200":
+          description: Dirección aproximada
+
+  /api/geo/ubicacion:
+    post:
+      tags: [geo]
+      summary: Geolocalización aproximada por IP (servidor)
+      responses:
+        "200":
+          description: Lat/lng estimados
+
+  /api/ubigeo/buscar:
+    get:
+      tags: [geo]
+      summary: Búsqueda de ubigeo Perú
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Resultados ubigeo
+
+  /api/ia/buscar:
+    post:
+      tags: [ia]
+      summary: Búsqueda visual por foto
+      description: Rate limit por IP. Envía imagen en base64 o data URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imagen: { type: string, description: Data URL base64 }
+                tipo: { type: string }
+                tamano: { type: string }
+      responses:
+        "200":
+          description: Coincidencias ordenadas por score
+        "429":
+          description: Rate limit excedido
+
+  /api/ia/indexar:
+    post:
+      tags: [ia]
+      summary: Indexar embedding de mascota perdida
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mascotaId: { type: string }
+      responses:
+        "200":
+          description: Indexación completada
+        "401":
+          description: Sin sesión
+
+  /api/avistamiento/mensaje:
+    post:
+      tags: [chat]
+      summary: Enviar mensaje rápido en avistamiento
+      security: [{ cookieAuth: [] }]
+      responses:
+        "200":
+          description: Mensaje guardado
+
+  /api/chat/adjunto/{id}:
+    get:
+      tags: [chat]
+      summary: Descargar adjunto de chat (privado)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Archivo binario
+        "403":
+          description: Sin permiso
+
+  /api/ws/token:
+    get:
+      tags: [chat]
+      summary: Obtener token firmado para WebSocket
+      security: [{ cookieAuth: [] }]
+      responses:
+        "200":
+          description: Token HMAC temporal
+
+  /api/admin/export:
+    get:
+      tags: [admin]
+      summary: Exportar datos CSV (solo administrador)
+      security: [{ cookieAuth: [] }]
+      responses:
+        "200":
+          description: Archivo CSV
+        "403":
+          description: Rol insuficiente
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: authjs.session-token
+      description: Sesión Auth.js (JWT en cookie)

@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+
+
+/**
+ * [mapa] Mapa: paw patrol.
+ */
+/**
+ * [mapa] Mapa: paw patrol.
+ */
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { datosMapaDeUnaMascota } from "@/lib/mapa/filtrar-por-mascota";
 import L from "leaflet";
 import "leaflet.heat";
@@ -140,6 +148,8 @@ type Props = {
   mostrarBotonGeolocalizar?: boolean;
   geolocalizando?: boolean;
   onGeolocalizar?: () => void;
+  /** Etiqueta flotante sobre el mapa (p. ej. conteo de mascotas) */
+  etiquetaSuperior?: ReactNode;
 };
 
 function calcularCentro(datos: DatosMapaPublico | undefined): Coordenadas {
@@ -207,6 +217,7 @@ export function MapaPawPatrol({
   mostrarBotonGeolocalizar = false,
   geolocalizando = false,
   onGeolocalizar,
+  etiquetaSuperior,
 }: Props) {
   const datos = useMemo(() => {
     if (!datosProp) return undefined;
@@ -701,6 +712,11 @@ export function MapaPawPatrol({
             : "Mapa interactivo PawPatrol"
         }
       />
+      {etiquetaSuperior ? (
+        <div className="pp-mapa-etiqueta-superior" aria-live="polite">
+          {etiquetaSuperior}
+        </div>
+      ) : null}
       {mostrarBotonGeolocalizar && onGeolocalizar && (
         <button
           type="button"

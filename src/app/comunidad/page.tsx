@@ -41,13 +41,21 @@ export default async function PaginaComunidad() {
 
   return (
     <ContenedorPublico errorCarga={errorCarga}>
-      <EncabezadoPagina
-        eyebrow="Mapa en vivo"
-        titulo="Comunidad"
-        descripcion="Ubicación de mascotas perdidas en el mapa. Zonas de búsqueda, avistamientos y refugios probables en la página de cada una."
-      />
-      <SeccionMapa datos={datosMapa} sinEncabezado />
-      <SeccionFeedComunidad actividad={actividad} colaboradores={colaboradores} />
+      <div className="pp-comunidad-pagina">
+        <EncabezadoPagina
+          eyebrow="Mapa en vivo"
+          titulo="Comunidad"
+          descripcion="Ubicación de mascotas perdidas en el mapa. "
+        />
+        <div className="pp-comunidad-cuerpo">
+          <SeccionMapa datos={datosMapa} sinEncabezado centrado />
+          <SeccionFeedComunidad
+            actividad={actividad}
+            colaboradores={colaboradores}
+            lateral
+          />
+        </div>
+      </div>
     </ContenedorPublico>
   );
 }

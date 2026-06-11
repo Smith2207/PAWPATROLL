@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/ws/token): endpoint ws › token.
+ */
 import { auth } from "@/auth";
 import { canalesTiempoRealUsuario } from "@/lib/tiempo-real/canales-usuario";
 import { crearTokenSuscripcionWs } from "@/lib/tiempo-real/token-ws";

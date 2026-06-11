@@ -1,3 +1,6 @@
+/**
+ * [mascotas] Tarjeta: mascota lista.
+ */
 import { esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
 
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";

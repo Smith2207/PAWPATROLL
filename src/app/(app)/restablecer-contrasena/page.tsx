@@ -1,3 +1,6 @@
+/**
+ * Ruta /restablecer-contrasena. Página principal de la ruta.
+ */
 import { FormularioRestablecerContrasena } from "@/componentes/auth/FormularioRestablecerContrasena";
 import { Icono } from "@/componentes/ui/Icono";
 import { validarTokenRecuperacion } from "@/lib/auth/recuperar-contrasena";

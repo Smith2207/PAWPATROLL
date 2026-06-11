@@ -1,3 +1,6 @@
+/**
+ * [mascotas] Encabezado: modulo mascotas.
+ */
 import Link from "next/link";
 
 type Props = {

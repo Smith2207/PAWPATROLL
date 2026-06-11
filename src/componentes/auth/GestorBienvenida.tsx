@@ -1,5 +1,13 @@
 "use client";
 
+
+
+/**
+ * [auth] Gestor: bienvenida.
+ */
+/**
+ * [auth] Gestor: bienvenida.
+ */
 import { obtenerEstadoBienvenida } from "@/actions/autenticacion";
 import { ModalBienvenida } from "@/componentes/auth/ModalBienvenida";
 import { useSession } from "next-auth/react";

@@ -1,3 +1,6 @@
+/**
+ * Correo transaccional (SMTP): enviar recuperacion.
+ */
 import { plantillaRecuperarContrasena } from "@/lib/email/plantillas";
 import {
   correoSoporteConfigurado,

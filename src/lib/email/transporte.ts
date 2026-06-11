@@ -1,3 +1,6 @@
+/**
+ * Correo transaccional (SMTP): transporte.
+ */
 import nodemailer from "nodemailer";
 
 function contrasenaSmtp() {

@@ -1,3 +1,6 @@
+/**
+ * [layout] Componente React: envoltura paginas app.
+ */
 import { BarraNavegacionApp } from "@/componentes/layout/BarraNavegacionApp";
 import { PiePagina } from "@/componentes/landing/PiePagina";
 

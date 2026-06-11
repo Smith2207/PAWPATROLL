@@ -1,4 +1,7 @@
-import { AccesoCasoBusqueda } from "@/componentes/mascotas/AccesoCasoBusqueda";
+/**
+ * [mascotas] Componente React: resumen mis casos perdida.
+ */
+import { AccesoCoordinacion } from "@/componentes/mascotas/AccesoCoordinacion";
 import type { EstadoMascota } from "@/lib/db/schema";
 
 type MascotaCaso = {
@@ -15,7 +18,8 @@ type Props = {
   mascotas: MascotaCaso[];
 };
 
-export function ResumenCasosDueno({ mascotas }: Props) {
+/** Fichas propias en estado PERDIDA (casos donde el usuario es dueño de la ficha). */
+export function ResumenMisCasosPerdida({ mascotas }: Props) {
   const perdidas = mascotas.filter((m) => m.estado === "PERDIDA");
   if (perdidas.length === 0) return null;
 
@@ -27,14 +31,12 @@ export function ResumenCasosDueno({ mascotas }: Props) {
     >
       <header className="mascotas-casos-resumen-cabecera">
         <h2 id="mascotas-casos-titulo">Tus mensajes</h2>
-        <p>
-          Toca una mascota para ver conversaciones y avistamientos.
-        </p>
+        <p>Toca una mascota para ver conversaciones y avistamientos.</p>
       </header>
       <ul className="mascotas-casos-resumen-lista">
         {perdidas.map((m) => (
           <li key={m.id}>
-            <AccesoCasoBusqueda
+            <AccesoCoordinacion
               mascotaId={m.id}
               nombreMascota={m.nombre}
               tipo={m.tipo}

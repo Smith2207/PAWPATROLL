@@ -1,3 +1,6 @@
+/**
+ * API REST (/api/geo/lugar): endpoint geo › lugar.
+ */
 import { NextResponse } from "next/server";
 import { resolverLugarGoogle } from "@/lib/geo/proveedor-maps";
 import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";

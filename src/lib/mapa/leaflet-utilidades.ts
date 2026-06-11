@@ -1,3 +1,6 @@
+/**
+ * Utilidades del mapa Leaflet: leaflet-utilidades.
+ */
 import L from "leaflet";
 import "leaflet.heat";
 

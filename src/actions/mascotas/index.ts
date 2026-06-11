@@ -1,3 +1,6 @@
+/**
+ * Barrel: reexporta acciones del módulo mascotas.
+ */
 export type { FiltrosBusquedaMascotasPublicas } from "@/actions/mascotas/consultas";
 
 export {
@@ -6,6 +9,7 @@ export {
   listarMascotasPerdidasPublicas,
   obtenerMascotaPropia,
   obtenerMascotaPublica,
+  esDuenoDeFicha,
 } from "@/actions/mascotas/consultas";
 
 export {

@@ -1,3 +1,6 @@
+/**
+ * Chat por avistamiento: mensaje.test.
+ */
 import { describe, expect, it } from "vitest";
 import {
   etiquetaFechaChat,

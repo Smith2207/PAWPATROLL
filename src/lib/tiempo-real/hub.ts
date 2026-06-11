@@ -1,3 +1,6 @@
+/**
+ * Tiempo real (WebSocket / hub): hub.
+ */
 import type { CanalTiempoReal, EventoTiempoReal } from "@/lib/tiempo-real/tipos";
 import { canalesParaEvento as canalesParaEventoCompartido } from "@/services/pawpatroll-ws/lib/canales-para-evento.mjs";
 
