@@ -1,7 +1,7 @@
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 
-/** Ubicación aproximada vía Google Geolocation API (servidor, ~1–2 s en PC). */
-export async function obtenerUbicacionViaGoogle(): Promise<UbicacionSeleccionada | null> {
+/** Ubicación aproximada por IP del visitante (respaldo si falla el GPS). */
+export async function obtenerUbicacionViaRed(): Promise<UbicacionSeleccionada | null> {
   try {
     const res = await fetch("/api/geo/ubicacion", { method: "POST" });
     if (!res.ok) return null;
@@ -21,7 +21,7 @@ export async function obtenerUbicacionViaGoogle(): Promise<UbicacionSeleccionada
       !Number.isFinite(data.lng)
     ) {
       if (process.env.NODE_ENV === "development" && data.detalle) {
-        console.warn("[Google Geolocation]", data.error, data.detalle);
+        console.warn("[geo/red]", data.error, data.detalle);
       }
       return null;
     }
@@ -47,3 +47,6 @@ export function elegirMejorUbicacion(
   const pb = b.precisionMetros ?? Number.POSITIVE_INFINITY;
   return pa <= pb ? a : b;
 }
+
+/** @deprecated Usar obtenerUbicacionViaRed */
+export const obtenerUbicacionViaGoogle = obtenerUbicacionViaRed;

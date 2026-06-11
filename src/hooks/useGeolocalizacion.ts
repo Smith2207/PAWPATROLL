@@ -2,10 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { obtenerDireccionDesdeCoords } from "@/lib/geo/geocodificar";
-import {
-  elegirMejorUbicacion,
-  obtenerUbicacionViaGoogle,
-} from "@/lib/geo/ubicacion-cliente";
 import type { Coordenadas, UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { CENTRO_MAPA_DEFECTO } from "@/lib/geo/tipos";
 import { ETIQUETA_GPS } from "@/lib/geo/etiqueta-ubicacion";
@@ -20,11 +16,12 @@ export type ResultadoUbicacion =
   | { ok: true; ubicacion: UbicacionSeleccionada }
   | { ok: false; error: string };
 
-const PRECISION_IDEAL_M = 30;
-const PRECISION_ACEPTABLE_M = 150;
-const TIEMPO_ASENTAR_MS = 2_000;
-const ESPERA_RAPIDA_MS = 6_000;
-const ESPERA_PRECISA_MS = 10_000;
+const PRECISION_IDEAL_M = 40;
+const PRECISION_ACEPTABLE_M = 250;
+const TIEMPO_ASENTAR_MS = 800;
+const ESPERA_CACHE_MS = 3_000;
+const ESPERA_GPS_MS = 12_000;
+const MAX_EDAD_CACHE_MS = 120_000;
 
 function leerPosicion(pos: GeolocationPosition): UbicacionSeleccionada {
   return {
@@ -37,20 +34,39 @@ function leerPosicion(pos: GeolocationPosition): UbicacionSeleccionada {
 function mensajeErrorGeolocalizacion(code: number | undefined): string {
   switch (code) {
     case 1:
-      return "Permiso de ubicación denegado. Pulsa Ubicarme en el mapa o toca el mapa para marcar el punto.";
+      return "Permiso de ubicación denegado. Activa el GPS en el navegador o marca el punto en el mapa.";
     case 2:
-      return "Sin señal GPS clara. Sal al exterior o marca el punto en el mapa.";
+      return "No hay señal GPS. En el celular activa la ubicación; en PC prueba cerca de una ventana o marca en el mapa.";
     case 3:
-      return "No obtuvimos tu ubicación a tiempo. Pulsa Ubicarme en el mapa otra vez, o toca el mapa.";
+      return "El GPS tardó demasiado. Intenta de nuevo al aire libre o marca el punto en el mapa.";
     default:
-      return "No pudimos ubicarte. Pulsa Ubicarme en el mapa o busca una dirección.";
+      return "No obtuvimos tu posición por GPS. Marca el punto en el mapa o escribe la dirección.";
   }
 }
 
-/** Muestreos GPS del navegador (en paralelo con Google Maps). */
+/** Última lectura GPS del navegador (solo alta precisión, sin ubicación por red/IP). */
+function lecturaGpsCacheada(): Promise<UbicacionSeleccionada | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation || !window.isSecureContext) {
+      resolve(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve(leerPosicion(pos)),
+      () => resolve(null),
+      {
+        enableHighAccuracy: true,
+        maximumAge: MAX_EDAD_CACHE_MS,
+        timeout: ESPERA_CACHE_MS,
+      }
+    );
+  });
+}
+
 function esperarMejorPosicion(
-  enableHighAccuracy: boolean,
-  maxEsperaMs: number
+  maxEsperaMs: number,
+  onProvisional?: (ubicacion: UbicacionSeleccionada) => void
 ): Promise<{ pos: GeolocationPosition | null; errorCode?: number }> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
@@ -65,8 +81,8 @@ function esperarMejorPosicion(
     let temporizadorAsentar: number | null = null;
 
     const opciones: PositionOptions = {
-      enableHighAccuracy,
-      maximumAge: enableHighAccuracy ? 15_000 : 120_000,
+      enableHighAccuracy: true,
+      maximumAge: 0,
       timeout: maxEsperaMs,
     };
 
@@ -88,6 +104,11 @@ function esperarMejorPosicion(
       if (!mejor || pos.coords.accuracy < mejor.coords.accuracy) {
         mejor = pos;
       }
+
+      if (onProvisional) {
+        onProvisional(leerPosicion(pos));
+      }
+
       if (pos.coords.accuracy <= PRECISION_IDEAL_M) {
         finalizar();
         return;
@@ -118,7 +139,9 @@ function esperarMejorPosicion(
   });
 }
 
-async function obtenerPosicionNavegador(): Promise<{
+async function obtenerPosicionGps(
+  onProvisional?: (ubicacion: UbicacionSeleccionada) => void
+): Promise<{
   ubicacion: UbicacionSeleccionada | null;
   errorCode?: number;
 }> {
@@ -126,31 +149,39 @@ async function obtenerPosicionNavegador(): Promise<{
     return { ubicacion: null };
   }
 
-  let { pos, errorCode } = await esperarMejorPosicion(false, ESPERA_RAPIDA_MS);
-
-  if (!pos || pos.coords.accuracy > PRECISION_ACEPTABLE_M) {
-    const precisa = await esperarMejorPosicion(true, ESPERA_PRECISA_MS);
-    if (
-      precisa.pos &&
-      (!pos || precisa.pos.coords.accuracy < pos.coords.accuracy)
-    ) {
-      pos = precisa.pos;
-      errorCode = undefined;
-    } else if (!pos) {
-      errorCode = precisa.errorCode ?? errorCode;
-    }
+  const cache = await lecturaGpsCacheada();
+  if (cache && (cache.precisionMetros ?? Infinity) <= PRECISION_ACEPTABLE_M) {
+    onProvisional?.(cache);
+    return { ubicacion: cache };
   }
 
-  return {
-    ubicacion: pos ? leerPosicion(pos) : null,
-    errorCode,
-  };
+  const { pos, errorCode } = await esperarMejorPosicion(
+    ESPERA_GPS_MS,
+    onProvisional
+  );
+
+  if (pos) {
+    return { ubicacion: leerPosicion(pos) };
+  }
+
+  if (cache) {
+    return { ubicacion: cache, errorCode };
+  }
+
+  return { ubicacion: null, errorCode };
 }
 
 function etiquetaProvisional(base: UbicacionSeleccionada): string {
   const aviso = textoPrecisionGps(base.precisionMetros);
   if (aviso) return aviso;
   return ETIQUETA_GPS;
+}
+
+function esMasPrecisa(
+  a: UbicacionSeleccionada,
+  b: UbicacionSeleccionada
+): boolean {
+  return (a.precisionMetros ?? Infinity) < (b.precisionMetros ?? Infinity);
 }
 
 export function useGeolocalizacion(opciones: OpcionesUbicacion = {}) {
@@ -170,90 +201,88 @@ export function useGeolocalizacion(opciones: OpcionesUbicacion = {}) {
     onUbicacionRef.current?.(u);
   }, []);
 
-  const completarUbicacion = useCallback(async (base: UbicacionSeleccionada) => {
-    const provisional: UbicacionSeleccionada = {
-      ...base,
-      etiqueta: etiquetaProvisional(base),
-    };
-    publicarUbicacion(provisional);
+  const enriquecerConDireccion = useCallback(
+    async (base: UbicacionSeleccionada) => {
+      const direccion = await obtenerDireccionDesdeCoords(
+        base.lat,
+        base.lng,
+        base.precisionMetros
+      );
 
-    const direccion = await obtenerDireccionDesdeCoords(
-      base.lat,
-      base.lng,
-      base.precisionMetros
-    );
+      const avisoPrecision = textoPrecisionGps(base.precisionMetros);
+      let etiqueta = direccion ?? base.etiqueta ?? ETIQUETA_GPS;
+      if (avisoPrecision && direccion) {
+        etiqueta = `${direccion} · ±${Math.round(base.precisionMetros ?? 0)} m`;
+      } else if (avisoPrecision) {
+        etiqueta = avisoPrecision;
+      }
 
-    const avisoPrecision = textoPrecisionGps(base.precisionMetros);
-    let etiqueta = direccion ?? ETIQUETA_GPS;
-    if (avisoPrecision && direccion) {
-      etiqueta = `${direccion} · ±${Math.round(base.precisionMetros ?? 0)} m`;
-    } else if (avisoPrecision) {
-      etiqueta = avisoPrecision;
-    }
+      if (direccion) onDireccionRef.current?.(direccion);
 
-    if (direccion) onDireccionRef.current?.(direccion);
+      const completa: UbicacionSeleccionada = { ...base, etiqueta };
+      publicarUbicacion(completa);
+      return completa;
+    },
+    [publicarUbicacion]
+  );
 
-    const completa: UbicacionSeleccionada = { ...base, etiqueta };
-    publicarUbicacion(completa);
-    return completa;
-  }, [publicarUbicacion]);
+  const publicarRapido = useCallback(
+    (base: UbicacionSeleccionada) => {
+      const rapida: UbicacionSeleccionada = {
+        ...base,
+        etiqueta: base.etiqueta ?? etiquetaProvisional(base),
+      };
+      publicarUbicacion(rapida);
+      return rapida;
+    },
+    [publicarUbicacion]
+  );
 
   const obtenerUbicacion = useCallback(async (): Promise<ResultadoUbicacion> => {
     setCargando(true);
     setError(null);
 
-    let gpsError: number | undefined;
-    let ubicacionFinal: UbicacionSeleccionada | null = null;
+    let mejor: UbicacionSeleccionada | null = null;
 
-    const googleP = obtenerUbicacionViaGoogle();
-    const gpsP = obtenerPosicionNavegador().then((r) => {
-      gpsError = r.errorCode;
-      return r.ubicacion;
-    });
+    const onProvisional = (u: UbicacionSeleccionada) => {
+      if (!mejor || esMasPrecisa(u, mejor)) {
+        mejor = u;
+        publicarRapido(u);
+        setCargando(false);
+      }
+    };
 
-    const google = await googleP;
-    if (google) {
-      ubicacionFinal = await completarUbicacion(google);
-      setCargando(false);
-    }
-
-    const gps = await gpsP;
-
-    if (
-      gps &&
-      google &&
-      (gps.precisionMetros ?? Infinity) < (google.precisionMetros ?? Infinity)
-    ) {
-      ubicacionFinal = await completarUbicacion(gps);
-    }
+    const { ubicacion: gps, errorCode } = await obtenerPosicionGps(onProvisional);
 
     setCargando(false);
 
-    if (!ubicacionFinal) {
-      const mejor = elegirMejorUbicacion(google, gps);
-      if (!mejor) {
-        const msg = mensajeErrorGeolocalizacion(gpsError);
-        setError(msg);
-        return { ok: false, error: msg };
+    if (gps) {
+      if (!mejor || esMasPrecisa(gps, mejor)) {
+        mejor = gps;
+        publicarRapido(gps);
       }
-      ubicacionFinal = await completarUbicacion(mejor);
+      const final = await enriquecerConDireccion(mejor);
+      return { ok: true, ubicacion: final };
     }
 
-    return { ok: true, ubicacion: ubicacionFinal };
-  }, [completarUbicacion]);
+    const msg = mensajeErrorGeolocalizacion(errorCode);
+    setError(msg);
+    return { ok: false, error: msg };
+  }, [enriquecerConDireccion, publicarRapido]);
 
-  const marcarEnMapa = useCallback(async (coords: Coordenadas) => {
-    setError(null);
-    const direccion = await obtenerDireccionDesdeCoords(coords.lat, coords.lng);
-    const ubicacion: UbicacionSeleccionada = {
-      ...coords,
-      etiqueta: direccion ?? "Punto marcado en el mapa",
-      precisionMetros: 5,
-    };
-    if (direccion) onDireccionRef.current?.(direccion);
-    publicarUbicacion(ubicacion);
-    return ubicacion;
-  }, [publicarUbicacion]);
+  const marcarEnMapa = useCallback(
+    async (coords: Coordenadas) => {
+      setError(null);
+      const base: UbicacionSeleccionada = {
+        ...coords,
+        etiqueta: "Punto marcado en el mapa",
+        precisionMetros: 5,
+      };
+      publicarRapido(base);
+      return enriquecerConDireccion(base);
+    },
+    [enriquecerConDireccion, publicarRapido]
+  );
 
   const usarMiUbicacion = useCallback(
     async (
@@ -262,7 +291,7 @@ export function useGeolocalizacion(opciones: OpcionesUbicacion = {}) {
     ) => {
       if (!input || !boton) return;
       const textoInicial = boton.textContent;
-      boton.textContent = "Obteniendo...";
+      boton.textContent = "Obteniendo GPS...";
       const resultado = await obtenerUbicacion();
       if (resultado.ok) {
         input.value = resultado.ubicacion.etiqueta ?? ETIQUETA_GPS;

@@ -182,7 +182,7 @@ export function SelectorUbicacionMapa({
           {ubicando ? (
             <>
               <Icono nombre="reloj" size={16} />
-              Obteniendo tu ubicación…
+              Obteniendo GPS…
             </>
           ) : ubicacionLista ? (
             <>

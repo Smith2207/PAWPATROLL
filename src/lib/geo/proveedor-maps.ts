@@ -120,7 +120,10 @@ function mensajeGeolocalizacionGoogle(
   return "Google no pudo estimar tu ubicación.";
 }
 
-/** Respaldo cuando el GPS del navegador falla (usa red/IP vía Google). */
+/**
+ * @deprecated En Vercel Google ve la IP del servidor (suele ser EE. UU.).
+ * Usar geolocalizarPorIpCliente con la IP del visitante.
+ */
 export async function geolocalizarGoogleRespaldo(): Promise<ResultadoGeolocalizarGoogle> {
   const key = claveGoogleMaps();
   if (!key) {
