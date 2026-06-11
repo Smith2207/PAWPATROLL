@@ -143,7 +143,6 @@ export const mascotas = pgTable("mascota", {
   descripcion: text("descripcion"),
   senasParticulares: text("senas_particulares"),
   collar: text("collar"),
-  microchip: text("microchip"),
   estado: estadoMascotaEnum("estado").default("EN_CASA").notNull(),
   fechaPerdida: timestamp("fecha_perdida", { mode: "date" }),
   lugarPerdida: text("lugar_perdida"),
@@ -372,7 +371,6 @@ export type DatosFichaMascota = {
   descripcion?: string;
   senasParticulares?: string;
   collar?: string;
-  microchip?: string;
   contactoPublico?: string;
   enfermedades?: string;
   accesoExterior?: string;

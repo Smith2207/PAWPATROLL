@@ -30,7 +30,6 @@ export function normalizarFicha(datos: DatosFichaMascota) {
     descripcion: datos.descripcion?.trim() || null,
     senasParticulares: datos.senasParticulares?.trim() || null,
     collar: datos.collar?.trim() || null,
-    microchip: datos.microchip?.trim() || null,
     contactoPublico: datos.contactoPublico?.trim() || null,
     enfermedades: datos.enfermedades?.trim() || null,
     accesoExterior: datos.accesoExterior?.trim() || null,

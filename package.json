@@ -23,6 +23,7 @@
     "db:migrate-chat-adjunto": "node scripts/aplicar-migracion-0012.mjs",
     "db:migrate-roles": "node scripts/aplicar-migracion-0013.mjs",
     "db:migrate-integridad": "node scripts/aplicar-migracion-0014.mjs",
+    "db:migrate-drop-microchip": "node scripts/aplicar-migracion-0015.mjs",
     "db:reindexar-visual": "node scripts/reindexar-embeddings-visual.mjs",
     "db:studio": "drizzle-kit studio"
   },

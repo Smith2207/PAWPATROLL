@@ -51,27 +51,6 @@ export function parsearPeso(peso: string | null | undefined): {
   return { valor, aproximado };
 }
 
-export function componerMicrochip(tiene: string, numero: string): string {
-  if (tiene === "no") return "No cuenta con microchip";
-  if (tiene === "si") {
-    const n = numero.trim();
-    return n ? `Sí — ${n}` : "Sí cuenta con microchip";
-  }
-  return "";
-}
-
-export function parsearMicrochip(microchip: string | null | undefined): {
-  tiene: "" | "si" | "no";
-  numero: string;
-} {
-  if (!microchip?.trim()) return { tiene: "", numero: "" };
-  if (/^no/i.test(microchip.trim())) return { tiene: "no", numero: "" };
-  const match = microchip.match(/^s[ií]\s*[—-]?\s*(.*)$/i);
-  if (match) return { tiene: "si", numero: match[1]?.trim() ?? "" };
-  if (/^s[ií]/i.test(microchip.trim())) return { tiene: "si", numero: "" };
-  return { tiene: "si", numero: microchip.trim() };
-}
-
 export function componerContactoPublico(telefono: string, email: string): string {
   const partes: string[] = [];
   const tel = telefono.trim();

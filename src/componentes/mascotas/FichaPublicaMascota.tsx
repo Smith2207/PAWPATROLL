@@ -53,11 +53,6 @@ export function FichaPublicaMascota({
       valor: mascota.collar,
       icono: "etiqueta" as const,
     },
-    mascota.microchip && {
-      label: "Microchip",
-      valor: mascota.microchip,
-      icono: "vacuna" as const,
-    },
     mascota.fechaPerdida && {
       label: "Desde",
       valor: new Date(mascota.fechaPerdida).toLocaleString("es-PE", {

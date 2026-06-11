@@ -18,10 +18,8 @@ import type { DatosFichaMascota, Mascota } from "@/lib/db/schema";
 import {
   componerContactoPublico,
   componerEdad,
-  componerMicrochip,
   componerPeso,
   parsearEdad,
-  parsearMicrochip,
   parsearPeso,
   resolverContactoInicial,
   type UnidadEdad,
@@ -56,7 +54,6 @@ export function FormularioFichaMascota({
   const tipoInicial = mascota?.tipo ?? "";
   const edadInicial = parsearEdad(mascota?.edad);
   const pesoInicial = parsearPeso(mascota?.peso);
-  const microchipInicial = parsearMicrochip(mascota?.microchip);
   const contactoInicial = resolverContactoInicial(
     mascota?.contactoPublico,
     contactoPerfil
@@ -74,10 +71,6 @@ export function FormularioFichaMascota({
   const [edadValor, setEdadValor] = useState(edadInicial.valor);
   const [edadUnidad, setEdadUnidad] = useState<UnidadEdad>(edadInicial.unidad);
   const [pesoValor, setPesoValor] = useState(pesoInicial.valor.replace(/\s*kg\s*$/i, "").trim());
-  const [microchipTiene, setMicrochipTiene] = useState<"" | "si" | "no">(
-    microchipInicial.tiene
-  );
-  const [microchipNumero, setMicrochipNumero] = useState(microchipInicial.numero);
   const [contactoTelefono, setContactoTelefono] = useState(contactoInicial.telefono);
   const [contactoEmail, setContactoEmail] = useState(contactoInicial.email);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +98,6 @@ export function FormularioFichaMascota({
       descripcion: fd.get("descripcion")?.toString(),
       senasParticulares: fd.get("senasParticulares")?.toString(),
       collar: fd.get("collar")?.toString(),
-      microchip: componerMicrochip(microchipTiene, microchipNumero),
       contactoPublico: componerContactoPublico(contactoTelefono, contactoEmail),
       enfermedades: fd.get("enfermedades")?.toString(),
       accesoExterior: fd.get("accesoExterior")?.toString(),
@@ -260,30 +252,6 @@ export function FormularioFichaMascota({
                   defaultValue={mascota?.collar ?? ""}
                   placeholder="Ej: Collar rojo con placa plateada que dice 'Luna'"
                 />
-              </div>
-              <div className="form-group">
-                <label htmlFor="microchip-tiene">Microchip</label>
-                <select
-                  id="microchip-tiene"
-                  value={microchipTiene}
-                  onChange={(e) =>
-                    setMicrochipTiene(e.target.value as "" | "si" | "no")
-                  }
-                >
-                  <option value="">Elegir...</option>
-                  <option value="si">Sí cuenta con microchip</option>
-                  <option value="no">No cuenta con microchip</option>
-                </select>
-                {microchipTiene === "si" && (
-                  <input
-                    type="text"
-                    className="form-ficha-campo-secundario"
-                    value={microchipNumero}
-                    onChange={(e) => setMicrochipNumero(e.target.value)}
-                    placeholder="Número del microchip (opcional)"
-                    aria-label="Número de microchip"
-                  />
-                )}
               </div>
               <div className="form-group form-ficha-grid--ancho">
                 <label>Contacto si se pierde</label>
