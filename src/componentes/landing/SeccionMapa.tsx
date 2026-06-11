@@ -1,28 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import { listarDatosMapaPublico, type DatosMapaPublico } from "@/actions/mapa";
 import { FiltrosMapa } from "@/componentes/mapa/FiltrosMapa";
+import { MapaPawPatrolSeccion } from "@/componentes/mapa/MapaPawPatrolLazy";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
-const MapaPawPatrol = dynamic(
-  () =>
-    import("@/componentes/mapa/MapaPawPatrol").then((m) => ({
-      default: m.MapaPawPatrol,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="pp-mapa-wrap">
-        <div className="pp-mapa pp-mapa--seccion" style={{ background: "#e8f4f8" }} />
-      </div>
-    ),
-  }
-);
 
 type Props = {
   datos: DatosMapaPublico;
@@ -104,7 +90,7 @@ export function SeccionMapa({
       )}
 
       <div className="pp-mapa-envoltorio-filtros">
-        <MapaPawPatrol
+        <MapaPawPatrolSeccion
           datos={datosMapa}
           altura="seccion"
           vista="solo-perdidas"

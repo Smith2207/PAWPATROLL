@@ -5,9 +5,6 @@
 /**
  * [mascotas] Botón: eliminar mascota.
  */
-/**
- * [mascotas] Botón: eliminar mascota.
- */
 import { eliminarMascota } from "@/actions/mascotas";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

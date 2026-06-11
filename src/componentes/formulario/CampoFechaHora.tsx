@@ -5,9 +5,6 @@
 /**
  * [formulario] Campo: fecha hora.
  */
-/**
- * [formulario] Campo: fecha hora.
- */
 import { valorDatetimeLocalActual } from "@/lib/fechas/datetime-local";
 
 type Props = {

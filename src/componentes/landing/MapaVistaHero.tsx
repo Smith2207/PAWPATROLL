@@ -5,27 +5,9 @@
 /**
  * [landing] Mapa: vista hero.
  */
-/**
- * [landing] Mapa: vista hero.
- */
-import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import type { DatosMapaPublico } from "@/actions/mapa";
-
-const MapaPawPatrol = dynamic(
-  () =>
-    import("@/componentes/mapa/MapaPawPatrol").then((m) => ({
-      default: m.MapaPawPatrol,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="map-bg map-bg--cargando" aria-hidden="true">
-        <div className="map-grid" />
-      </div>
-    ),
-  }
-);
+import { MapaPawPatrolHero } from "@/componentes/mapa/MapaPawPatrolLazy";
 
 type Props = {
   datos: DatosMapaPublico;
@@ -53,7 +35,7 @@ export function MapaVistaHero({ datos }: Props) {
   }
 
   return (
-    <MapaPawPatrol
+    <MapaPawPatrolHero
       datos={datosSoloPerdidas}
       altura="hero"
       vista="solo-perdidas"

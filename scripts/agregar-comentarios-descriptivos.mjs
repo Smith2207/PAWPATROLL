@@ -280,12 +280,26 @@ function descripcionArchivo(abs, rel) {
 }
 
 function tieneComentarioInicial(contenido) {
-  const t = contenido.trimStart();
+  const lineas = contenido.split("\n");
+  let i = 0;
+
+  while (
+    i < lineas.length &&
+    /^["']use (client|server)["'];?\s*$/.test(lineas[i].trim())
+  ) {
+    i++;
+  }
+
+  while (i < lineas.length && lineas[i].trim() === "") {
+    i++;
+  }
+
+  const resto = lineas.slice(i).join("\n").trimStart();
   return (
-    t.startsWith("/**") ||
-    t.startsWith("/*") ||
-    t.startsWith("// #") ||
-    t.startsWith("/*!")
+    resto.startsWith("/**") ||
+    resto.startsWith("/*") ||
+    resto.startsWith("// #") ||
+    resto.startsWith("/*!")
   );
 }
 

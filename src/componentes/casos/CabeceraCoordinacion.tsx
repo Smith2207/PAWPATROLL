@@ -5,9 +5,6 @@
 /**
  * [casos] Componente React: cabecera coordinacion.
  */
-/**
- * [casos] Componente React: cabecera coordinacion.
- */
 import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
 
 export type MascotaCabeceraCoordinacion = {

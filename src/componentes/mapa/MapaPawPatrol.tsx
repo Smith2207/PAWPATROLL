@@ -5,9 +5,6 @@
 /**
  * [mapa] Mapa: paw patrol.
  */
-/**
- * [mapa] Mapa: paw patrol.
- */
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { datosMapaDeUnaMascota } from "@/lib/mapa/filtrar-por-mascota";
 import L from "leaflet";

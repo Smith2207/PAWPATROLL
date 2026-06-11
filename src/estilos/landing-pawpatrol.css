@@ -730,18 +730,8 @@
     .modal-body::-webkit-scrollbar-track { background: var(--bg); }
     .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    /* â”€â”€â”€ FORM â”€â”€â”€ */
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--navy); margin-bottom: 6px; letter-spacing: 0.01em; }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 0.65rem 1rem; border: 2px solid var(--border); border-radius: var(--radius-sm);
-      font-family: 'Nunito', sans-serif; font-size: 0.88rem; color: var(--text);
-      outline: none; transition: all 0.2s; background: var(--bg);
-    }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--blue2); background: white; box-shadow: 0 0 0 3px rgba(var(--blue-rgb), 0.15); }
-    .form-group textarea { resize: none; line-height: 1.5; }
-    .form-group select { cursor: pointer; }
+    /* Modales: etiquetas con tono landing */
+    .modal .form-group label { color: var(--navy); letter-spacing: 0.01em; }
 
     /* Location picker */
     .location-picker {

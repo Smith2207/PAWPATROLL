@@ -5,9 +5,6 @@
 /**
  * [casos] Componente React: preview ubicacion composer.
  */
-/**
- * [casos] Componente React: preview ubicacion composer.
- */
 import {
   urlMapaEstaticoChat,
   type UbicacionChat,

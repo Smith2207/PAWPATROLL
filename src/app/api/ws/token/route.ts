@@ -4,12 +4,11 @@
 import { auth } from "@/auth";
 import { canalesTiempoRealUsuario } from "@/lib/tiempo-real/canales-usuario";
 import { crearTokenSuscripcionWs } from "@/lib/tiempo-real/token-ws";
-import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
 
 export async function GET(req: Request) {
-  const ip = ipDesdeRequest(req);
-  const limite = rateLimit(`ws-token:${ip}`, 30, 60_000);
-  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+  const bloqueado = verificarRateLimit(req, "ws-token", 30);
+  if (bloqueado) return bloqueado;
 
   const sesion = await auth();
   const userId = sesion?.user?.id;

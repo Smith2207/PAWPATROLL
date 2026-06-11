@@ -5,9 +5,6 @@
 /**
  * [casos] Panel: contextual caso.
  */
-/**
- * [casos] Panel: contextual caso.
- */
 import { useState } from "react";
 import type { Avistamiento, Mascota } from "@/lib/db/schema";
 

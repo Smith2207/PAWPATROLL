@@ -6,7 +6,7 @@ import {
   consultarEstadoVerificacion,
   verificarCuentaConToken,
 } from "@/lib/auth/verificar-cuenta";
-import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
 
 /**
  * POST /api/auth/verificar-cuenta
@@ -46,9 +46,8 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const ip = ipDesdeRequest(request);
-  const limite = rateLimit(`verificar-cuenta:${ip}`, 20, 60_000);
-  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+  const bloqueado = verificarRateLimit(request, "verificar-cuenta", 20);
+  if (bloqueado) return bloqueado;
 
   const { searchParams } = new URL(request.url);
   const email = searchParams.get("email");

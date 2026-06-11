@@ -138,47 +138,6 @@
   cursor: not-allowed;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 600px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--navy2);
-  margin-bottom: 6px;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 0.65rem 0.85rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-weight: 600;
-  color: var(--text);
-  background: var(--white);
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: var(--blue2);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
 .campo-ciudad {
   position: relative;
 }

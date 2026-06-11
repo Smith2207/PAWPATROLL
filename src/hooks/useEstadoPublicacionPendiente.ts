@@ -5,9 +5,6 @@
 /**
  * Hook React: estado publicacion pendiente.
  */
-/**
- * Hook React: estado publicacion pendiente.
- */
 import { useMemo } from "react";
 import { useModales } from "@/contexto/ContextoModales";
 import { hayAvistamientoPendienteAuth } from "@/lib/avistamientos/borrador-cliente";

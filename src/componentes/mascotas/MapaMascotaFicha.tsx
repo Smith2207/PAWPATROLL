@@ -5,11 +5,11 @@
 /**
  * [mascotas] Mapa: mascota ficha.
  */
-/**
- * [mascotas] Mapa: mascota ficha.
- */
-import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
+import {
+  MapaPawPatrolFicha,
+  MapaPawPatrolSeccion,
+} from "@/componentes/mapa/MapaPawPatrolLazy";
 import { useRouter } from "next/navigation";
 import type { DatosMapaMascota } from "@/actions/mapa";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
@@ -20,21 +20,6 @@ import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 import { listarDatosMapaMascota } from "@/actions/mapa";
 import { LightboxMapaFicha } from "@/componentes/mascotas/LightboxMapaFicha";
 import { Icono } from "@/componentes/ui/Icono";
-
-const MapaPawPatrol = dynamic(
-  () =>
-    import("@/componentes/mapa/MapaPawPatrol").then((m) => ({
-      default: m.MapaPawPatrol,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="pp-mapa-wrap">
-        <div className="pp-mapa pp-mapa--ficha" style={{ background: "#e8f4f8" }} />
-      </div>
-    ),
-  }
-);
 
 type Props = {
   nombre: string;
@@ -137,9 +122,7 @@ export function MapaMascotaFicha({
           <h2 id="mapa-mascota-titulo" className="ficha-publica-mapa-titulo">
             Mapa de búsqueda de {nombre}
           </h2>
-          <p className="ficha-publica-mapa-desc">
-            Cerco, calor y avistamientos exclusivos de esta mascota.
-          </p>
+          
         </div>
         {totalAvistamientos > 0 && (
           <span className="ficha-publica-mapa-badge">
@@ -193,7 +176,7 @@ export function MapaMascotaFicha({
             className="ficha-publica-mapa-envoltorio ficha-publica-mapa-envoltorio--clic"
             onClick={onClickVistaMapa}
           >
-            <MapaPawPatrol {...propsMapa} altura="ficha" />
+            <MapaPawPatrolFicha {...propsMapa} altura="ficha" />
             <button
               type="button"
               className="ficha-publica-mapa-ampliar-btn"
@@ -212,7 +195,7 @@ export function MapaMascotaFicha({
             titulo={`Mapa de búsqueda — ${nombre}`}
             onCerrar={() => setMapaAmpliado(false)}
           >
-            <MapaPawPatrol {...propsMapa} altura="seccion" />
+            <MapaPawPatrolSeccion {...propsMapa} altura="seccion" />
             {dialogoPermiso}
           </LightboxMapaFicha>
           {!mapaAmpliado && dialogoPermiso}

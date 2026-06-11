@@ -18,6 +18,8 @@ import {
 
 export type { ResultadoBusquedaLugar };
 
+const NOMINATIM_USER_AGENT = "PawPatroll/1.0 (app mascotas perdidas)";
+
 function claveGoogleMaps(): string | null {
   return process.env.GOOGLE_MAPS_API_KEY?.trim() || null;
 }
@@ -259,7 +261,7 @@ async function buscarNominatim(consulta: string): Promise<ResultadoBusquedaLugar
 
   const res = await fetch(url.toString(), {
     headers: {
-      "User-Agent": "PawPatroll/1.0 (app mascotas perdidas)",
+      "User-Agent": NOMINATIM_USER_AGENT,
       Accept: "application/json",
     },
     cache: "no-store",
@@ -271,6 +273,95 @@ async function buscarNominatim(consulta: string): Promise<ResultadoBusquedaLugar
   return data
     .map((item) => lugarDesdeNominatim(item))
     .filter((r): r is ResultadoBusquedaLugar => r != null);
+}
+
+function zoomNominatimReverse(precisionMetros: number | null | undefined): string {
+  if (
+    precisionMetros != null &&
+    Number.isFinite(precisionMetros) &&
+    precisionMetros <= 30
+  ) {
+    return "19";
+  }
+  if (
+    precisionMetros != null &&
+    Number.isFinite(precisionMetros) &&
+    precisionMetros <= 80
+  ) {
+    return "18";
+  }
+  return "17";
+}
+
+function direccionDesdeNominatimReverse(data: {
+  display_name?: string;
+  address?: Record<string, string>;
+}): string {
+  let direccion = data.display_name ?? "";
+  const a = data.address;
+  if (a) {
+    const partes = [
+      a.road || a.pedestrian || a.footway,
+      a.suburb || a.neighbourhood || a.quarter,
+      a.city || a.town || a.village || a.municipality,
+      a.state,
+    ].filter(Boolean);
+    if (partes.length > 0) {
+      direccion = partes.join(", ");
+    }
+  }
+  return direccion.trim();
+}
+
+/** Reverse geocoding con OpenStreetMap Nominatim (fallback sin Google). */
+export async function reverseGeocodeNominatim(
+  lat: number,
+  lng: number,
+  precisionMetros?: number | null
+): Promise<string | null> {
+  const url = new URL("https://nominatim.openstreetmap.org/reverse");
+  url.searchParams.set("lat", String(lat));
+  url.searchParams.set("lon", String(lng));
+  url.searchParams.set("format", "json");
+  url.searchParams.set("accept-language", "es");
+  url.searchParams.set("zoom", zoomNominatimReverse(precisionMetros));
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      "User-Agent": NOMINATIM_USER_AGENT,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+
+  const data = (await res.json()) as {
+    display_name?: string;
+    address?: Record<string, string>;
+  };
+
+  const direccion = direccionDesdeNominatimReverse(data);
+  return direccion || null;
+}
+
+/** Google primero; si no hay clave o falla, Nominatim. */
+export async function reverseGeocode(
+  lat: number,
+  lng: number,
+  precisionMetros?: number | null
+): Promise<{ direccion: string | null; proveedor: "google" | "nominatim" | "ninguno" }> {
+  const google = await reverseGeocodeGoogle(lat, lng);
+  if (google) {
+    return { direccion: google, proveedor: "google" };
+  }
+
+  const nominatim = await reverseGeocodeNominatim(lat, lng, precisionMetros);
+  if (nominatim) {
+    return { direccion: nominatim, proveedor: "nominatim" };
+  }
+
+  return { direccion: null, proveedor: "ninguno" };
 }
 
 /** Google Autocomplete → Geocoding → OpenStreetMap. */

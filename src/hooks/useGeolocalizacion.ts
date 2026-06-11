@@ -5,9 +5,6 @@
 /**
  * Hook React: geolocalizacion.
  */
-/**
- * Hook React: geolocalizacion.
- */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { obtenerDireccionDesdeCoords } from "@/lib/geo/geocodificar";
 import type { Coordenadas, UbicacionSeleccionada } from "@/lib/geo/tipos";

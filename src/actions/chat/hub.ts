@@ -5,9 +5,6 @@
 /**
  * Server Actions (chat › hub): operaciones de servidor invocadas desde la UI.
  */
-/**
- * Server Actions (chat › hub): operaciones de servidor invocadas desde la UI.
- */
 import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { avistamientos, mascotaFotos, mascotas } from "@/lib/db/schema";

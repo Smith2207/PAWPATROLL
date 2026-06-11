@@ -5,9 +5,6 @@
 /**
  * [casos] Vista: chat avistamiento.
  */
-/**
- * [casos] Vista: chat avistamiento.
- */
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";

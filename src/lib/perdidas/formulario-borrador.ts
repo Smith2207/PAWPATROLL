@@ -7,9 +7,12 @@ import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
 import {
   MSG_UBICACION_PERDIDA,
+  MSG_UBICACION_CORTA_PERDIDA,
   errorSiSinUbicacion,
 } from "@/lib/reportes/validaciones";
 import type { BorradorReportePerdida } from "@/lib/perdidas/borrador-cliente";
+import type { ValoresInicialesFichaMascota } from "@/lib/perdidas/tipos-ficha";
+import type { Coordenadas } from "@/lib/geo/tipos";
 
 export function validarPaso1Perdida(
   form: HTMLFormElement,
@@ -47,6 +50,37 @@ export function validarPaso2Perdida(form: HTMLFormElement): string | null {
   const fechaVal = fecha instanceof HTMLInputElement ? fecha.value : "";
   if (!fechaVal) return "Indica cuándo se perdió.";
 
+  return null;
+}
+
+export function validarPublicacionPerdida(
+  form: HTMLFormElement,
+  ubicacion: UbicacionSeleccionada | null,
+  fotos: string[]
+): { error: string; paso: 1 | 2 } | null {
+  const err1 = validarPaso1Perdida(form, ubicacion, fotos);
+  if (err1) return { error: err1, paso: 1 };
+
+  const err2 = validarPaso2Perdida(form);
+  if (err2) return { error: err2, paso: 2 };
+
+  const errUbicacion = errorSiSinUbicacion(
+    ubicacion,
+    MSG_UBICACION_CORTA_PERDIDA
+  );
+  if (errUbicacion) return { error: errUbicacion, paso: 1 };
+
+  return null;
+}
+
+export function validarAvancePasoPerdida(
+  paso: number,
+  form: HTMLFormElement,
+  ubicacion: UbicacionSeleccionada | null,
+  fotos: string[]
+): string | null {
+  if (paso === 1) return validarPaso1Perdida(form, ubicacion, fotos);
+  if (paso === 2) return validarPaso2Perdida(form);
   return null;
 }
 
@@ -145,5 +179,69 @@ export function extraerRecompensa(descripcion?: string | null): {
   return {
     descripcion: descripcion.slice(0, idx),
     recompensa: descripcion.slice(idx + 14),
+  };
+}
+
+export type CamposBorradorPerdida = {
+  valoresFicha: Required<
+    Pick<
+      ValoresInicialesFichaMascota,
+      | "nombre"
+      | "tipo"
+      | "sexo"
+      | "color"
+      | "tamano"
+      | "edad"
+      | "accesoExterior"
+      | "descripcion"
+    >
+  > &
+    Pick<ValoresInicialesFichaMascota, "raza" | "fechaPerdida">;
+  ubicacion: Coordenadas;
+  direccion: string;
+  referenciasZona: string;
+  contactoNombre: string;
+  contactoTelefono: string;
+  contactoEmail: string;
+  recompensa: string;
+  fotos: string[];
+};
+
+export function camposDesdeBorradorPerdida(
+  borrador: BorradorReportePerdida
+): CamposBorradorPerdida {
+  const { descripcion, recompensa: recomp } = extraerRecompensa(
+    borrador.datosMascota.descripcion
+  );
+  const partesLugar = borrador.perdida.lugarPerdida.split(" · ");
+
+  return {
+    valoresFicha: {
+      nombre: borrador.datosMascota.nombre,
+      tipo: borrador.datosMascota.tipo,
+      raza: borrador.datosMascota.raza,
+      sexo: borrador.datosMascota.sexo ?? "",
+      color: borrador.datosMascota.color ?? "",
+      tamano: borrador.datosMascota.tamano ?? "",
+      edad: borrador.datosMascota.edad ?? "",
+      accesoExterior: borrador.datosMascota.accesoExterior ?? "",
+      descripcion,
+      fechaPerdida: borrador.perdida.fechaPerdida,
+    },
+    ubicacion: {
+      lat: borrador.perdida.latPerdida,
+      lng: borrador.perdida.lngPerdida,
+    },
+    direccion: partesLugar[0] ?? "",
+    referenciasZona:
+      borrador.referenciasZona ??
+      borrador.perdida.notas ??
+      partesLugar[1] ??
+      "",
+    contactoNombre: borrador.contactoNombre ?? "",
+    contactoTelefono: borrador.contactoTelefono ?? "",
+    contactoEmail: borrador.contactoEmail ?? "",
+    recompensa: borrador.recompensa ?? recomp,
+    fotos: borrador.fotos,
   };
 }

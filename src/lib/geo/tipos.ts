@@ -24,6 +24,24 @@ export function parsearCoordenada(valor: string | null | undefined): number | nu
   return Number.isFinite(n) ? n : null;
 }
 
+export function coordenadasDesdeValores(
+  lat: string | null | undefined,
+  lng: string | null | undefined
+): Coordenadas | null {
+  const latN = parsearCoordenada(lat);
+  const lngN = parsearCoordenada(lng);
+  if (latN === null || lngN === null) return null;
+  const c = { lat: latN, lng: lngN };
+  return coordenadasValidas(c) ? c : null;
+}
+
+export function precisionMetrosDesdeParam(
+  valor: string | null | undefined
+): number | null {
+  const n = parsearCoordenada(valor);
+  return n != null && n > 0 ? n : null;
+}
+
 export function coordenadasValidas(c: Coordenadas | null | undefined): c is Coordenadas {
   if (!c) return false;
   return (

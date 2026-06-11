@@ -5,9 +5,6 @@
 /**
  * [mascotas] Formulario: ficha mascota.
  */
-/**
- * [mascotas] Formulario: ficha mascota.
- */
 import {
   actualizarMascota,
   crearMascota,

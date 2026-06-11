@@ -2,13 +2,13 @@
  * API REST (/api/geo/buscar): endpoint geo › buscar.
  */
 import { NextResponse } from "next/server";
+import { jsonErrorInterno } from "@/lib/api/respuestas";
 import { buscarLugares } from "@/lib/geo/proveedor-maps";
-import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
 
 export async function GET(request: Request) {
-  const ip = ipDesdeRequest(request);
-  const limite = rateLimit(`geo-buscar:${ip}`, 40, 60_000);
-  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+  const bloqueado = verificarRateLimit(request, "geo-buscar", 40);
+  if (bloqueado) return bloqueado;
 
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim() ?? "";
@@ -21,9 +21,6 @@ export async function GET(request: Request) {
     const { resultados, proveedor } = await buscarLugares(q);
     return NextResponse.json({ resultados, proveedor });
   } catch {
-    return NextResponse.json(
-      { error: "Error al buscar en el mapa." },
-      { status: 500 }
-    );
+    return jsonErrorInterno("Error al buscar en el mapa.");
   }
 }

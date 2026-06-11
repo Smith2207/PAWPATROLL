@@ -5,9 +5,6 @@
 /**
  * [casos] Vista: coordinacion.
  */
-/**
- * [casos] Vista: coordinacion.
- */
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

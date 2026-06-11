@@ -5,9 +5,6 @@
 /**
  * Server Actions (chat › acceso): operaciones de servidor invocadas desde la UI.
  */
-/**
- * Server Actions (chat › acceso): operaciones de servidor invocadas desde la UI.
- */
 import { puedeAccederConversacion } from "@/lib/chat/acceso";
 import { puedeAccederPanelCoordinacion } from "@/lib/casos/acceso";
 import {

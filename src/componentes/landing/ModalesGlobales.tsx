@@ -5,9 +5,6 @@
 /**
  * [landing] Modal: es globales.
  */
-/**
- * [landing] Modal: es globales.
- */
 import { useEffect, useState } from "react";
 import { listarMascotasPerdidasParaSelector } from "@/actions/avistamientos";
 import { ModalReportarPerdida } from "@/componentes/landing/modales/ModalReportarPerdida";

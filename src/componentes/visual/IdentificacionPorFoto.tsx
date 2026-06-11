@@ -5,9 +5,6 @@
 /**
  * [visual] Componente React: identificacion por foto.
  */
-/**
- * [visual] Componente React: identificacion por foto.
- */
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { Icono } from "@/componentes/ui/Icono";
@@ -28,10 +25,10 @@ import {
 import {
   ACCEPT_INPUT_IMAGEN,
   MENSAJE_IMAGEN_ILEGIBLE,
+  MAX_BYTES_IMAGEN_USUARIO,
   validarArchivoImagen,
 } from "@/lib/imagen/validar-archivo";
-
-const MAX_BYTES_BUSQUEDA = 4 * 1024 * 1024;
+import { leerArchivoComoDataUrl } from "@/lib/imagen/leer-archivo-cliente";
 
 type Props = {
   onElegir?: (c: CoincidenciaVisual) => void;
@@ -118,27 +115,20 @@ export function IdentificacionPorFoto({
     if (!file) return;
 
     const validacion = validarArchivoImagen(file, {
-      maxBytes: MAX_BYTES_BUSQUEDA,
+      maxBytes: MAX_BYTES_IMAGEN_USUARIO,
     });
     if (!validacion.ok) {
       setError(validacion.error);
       return;
     }
 
-    const reader = new FileReader();
-    reader.onerror = () => setError(MENSAJE_IMAGEN_ILEGIBLE);
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      void (async () => {
-        try {
-          const [procesada] = await preprocesarImagenesCliente([dataUrl]);
-          if (procesada) void procesarImagen(procesada);
-        } catch {
-          setError(MENSAJE_IMAGEN_ILEGIBLE);
-        }
-      })();
-    };
-    reader.readAsDataURL(file);
+    try {
+      const dataUrl = await leerArchivoComoDataUrl(file);
+      const [procesada] = await preprocesarImagenesCliente([dataUrl]);
+      if (procesada) void procesarImagen(procesada);
+    } catch {
+      setError(MENSAJE_IMAGEN_ILEGIBLE);
+    }
   }
 
   return (

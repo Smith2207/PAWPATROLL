@@ -5,9 +5,6 @@
 /**
  * [mascotas] Panel: cambio estado.
  */
-/**
- * [mascotas] Panel: cambio estado.
- */
 import { cambiarEstadoMascota } from "@/actions/mascotas";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import { AccesoCoordinacion } from "@/componentes/mascotas/AccesoCoordinacion";

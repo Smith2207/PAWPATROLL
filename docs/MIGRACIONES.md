@@ -33,6 +33,8 @@ Ejecuta las migraciones **en orden** (solo las que aún no hayas aplicado):
 | `db:migrate-integridad` | 0014 | Índice reportes y evento `REPORTE_ABUSO` |
 | `db:migrate-drop-microchip` | 0015 | Elimina columna `microchip` de `mascota` |
 
+Script genérico: `node scripts/aplicar-migracion.mjs <número>` (los `npm run db:migrate-*` lo invocan).
+
 Cada script lee `DATABASE_URL` de `.env.local` y aplica el SQL correspondiente.
 
 ## Después de migrar embeddings Gemini

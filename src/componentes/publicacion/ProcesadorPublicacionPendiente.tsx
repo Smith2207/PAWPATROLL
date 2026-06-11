@@ -5,9 +5,6 @@
 /**
  * [publicacion] Procesador: publicacion pendiente.
  */
-/**
- * [publicacion] Procesador: publicacion pendiente.
- */
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";

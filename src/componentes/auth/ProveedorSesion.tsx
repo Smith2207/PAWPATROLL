@@ -5,9 +5,6 @@
 /**
  * [auth] Proveedor: sesion.
  */
-/**
- * [auth] Proveedor: sesion.
- */
 import { SessionProvider } from "next-auth/react";
 import type { ReactNode } from "react";
 

@@ -5,12 +5,10 @@
 /**
  * [landing] Sección: mascotas recientes.
  */
-/**
- * [landing] Sección: mascotas recientes.
- */
 import { useModales } from "@/contexto/ContextoModales";
 import { BadgeEstadoMascota } from "@/componentes/mascotas/BadgeEstadoMascota";
 import { Icono, iconoPorTipoMascota } from "@/componentes/ui/Icono";
+import { tiempoRelativo } from "@/lib/fechas/tiempo-relativo";
 import { esTipoMascotaPermitido } from "@/lib/mascotas/tipos";
 import type { EstadoMascota } from "@/lib/db/schema";
 
@@ -38,15 +36,6 @@ type Props = {
   mensajeVacio?: string;
   onQuitarFiltros?: () => void;
 };
-
-function tiempoRelativo(fecha: Date) {
-  const diff = Date.now() - new Date(fecha).getTime();
-  const horas = Math.floor(diff / 3_600_000);
-  if (horas < 1) return "hace unos minutos";
-  if (horas < 24) return `hace ${horas}h`;
-  const dias = Math.floor(horas / 24);
-  return `hace ${dias}d`;
-}
 
 export function SeccionMascotasRecientes({
   mascotas,
@@ -142,7 +131,7 @@ export function SeccionMascotasRecientes({
                   ) : (
                     <Icono nombre={iconoTipo} size={48} />
                   )}
-                  <div className="time-pill">{tiempoRelativo(m.updatedAt)}</div>
+                  <div className="time-pill">{tiempoRelativo(m.updatedAt, "compacto")}</div>
                   <div
                     style={{
                       position: "absolute",

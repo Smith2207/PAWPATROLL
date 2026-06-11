@@ -5,9 +5,6 @@
 /**
  * [auth] Componente React: menu usuario.
  */
-/**
- * [auth] Componente React: menu usuario.
- */
 import { obtenerImagenPerfilSesion } from "@/actions/autenticacion";
 import { Icono } from "@/componentes/ui/Icono";
 import { useModales } from "@/contexto/ContextoModales";

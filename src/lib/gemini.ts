@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "fs";
 import { join, resolve } from "path";
 import { cwd } from "process";
 import type { GoogleGenAI } from "@google/genai";
+import { PROMPT_DESCRIPCION_MASCOTA_GEMINI } from "@/lib/visual/config";
 
 const RUTAS_CREDENCIALES_RESERVA = ["secrets/gcp-sa.json"];
 
@@ -19,9 +20,7 @@ export const MODELO_GEMINI_EMBEDDING =
 
 export const DIMENSION_EMBEDDING = 768;
 
-const PROMPT_DESCRIPCION = `Describe esta mascota (perro o gato) para búsqueda visual.
-Incluye: especie, tamaño aproximado, colores del pelaje, patrones (atigrado, manchas), orejas, cola, señas visibles.
-Responde en español, solo palabras clave separadas por comas, sin frases largas ni opiniones.`;
+const PROMPT_DESCRIPCION = PROMPT_DESCRIPCION_MASCOTA_GEMINI;
 
 export function proyectoGoogleCloud(): string | undefined {
   return (

@@ -3,6 +3,7 @@
  */
 import { NextRequest } from "next/server";
 import { exportarCsvAdmin } from "@/actions/admin";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
 
 const ARCHIVOS: Record<string, string> = {
   avistamientos: "pawpatrol-avistamientos.csv",
@@ -12,6 +13,9 @@ const ARCHIVOS: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
+  const bloqueado = verificarRateLimit(req, "admin-export", 10);
+  if (bloqueado) return bloqueado;
+
   const tipo = req.nextUrl.searchParams.get("tipo") ?? "avistamientos";
   const nombre = ARCHIVOS[tipo] ?? ARCHIVOS.avistamientos;
 

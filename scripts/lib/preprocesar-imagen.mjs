@@ -1,18 +1,14 @@
 /**
  * Script auxiliar (CLI): preprocesar-imagen.
  */
-const TAMANO = 224;
+import { dataUrlABuffer } from "./data-url.mjs";
 
-export function parseDataUrl(dataUrl) {
-  const m = /^data:image\/([\w+.-]+);base64,(.+)$/i.exec(dataUrl);
-  if (!m) throw new Error("Data URL inválido");
-  return Buffer.from(m[2], "base64");
-}
+const TAMANO = 224;
 
 export async function preprocesarDataUrlParaClip(dataUrl) {
   try {
     const sharp = (await import("sharp")).default;
-    const buffer = parseDataUrl(dataUrl);
+    const { buffer } = dataUrlABuffer(dataUrl);
     const out = await sharp(buffer)
       .rotate()
       .resize(TAMANO, TAMANO, { fit: "cover", position: "centre" })

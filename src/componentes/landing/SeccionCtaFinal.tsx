@@ -5,9 +5,6 @@
 /**
  * [landing] Sección: cta final.
  */
-/**
- * [landing] Sección: cta final.
- */
 import { useModales } from "@/contexto/ContextoModales";
 import { Icono } from "@/componentes/ui/Icono";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";

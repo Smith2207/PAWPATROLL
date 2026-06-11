@@ -3,9 +3,18 @@
  */
 import { NextResponse } from "next/server";
 import { verificarCorreoConToken } from "@/actions/autenticacion";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
 import { urlBaseApp } from "@/lib/url-app";
 
 export async function GET(request: Request) {
+  const bloqueado = verificarRateLimit(request, "verificar-correo", 30);
+  if (bloqueado) {
+    const baseUrl = urlBaseApp();
+    return NextResponse.redirect(
+      `${baseUrl}/verificar-correo?estado=error&motivo=${encodeURIComponent("Demasiados intentos. Espera un momento.")}`
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
   const email = searchParams.get("email");

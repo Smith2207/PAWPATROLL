@@ -6,19 +6,16 @@ import { puedeAccederChatAvistamiento } from "@/actions/chat";
 import { db } from "@/lib/db";
 import { mensajesAvistamiento } from "@/lib/db/schema";
 import { leerAdjuntoChatBlob, esUrlBlobChat } from "@/lib/storage/blob-chat";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
+import { dataUrlABuffer } from "@/lib/visual/data-url";
 import { eq } from "drizzle-orm";
 
 type Params = { params: Promise<{ id: string }> };
 
-function parsearDataUrl(dataUrl: string) {
-  const match = /^data:(image\/[\w+.-]+);base64,([A-Za-z0-9+/=]+)$/i.exec(
-    dataUrl.trim()
-  );
-  if (!match) return null;
-  return { mime: match[1], buffer: Buffer.from(match[2], "base64") };
-}
+export async function GET(req: Request, { params }: Params) {
+  const bloqueado = verificarRateLimit(req, "chat-adjunto", 60);
+  if (bloqueado) return bloqueado;
 
-export async function GET(_req: Request, { params }: Params) {
   const sesion = await auth();
   if (!sesion?.user?.id) {
     return new Response("No autorizado", { status: 401 });
@@ -56,15 +53,15 @@ export async function GET(_req: Request, { params }: Params) {
     });
   }
 
-  const parsed = parsearDataUrl(mensaje.adjuntoUrl);
-  if (!parsed) {
+  try {
+    const { buffer, mime } = dataUrlABuffer(mensaje.adjuntoUrl);
+    return new Response(new Uint8Array(buffer), {
+      headers: {
+        "Content-Type": mime,
+        "Cache-Control": "private, max-age=86400, immutable",
+      },
+    });
+  } catch {
     return new Response("Adjunto inválido", { status: 404 });
   }
-
-  return new Response(new Uint8Array(parsed.buffer), {
-    headers: {
-      "Content-Type": parsed.mime,
-      "Cache-Control": "private, max-age=86400, immutable",
-    },
-  });
 }

@@ -5,9 +5,6 @@
 /**
  * Hook React: solicitud ubicacion.
  */
-/**
- * Hook React: solicitud ubicacion.
- */
 import { useCallback, useEffect, useState } from "react";
 import { DialogoPermisoUbicacion } from "@/componentes/geo/DialogoPermisoUbicacion";
 import type { ResultadoUbicacion } from "@/hooks/useGeolocalizacion";

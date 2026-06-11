@@ -5,9 +5,6 @@
 /**
  * [casos] Panel: chats caso.
  */
-/**
- * [casos] Panel: chats caso.
- */
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { gestionarEstadoAvistamiento } from "@/actions/avistamientos";

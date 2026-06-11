@@ -5,9 +5,6 @@
 /**
  * [formulario] Campo: ciudad.
  */
-/**
- * [formulario] Campo: ciudad.
- */
 import { buscarCiudadesDesdeApi, type UbicacionPeru } from "@/lib/geo/ciudades";
 import { useEffect, useId, useRef, useState } from "react";
 

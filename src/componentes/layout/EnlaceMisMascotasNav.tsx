@@ -5,9 +5,6 @@
 /**
  * [layout] Componente React: enlace mis mascotas nav.
  */
-/**
- * [layout] Componente React: enlace mis mascotas nav.
- */
 import { obtenerResumenCasosNav } from "@/actions/mascotas/consultas-nav";
 import Link from "next/link";
 import { useSession } from "next-auth/react";

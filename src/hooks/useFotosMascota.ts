@@ -5,19 +5,17 @@
 /**
  * Hook React: fotos mascota.
  */
-/**
- * Hook React: fotos mascota.
- */
 import { useCallback, useRef, useState } from "react";
 import { preprocesarImagenesCliente } from "@/lib/imagen/preprocesar-cliente";
 import {
+  MAX_BYTES_IMAGEN_USUARIO,
   MENSAJE_IMAGEN_ILEGIBLE,
   validarArchivoImagen,
   validarDataUrlImagen,
 } from "@/lib/imagen/validar-archivo";
+import { leerArchivosComoDataUrl } from "@/lib/imagen/leer-archivo-cliente";
 
 const MAX_FOTOS_DEFECTO = 5;
-const MAX_BYTES_DEFECTO = 8 * 1024 * 1024;
 
 type OpcionesFotosMascota = {
   maxFotos?: number;
@@ -33,7 +31,7 @@ type OpcionesFotosMascota = {
  */
 export function useFotosMascota(opciones: OpcionesFotosMascota = {}) {
   const maxFotos = opciones.maxFotos ?? MAX_FOTOS_DEFECTO;
-  const maxBytesArchivo = opciones.maxBytesArchivo ?? MAX_BYTES_DEFECTO;
+  const maxBytesArchivo = opciones.maxBytesArchivo ?? MAX_BYTES_IMAGEN_USUARIO;
   const onFotosChange = opciones.onFotosChange;
   const fotosControladas = opciones.fotos;
   const controlado =
@@ -83,26 +81,13 @@ export function useFotosMascota(opciones: OpcionesFotosMascota = {}) {
 
       void (async () => {
         try {
-          const urls = await Promise.all(
-            archivos.map(
-              (file) =>
-                new Promise<string>((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.onload = (e) => {
-                    const dataUrl = e.target?.result as string;
-                    const okData = validarDataUrlImagen(dataUrl);
-                    if (!okData.ok) {
-                      reject(new Error(okData.error));
-                      return;
-                    }
-                    resolve(dataUrl);
-                  };
-                  reader.onerror = () =>
-                    reject(new Error(MENSAJE_IMAGEN_ILEGIBLE));
-                  reader.readAsDataURL(file);
-                })
-            )
-          );
+          const urls = await leerArchivosComoDataUrl(archivos);
+          for (const dataUrl of urls) {
+            const okData = validarDataUrlImagen(dataUrl);
+            if (!okData.ok) {
+              throw new Error(okData.error);
+            }
+          }
           const procesadas = await preprocesarImagenesCliente(urls);
           setErrorArchivo(null);
           if (maxFotos <= 1) {

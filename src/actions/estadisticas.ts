@@ -5,9 +5,6 @@
 /**
  * Server Actions (estadisticas): operaciones de servidor invocadas desde la UI.
  */
-/**
- * Server Actions (estadisticas): operaciones de servidor invocadas desde la UI.
- */
 import { and, count, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { avistamientos, mascotas, users } from "@/lib/db/schema";

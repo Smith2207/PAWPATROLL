@@ -3,7 +3,7 @@
  */
 import { AvisoBorradorReporte } from "@/componentes/landing/modales/AvisoBorradorReporte";
 import { PasosWizard } from "@/componentes/landing/modales/PasosWizard";
-import type { PasoWizard } from "@/hooks/useWizardReporte";
+import type { PasoWizard } from "@/lib/reportes/pasos-wizard";
 
 type Props = {
   formRef: React.RefObject<HTMLFormElement | null>;

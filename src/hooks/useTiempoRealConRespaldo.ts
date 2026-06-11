@@ -5,9 +5,6 @@
 /**
  * Hook React: tiempo real con respaldo.
  */
-/**
- * Hook React: tiempo real con respaldo.
- */
 import { useRespaldoActualizacion } from "@/hooks/useRespaldoActualizacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
 import type { CanalTiempoReal, EventoTiempoReal } from "@/lib/tiempo-real/tipos";

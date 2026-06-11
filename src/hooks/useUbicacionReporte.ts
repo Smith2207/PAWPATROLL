@@ -5,9 +5,6 @@
 /**
  * Hook React: ubicacion reporte.
  */
-/**
- * Hook React: ubicacion reporte.
- */
 import { useState } from "react";
 import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 

@@ -5,9 +5,6 @@
 /**
  * [casos] Chat: privado caso.
  */
-/**
- * [casos] Chat: privado caso.
- */
 import { useEffect, useMemo, useRef, useState, useTransition, useCallback, type ReactNode } from "react";
 import { enviarMensajeAvistamiento } from "@/actions/avistamientos";
 import { marcarChatLeido, listarMensajesChatAvistamiento } from "@/actions/chat";
@@ -45,9 +42,12 @@ import {
 import type { CanalTiempoReal } from "@/lib/tiempo-real/tipos";
 import { useTiempoRealConRespaldo } from "@/hooks/useTiempoRealConRespaldo";
 import { preprocesarImagenCliente } from "@/lib/imagen/preprocesar-cliente";
+import { leerArchivoComoDataUrl } from "@/lib/imagen/leer-archivo-cliente";
 import {
   ACCEPT_INPUT_IMAGEN,
   MENSAJE_IMAGEN_ILEGIBLE,
+  MAX_BYTES_DATA_URL_IMAGEN,
+  MAX_BYTES_IMAGEN_USUARIO,
   validarArchivoImagen,
   validarDataUrlImagen,
 } from "@/lib/imagen/validar-archivo";
@@ -55,8 +55,6 @@ import { mensajeLeidoPorInterlocutor } from "@/lib/chat/lectura";
 import { Icono } from "@/componentes/ui/Icono";
 
 const ALTURA_MAX_TEXTO = 100;
-const MAX_ADJUNTO_BYTES = 900_000;
-const MAX_BYTES_ADJUNTO = 4 * 1024 * 1024;
 
 type Props = {
   avistamientoId: string;
@@ -393,40 +391,34 @@ export function ChatPrivadoCaso({
     e.target.value = "";
     if (!archivo) return;
     const validacion = validarArchivoImagen(archivo, {
-      maxBytes: MAX_BYTES_ADJUNTO,
+      maxBytes: MAX_BYTES_IMAGEN_USUARIO,
     });
     if (!validacion.ok) {
       setError(validacion.error);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const raw = reader.result?.toString();
-      if (!raw) {
-        setError(MENSAJE_IMAGEN_ILEGIBLE);
-        return;
-      }
+    try {
+      const raw = await leerArchivoComoDataUrl(archivo);
       const okData = validarDataUrlImagen(raw);
       if (!okData.ok) {
         setError(okData.error);
         return;
       }
-      try {
-        const comprimida = await preprocesarImagenCliente(raw, {
-          ladoMax: 800,
-          calidad: 0.78,
-        });
-        if (comprimida.length > MAX_ADJUNTO_BYTES) {
-          setError("La imagen sigue siendo muy pesada.");
-          return;
-        }
-        setAdjuntoPreview(comprimida);
-      } catch {
-        setError(MENSAJE_IMAGEN_ILEGIBLE);
+      const comprimida = await preprocesarImagenCliente(raw, {
+        ladoMax: 800,
+        calidad: 0.78,
+      });
+      const okTamano = validarDataUrlImagen(comprimida, {
+        maxBytes: MAX_BYTES_DATA_URL_IMAGEN,
+      });
+      if (!okTamano.ok) {
+        setError(okTamano.error);
+        return;
       }
-    };
-    reader.onerror = () => setError(MENSAJE_IMAGEN_ILEGIBLE);
-    reader.readAsDataURL(archivo);
+      setAdjuntoPreview(comprimida);
+    } catch {
+      setError(MENSAJE_IMAGEN_ILEGIBLE);
+    }
   }
 
   function enviar() {

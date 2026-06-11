@@ -5,9 +5,6 @@
 /**
  * [ui] Overlay: publicando.
  */
-/**
- * [ui] Overlay: publicando.
- */
 type Props = {
   visible: boolean;
   mensaje?: string;

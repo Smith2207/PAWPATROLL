@@ -5,9 +5,6 @@
 /**
  * [auth] Formulario: recuperar contrasena.
  */
-/**
- * [auth] Formulario: recuperar contrasena.
- */
 import { solicitarRecuperacionContrasena } from "@/actions/autenticacion";
 import Link from "next/link";
 import { useState } from "react";

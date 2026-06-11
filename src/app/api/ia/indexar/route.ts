@@ -9,12 +9,11 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { mascotas } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
 
 export async function POST(req: Request) {
-  const ip = ipDesdeRequest(req);
-  const limite = rateLimit(`ia-indexar:${ip}`, 10, 60_000);
-  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+  const bloqueado = verificarRateLimit(req, "ia-indexar", 10);
+  if (bloqueado) return bloqueado;
 
   const sesion = await auth();
   const userId = sesion?.user?.id;

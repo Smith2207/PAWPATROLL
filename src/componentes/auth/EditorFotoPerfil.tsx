@@ -5,15 +5,16 @@
 /**
  * [auth] Editor: foto perfil.
  */
-/**
- * [auth] Editor: foto perfil.
- */
 import { actualizarImagenPerfil } from "@/actions/autenticacion";
 import {
   ACCEPT_INPUT_IMAGEN,
+  MAX_BYTES_DATA_URL_IMAGEN,
+  MAX_BYTES_IMAGEN_USUARIO,
   MENSAJE_IMAGEN_ILEGIBLE,
   validarArchivoImagen,
+  validarDataUrlImagen,
 } from "@/lib/imagen/validar-archivo";
+import { leerArchivoComoDataUrl } from "@/lib/imagen/leer-archivo-cliente";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -23,15 +24,6 @@ type Props = {
   iniciales: string;
   nombre: string;
 };
-
-function leerArchivo(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 export function EditorFotoPerfil({ imagenInicial, iniciales, nombre }: Props) {
   const router = useRouter();
@@ -93,7 +85,7 @@ export function EditorFotoPerfil({ imagenInicial, iniciales, nombre }: Props) {
     if (!archivo) return;
 
     const validacion = validarArchivoImagen(archivo, {
-      maxBytes: 4 * 1024 * 1024,
+      maxBytes: MAX_BYTES_IMAGEN_USUARIO,
     });
     if (!validacion.ok) {
       setError(validacion.error);
@@ -102,7 +94,7 @@ export function EditorFotoPerfil({ imagenInicial, iniciales, nombre }: Props) {
     }
 
     try {
-      const dataUrl = await leerArchivo(archivo);
+      const dataUrl = await leerArchivoComoDataUrl(archivo);
       await guardarImagen(dataUrl);
     } catch {
       setError(MENSAJE_IMAGEN_ILEGIBLE);

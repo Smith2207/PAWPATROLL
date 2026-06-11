@@ -67,3 +67,11 @@ export async function preprocesarImagenesCliente(
 ): Promise<string[]> {
   return Promise.all(dataUrls.map((u) => preprocesarImagenCliente(u)));
 }
+
+/** Recorte cuadrado centrado para fotos de avistamiento antes de publicar. */
+export async function preprocesarFotoAvistamiento(
+  fotoUrl: string | undefined | null
+): Promise<string | undefined> {
+  if (!fotoUrl) return undefined;
+  return preprocesarImagenCliente(fotoUrl, { cuadrado: true });
+}

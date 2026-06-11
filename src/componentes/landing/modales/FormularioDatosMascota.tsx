@@ -5,9 +5,6 @@
 /**
  * [landing] Formulario: datos mascota.
  */
-/**
- * [landing] Formulario: datos mascota.
- */
 import { CampoRaza } from "@/componentes/formulario/CampoRaza";
 import { CampoSexo } from "@/componentes/formulario/CampoSexo";
 import { CampoTamano } from "@/componentes/formulario/CampoTamano";
@@ -15,19 +12,10 @@ import { CampoTipoMascota } from "@/componentes/formulario/CampoTipoMascota";
 import { CampoFechaHora } from "@/componentes/formulario/CampoFechaHora";
 import { CampoAccesoExterior } from "@/componentes/formulario/CampoAccesoExterior";
 import { useRazaPorTipo } from "@/hooks/useRazaPorTipo";
+import type { ValoresInicialesFichaMascota } from "@/lib/perdidas/tipos-ficha";
+import { clasePasoWizardSeccion } from "@/lib/reportes/wizard-ui";
 
-export type ValoresInicialesFichaMascota = {
-  nombre?: string;
-  tipo?: string;
-  raza?: string | null;
-  sexo?: string;
-  color?: string;
-  tamano?: string;
-  edad?: string;
-  descripcion?: string;
-  fechaPerdida?: string;
-  accesoExterior?: string;
-};
+export type { ValoresInicialesFichaMascota };
 
 type Props = {
   tipoInicial?: string;
@@ -36,12 +24,6 @@ type Props = {
   /** Wizard: 1 esencial, 2 detalles, 3 contacto (campos ocultos). Sin valor = formulario completo visible. */
   pasoActivo?: 1 | 2 | 3;
 };
-
-function clasePaso(seccion: 1 | 2, paso?: 1 | 2 | 3) {
-  if (!paso) return "";
-  if (seccion === 1) return paso === 1 ? "" : "pp-wizard-oculto";
-  return paso === 2 ? "" : "pp-wizard-oculto";
-}
 
 export function FormularioDatosMascota({
   tipoInicial = "",
@@ -68,7 +50,7 @@ export function FormularioDatosMascota({
     <>
       <input type="hidden" name="raza" value={razaCompuesta} />
 
-      <div className={clasePaso(1, pasoActivo)}>
+      <div className={clasePasoWizardSeccion(pasoActivo, 1)}>
         {!wizard && <div className="section-divider">Datos de la mascota</div>}
 
         <div className="form-row">
@@ -92,7 +74,7 @@ export function FormularioDatosMascota({
         </div>
       </div>
 
-      <div className={clasePaso(2, pasoActivo)}>
+      <div className={clasePasoWizardSeccion(pasoActivo, 2)}>
         {wizard && pasoActivo === 2 && (
           <div className="section-divider">Más detalles</div>
         )}

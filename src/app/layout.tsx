@@ -12,6 +12,7 @@ import { ProveedorModales } from "@/contexto/ContextoModales";
 import { Nunito, Fredoka } from "next/font/google";
 import "./globals.css";
 import "@/estilos/paleta.css";
+import "@/estilos/formularios.css";
 import "@/estilos/landing-pawpatrol.css";
 import "@/estilos/auth.css";
 import "@/estilos/mascotas.css";

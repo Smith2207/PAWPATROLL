@@ -17,7 +17,7 @@ import {
   FUENTES_COMPORTAMIENTO,
   type FuenteComportamiento,
 } from "@/lib/comportamiento/fuentes";
-import { parsearCoordenada } from "@/lib/geo/tipos";
+import { coordenadasDesdeValores } from "@/lib/geo/tipos";
 import type { Mascota } from "@/lib/db/schema";
 
 export type PrediccionComportamiento = {
@@ -61,9 +61,12 @@ export function calcularPrediccionComportamiento(
   mascota: PerfilMascotaPrediccion,
   avistamientos: PuntoAvistamientoCerco[] = []
 ): PrediccionComportamiento | null {
-  const lat = parsearCoordenada(mascota.latPerdida);
-  const lng = parsearCoordenada(mascota.lngPerdida);
-  if (lat == null || lng == null) return null;
+  const coords = coordenadasDesdeValores(
+    mascota.latPerdida,
+    mascota.lngPerdida
+  );
+  if (!coords) return null;
+  const { lat, lng } = coords;
 
   const perfilEntrada = {
     tipo: mascota.tipo,

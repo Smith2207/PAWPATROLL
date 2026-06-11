@@ -5,9 +5,6 @@
 /**
  * [geo] Componente React: dialogo permiso ubicacion.
  */
-/**
- * [geo] Componente React: dialogo permiso ubicacion.
- */
 import { Icono } from "@/componentes/ui/Icono";
 import type { EstadoPermisoUbicacion } from "@/lib/geo/permiso-ubicacion";
 

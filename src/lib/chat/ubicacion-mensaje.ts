@@ -1,6 +1,7 @@
 /**
  * Chat por avistamiento: ubicacion-mensaje.
  */
+import { coordenadasDesdeValores } from "@/lib/geo/tipos";
 export type UbicacionChat = {
   lat: number;
   lng: number;
@@ -66,14 +67,13 @@ export function parsearUbicacionMensaje(contenido: string): UbicacionChat | null
       texto
     );
   if (urlMatch) {
-    const lat = Number.parseFloat(urlMatch[1]);
-    const lng = Number.parseFloat(urlMatch[2]);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    const coords = coordenadasDesdeValores(urlMatch[1], urlMatch[2]);
+    if (coords) {
       const sinUrl = texto.replace(urlMatch[0], "").replace(/^📍\s*/, "").trim();
       return {
-        lat,
-        lng,
-        label: sinUrl || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+        lat: coords.lat,
+        lng: coords.lng,
+        label: sinUrl || `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`,
       };
     }
   }

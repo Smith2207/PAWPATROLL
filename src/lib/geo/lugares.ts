@@ -1,6 +1,7 @@
 /**
  * Geolocalización y mapas: lugares.
  */
+import { parsearCoordenada } from "@/lib/geo/tipos";
 import { subtituloDesdePartes } from "@/lib/geo/partes-ubicacion";
 
 /** Resultado de búsqueda de dirección o lugar (Google Autocomplete o Nominatim). */
@@ -53,9 +54,9 @@ export type ItemNominatim = {
 };
 
 export function lugarDesdeNominatim(item: ItemNominatim): ResultadoBusquedaLugar | null {
-  const lat = Number.parseFloat(item.lat);
-  const lng = Number.parseFloat(item.lon);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  const lat = parsearCoordenada(item.lat);
+  const lng = parsearCoordenada(item.lon);
+  if (lat === null || lng === null) return null;
 
   const addr = item.address;
   const etiqueta =

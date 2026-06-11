@@ -5,9 +5,6 @@
 /**
  * [layout] Componente React: enlace chats nav.
  */
-/**
- * [layout] Componente React: enlace chats nav.
- */
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

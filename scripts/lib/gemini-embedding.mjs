@@ -4,17 +4,14 @@
  */
 import { readFileSync, existsSync } from "fs";
 import { GoogleGenAI } from "@google/genai";
+import { dataUrlABuffer } from "./data-url.mjs";
+import {
+  MODELO_GEMINI_EMBEDDING,
+  MODELO_GEMINI_VISION,
+  PROMPT_DESCRIPCION_MASCOTA_GEMINI,
+} from "./gemini-config.mjs";
 
-export const MODELO_GEMINI_VISION =
-  process.env.GEMINI_VISION_MODEL?.trim() || "gemini-2.5-flash";
-
-export const MODELO_GEMINI_EMBEDDING =
-  process.env.GEMINI_EMBEDDING_MODEL?.trim() ||
-  "gemini-embedding-2-preview";
-
-const PROMPT = `Describe esta mascota (perro o gato) para búsqueda visual.
-Incluye: especie, tamaño, colores del pelaje, patrones, señas visibles.
-Responde en español, solo palabras clave separadas por comas.`;
+const PROMPT = PROMPT_DESCRIPCION_MASCOTA_GEMINI;
 
 function proyecto() {
   return (
@@ -113,14 +110,7 @@ export async function verificarCredencialesGemini() {
   });
 }
 
-function dataUrlABuffer(dataUrl) {
-  const match = /^data:image\/([\w+.-]+);base64,(.+)$/i.exec(dataUrl);
-  if (!match) throw new Error("Data URL inválido.");
-  const buffer = Buffer.from(match[2], "base64");
-  const sub = match[1].toLowerCase();
-  const mime = sub === "jpg" ? "image/jpeg" : `image/${sub}`;
-  return { buffer, mime };
-}
+export { MODELO_GEMINI_EMBEDDING, MODELO_GEMINI_VISION } from "./gemini-config.mjs";
 
 async function describir(buffer, mime) {
   const ai = await cliente();

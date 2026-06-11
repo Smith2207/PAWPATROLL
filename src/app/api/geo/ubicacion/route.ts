@@ -3,13 +3,14 @@
  */
 import { NextResponse } from "next/server";
 import { geolocalizarPorIpCliente } from "@/lib/geo/geolocalizar-ip";
-import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
+import { verificarRateLimit, ipDesdeRequest } from "@/lib/api/rate-limit";
 
 /** Respaldo por IP del visitante (cuando falla el GPS del navegador). */
 export async function POST(req: Request) {
+  const bloqueado = verificarRateLimit(req, "geo-ubicacion", 15);
+  if (bloqueado) return bloqueado;
+
   const ip = ipDesdeRequest(req);
-  const limite = rateLimit(`geo-ubicacion:${ip}`, 15, 60_000);
-  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
 
   try {
     const resultado = await geolocalizarPorIpCliente(ip);

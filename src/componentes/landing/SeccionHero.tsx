@@ -5,9 +5,6 @@
 /**
  * [landing] Sección: hero.
  */
-/**
- * [landing] Sección: hero.
- */
 import type { EstadisticasLanding } from "@/actions/estadisticas";
 import type { DatosMapaPublico } from "@/actions/mapa";
 import { useModales } from "@/contexto/ContextoModales";

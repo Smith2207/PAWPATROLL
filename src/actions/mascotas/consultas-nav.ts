@@ -5,9 +5,6 @@
 /**
  * Server Actions (mascotas › consultas-nav): operaciones de servidor invocadas desde la UI.
  */
-/**
- * Server Actions (mascotas › consultas-nav): operaciones de servidor invocadas desde la UI.
- */
 import { and, count, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { avistamientos, mascotas } from "@/lib/db/schema";

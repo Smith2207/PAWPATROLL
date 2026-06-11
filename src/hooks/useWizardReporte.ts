@@ -5,16 +5,13 @@
 /**
  * Hook React: wizard reporte.
  */
-/**
- * Hook React: wizard reporte.
- */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useModales, type TipoModal, type TipoPublicandoReporte } from "@/contexto/ContextoModales";
 import { EVENTO_REPORTE_PUBLICADO } from "@/lib/eventos-cliente";
 import { RUTAS_LANDING } from "@/lib/landing/rutas";
 
-export type PasoWizard = { id: number; titulo: string };
+export type { PasoWizard } from "@/lib/reportes/pasos-wizard";
 
 type ResultadoExito = {
   mensaje: string;

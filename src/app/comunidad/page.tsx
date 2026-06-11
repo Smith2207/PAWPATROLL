@@ -1,4 +1,4 @@
-import { listarDatosMapaPublico } from "@/actions/mapa";
+import { listarDatosMapaPublico, type DatosMapaPublico } from "@/actions/mapa";
 import {
   listarActividadComunidad,
   listarTopColaboradores,
@@ -8,7 +8,6 @@ import { EncabezadoPagina } from "@/componentes/landing/EncabezadoPagina";
 import { SeccionMapa } from "@/componentes/landing/SeccionMapa";
 import { SeccionFeedComunidad } from "@/componentes/comunidad/SeccionFeedComunidad";
 import { conTimeout } from "@/lib/utilidades/timeout";
-import type { DatosMapaPublico } from "@/actions/mapa";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +44,7 @@ export default async function PaginaComunidad() {
         <EncabezadoPagina
           eyebrow="Mapa en vivo"
           titulo="Comunidad"
-          descripcion="Ubicación de mascotas perdidas en el mapa. "
+          descripcion="Ubicación de mascotas perdidas en el mapa. Zonas de búsqueda, avistamientos y refugios probables en la página de cada una."
         />
         <div className="pp-comunidad-cuerpo">
           <SeccionMapa datos={datosMapa} sinEncabezado centrado />

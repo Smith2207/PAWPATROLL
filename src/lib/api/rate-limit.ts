@@ -53,3 +53,18 @@ export function respuestaRateLimit(reintentarEnSeg: number, limite?: number) {
     }
   );
 }
+
+/** Devuelve Response 429 o null si la petición puede continuar. */
+export function verificarRateLimit(
+  request: Request,
+  clave: string,
+  limite: number,
+  ventanaMs = 60_000
+): Response | null {
+  const ip = ipDesdeRequest(request);
+  const resultado = rateLimit(`${clave}:${ip}`, limite, ventanaMs);
+  if (!resultado.ok) {
+    return respuestaRateLimit(resultado.reintentarEnSeg, limite);
+  }
+  return null;
+}

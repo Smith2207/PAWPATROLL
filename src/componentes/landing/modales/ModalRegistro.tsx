@@ -5,9 +5,6 @@
 /**
  * [landing] Modal: registro.
  */
-/**
- * [landing] Modal: registro.
- */
 import { Icono } from "@/componentes/ui/Icono";
 import { FormularioRegistro } from "@/componentes/auth/FormularioRegistro";
 import {

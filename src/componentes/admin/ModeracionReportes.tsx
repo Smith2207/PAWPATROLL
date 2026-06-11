@@ -5,9 +5,6 @@
 /**
  * [admin] Componente React: moderacion reportes.
  */
-/**
- * [admin] Componente React: moderacion reportes.
- */
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {

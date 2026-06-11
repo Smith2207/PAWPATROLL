@@ -5,9 +5,6 @@
 /**
  * [landing] Formulario: fotos mascota.
  */
-/**
- * [landing] Formulario: fotos mascota.
- */
 import { GaleriaFotosMascota } from "@/componentes/mascotas/GaleriaFotosMascota";
 import type { CamaraReporteApi } from "@/hooks/useCamaraReporte";
 

@@ -5,20 +5,18 @@ import type { FiltrosBusquedaVisual } from "@/lib/visual/rerank";
 import {
   validarArchivoImagen,
   validarDataUrlImagen,
+  MAX_BYTES_IMAGEN_USUARIO,
 } from "@/lib/imagen/validar-archivo";
-import { ipDesdeRequest, rateLimit, respuestaRateLimit } from "@/lib/api/rate-limit";
+import { verificarRateLimit } from "@/lib/api/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 /** Gemini: ~2–5 s. CLIP local (respaldo): primera vez ~1–2 min */
 export const maxDuration = 120;
 
-const MAX_BYTES = 4 * 1024 * 1024;
-
 export async function POST(req: Request) {
-  const ip = ipDesdeRequest(req);
-  const limite = rateLimit(`ia-buscar:${ip}`, 20, 60_000);
-  if (!limite.ok) return respuestaRateLimit(limite.reintentarEnSeg);
+  const bloqueado = verificarRateLimit(req, "ia-buscar", 20);
+  if (bloqueado) return bloqueado;
 
   try {
     const ct = req.headers.get("content-type") ?? "";
@@ -52,7 +50,9 @@ export async function POST(req: Request) {
       const fd = await req.formData();
       const archivo = fd.get("imagen") ?? fd.get("foto");
       if (archivo instanceof File) {
-        const validacion = validarArchivoImagen(archivo, { maxBytes: MAX_BYTES });
+        const validacion = validarArchivoImagen(archivo, {
+          maxBytes: MAX_BYTES_IMAGEN_USUARIO,
+        });
         if (!validacion.ok) {
           return Response.json({ ok: false, error: validacion.error }, { status: 400 });
         }

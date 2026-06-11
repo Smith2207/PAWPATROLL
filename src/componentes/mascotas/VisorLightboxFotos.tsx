@@ -5,9 +5,6 @@
 /**
  * [mascotas] Componente React: visor lightbox fotos.
  */
-/**
- * [mascotas] Componente React: visor lightbox fotos.
- */
 import { useEffect } from "react";
 import { Icono } from "@/componentes/ui/Icono";
 

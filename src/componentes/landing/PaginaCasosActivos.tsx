@@ -5,9 +5,6 @@
 /**
  * [landing] Componente React: pagina casos activos.
  */
-/**
- * [landing] Componente React: pagina casos activos.
- */
 import { useCallback, useEffect, useState } from "react";
 import {
   buscarMascotasPublicas,

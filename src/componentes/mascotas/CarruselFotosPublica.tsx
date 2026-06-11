@@ -5,9 +5,6 @@
 /**
  * [mascotas] Componente React: carrusel fotos publica.
  */
-/**
- * [mascotas] Componente React: carrusel fotos publica.
- */
 import { VisorLightboxFotos } from "@/componentes/mascotas/VisorLightboxFotos";
 import { Icono } from "@/componentes/ui/Icono";
 import { useCallback, useEffect, useState } from "react";

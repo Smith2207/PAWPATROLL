@@ -11,6 +11,15 @@ const EXTENSIONES_IMAGEN_PERMITIDAS = [".jpg", ".jpeg", ".png", ".webp"];
 export const ACCEPT_INPUT_IMAGEN =
   "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp";
 
+/** Límite habitual en subidas de usuario (4 MB) */
+export const MAX_BYTES_IMAGEN_USUARIO = 4 * 1024 * 1024;
+
+/** Tamaño máximo de data URL guardada en BD (~900 KB de cadena base64) */
+export const MAX_BYTES_DATA_URL_IMAGEN = 900_000;
+
+export const MENSAJE_DATA_URL_PESADA =
+  "La imagen es demasiado pesada. Usa una más pequeña.";
+
 export const MENSAJE_FORMATO_IMAGEN =
   "Solo se permiten imágenes JPG, PNG o WebP. Sube otra foto.";
 
@@ -49,7 +58,8 @@ export function validarArchivoImagen(
 }
 
 export function validarDataUrlImagen(
-  dataUrl: string
+  dataUrl: string,
+  opciones?: { maxBytes?: number }
 ): { ok: true } | { ok: false; error: string } {
   if (!dataUrl.startsWith("data:image/")) {
     return { ok: false, error: MENSAJE_FORMATO_IMAGEN };
@@ -59,6 +69,9 @@ export function validarDataUrlImagen(
     finMime > 5 ? dataUrl.slice(5, finMime).toLowerCase() : dataUrl.slice(5).toLowerCase();
   if (!mimeImagenPermitido(mime)) {
     return { ok: false, error: MENSAJE_FORMATO_IMAGEN };
+  }
+  if (opciones?.maxBytes != null && dataUrl.length > opciones.maxBytes) {
+    return { ok: false, error: MENSAJE_DATA_URL_PESADA };
   }
   return { ok: true };
 }

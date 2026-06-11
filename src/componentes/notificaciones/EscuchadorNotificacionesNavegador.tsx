@@ -5,9 +5,6 @@
 /**
  * [notificaciones] Escuchador: notificaciones navegador.
  */
-/**
- * [notificaciones] Escuchador: notificaciones navegador.
- */
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";

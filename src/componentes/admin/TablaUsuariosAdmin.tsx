@@ -5,9 +5,6 @@
 /**
  * [admin] Componente React: tabla usuarios admin.
  */
-/**
- * [admin] Componente React: tabla usuarios admin.
- */
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {

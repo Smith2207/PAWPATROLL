@@ -5,9 +5,6 @@
 /**
  * Server Actions (mapa): operaciones de servidor invocadas desde la UI.
  */
-/**
- * Server Actions (mapa): operaciones de servidor invocadas desde la UI.
- */
 import { and, desc, eq, gte, inArray, ne } from "drizzle-orm";
 import type { FiltrosMapaPublico } from "@/lib/mapa/filtros";
 import { db } from "@/lib/db";
@@ -19,7 +16,7 @@ import {
 import { estimarRadioBusquedaMetros } from "@/lib/comportamiento/evidencia-radios";
 import { calcularPrediccionComportamiento } from "@/lib/comportamiento/prediccion";
 import type { PrediccionComportamiento } from "@/lib/comportamiento/prediccion";
-import { parsearCoordenada, type Coordenadas } from "@/lib/geo/tipos";
+import { coordenadasDesdeValores, type Coordenadas } from "@/lib/geo/tipos";
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 
 export type MarcadorPerdidaMapa = {
@@ -157,9 +154,9 @@ export async function listarDatosMapaPublico(
   const avistamientosLista: MarcadorAvistamientoMapa[] = [];
 
   for (const fila of avistamientosRaw) {
-    const lat = parsearCoordenada(fila.av.lat);
-    const lng = parsearCoordenada(fila.av.lng);
-    if (lat == null || lng == null) continue;
+    const coords = coordenadasDesdeValores(fila.av.lat, fila.av.lng);
+    if (!coords) continue;
+    const { lat, lng } = coords;
 
     avistamientosLista.push({
       id: fila.av.id,
@@ -195,9 +192,9 @@ export async function listarDatosMapaPublico(
   const perdidas: MarcadorPerdidaMapa[] = [];
 
   for (const m of perdidasRaw) {
-    const lat = parsearCoordenada(m.latPerdida);
-    const lng = parsearCoordenada(m.lngPerdida);
-    if (lat == null || lng == null) continue;
+    const coords = coordenadasDesdeValores(m.latPerdida, m.lngPerdida);
+    if (!coords) continue;
+    const { lat, lng } = coords;
 
     const vinculados = (avistamientosPorMascota.get(m.id) ?? []).sort(
       (a, b) => a.numeroReporte - b.numeroReporte
@@ -293,9 +290,9 @@ export async function listarDatosMapaMascota(
 
   const avistamientosLista: MarcadorAvistamientoMapa[] = [];
   for (const av of avistamientosRaw) {
-    const lat = parsearCoordenada(av.lat);
-    const lng = parsearCoordenada(av.lng);
-    if (lat == null || lng == null) continue;
+    const coords = coordenadasDesdeValores(av.lat, av.lng);
+    if (!coords) continue;
+    const { lat, lng } = coords;
 
     avistamientosLista.push({
       id: av.id,
@@ -330,8 +327,7 @@ export async function listarDatosMapaMascota(
   }
 
   const perdidas: MarcadorPerdidaMapa[] = [];
-  const latPerdida = parsearCoordenada(m.latPerdida);
-  const lngPerdida = parsearCoordenada(m.lngPerdida);
+  const coordsPerdida = coordenadasDesdeValores(m.latPerdida, m.lngPerdida);
 
   const prediccion = calcularPrediccionComportamiento(
     m,
@@ -342,7 +338,8 @@ export async function listarDatosMapaMascota(
     }))
   );
 
-  if (latPerdida != null && lngPerdida != null) {
+  if (coordsPerdida) {
+    const { lat: latPerdida, lng: lngPerdida } = coordsPerdida;
     const radioBase =
       prediccion?.radioActualMetros ??
       m.radioBusquedaMetros ??

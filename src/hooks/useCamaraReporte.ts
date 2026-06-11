@@ -5,9 +5,6 @@
 /**
  * Hook React: camara reporte.
  */
-/**
- * Hook React: camara reporte.
- */
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useFotosMascota } from "@/hooks/useFotosMascota";
 

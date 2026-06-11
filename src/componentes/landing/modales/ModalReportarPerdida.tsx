@@ -1,24 +1,23 @@
+/**
+ * [landing] Modal: reportar perdida.
+ */
 "use client";
 
-
-
-/**
- * [landing] Modal: reportar perdida.
- */
-/**
- * [landing] Modal: reportar perdida.
- */
 import { useCallback, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ModalContenedor } from "@/componentes/landing/modales/ModalContenedor";
-import { FormularioFotosMascota } from "@/componentes/landing/modales/FormularioFotosMascota";
 import { AccionesWizardReporteConIcono } from "@/componentes/landing/modales/ui/AccionesWizardReporte";
 import { AvisoLoginAntesPublicar } from "@/componentes/landing/modales/ui/AvisoLoginAntesPublicar";
-import { EncabezadoModalReporte } from "@/componentes/landing/modales/ui/EncabezadoModalReporte";
 import { FormularioWizardReporte } from "@/componentes/landing/modales/ui/FormularioWizardReporte";
-import { SeccionUbicacionReporte } from "@/componentes/landing/modales/ui/SeccionUbicacionReporte";
+import { ShellModalReporte } from "@/componentes/landing/modales/ui/ShellModalReporte";
+import { PasoContactoPerdida } from "@/componentes/landing/modales/perdida/PasoContactoPerdida";
+import { PasoUbicacionFotosPerdida } from "@/componentes/landing/modales/perdida/PasoUbicacionFotosPerdida";
+import { PanelExitoReporte } from "@/componentes/landing/modales/PanelExitoReporte";
+import {
+  FormularioDatosMascota,
+  type ValoresInicialesFichaMascota,
+} from "@/componentes/landing/modales/FormularioDatosMascota";
 import { useCamaraReporte } from "@/hooks/useCamaraReporte";
 import { useUbicacionReporte } from "@/hooks/useUbicacionReporte";
 import { useWizardReporte } from "@/hooks/useWizardReporte";
@@ -30,30 +29,18 @@ import {
 } from "@/lib/perdidas/borrador-cliente";
 import {
   armarBorradorPerdida,
-  extraerRecompensa,
-  validarPaso1Perdida,
-  validarPaso2Perdida,
+  camposDesdeBorradorPerdida,
+  validarAvancePasoPerdida,
+  validarPublicacionPerdida,
 } from "@/lib/perdidas/formulario-borrador";
 import { publicarReportePerdida } from "@/lib/perdidas/publicar-reporte";
 import {
-  MSG_UBICACION_CORTA_PERDIDA,
-  errorSiSinUbicacion,
-} from "@/lib/reportes/validaciones";
-import {
-  FormularioDatosMascota,
-  type ValoresInicialesFichaMascota,
-} from "@/componentes/landing/modales/FormularioDatosMascota";
-import { OverlayPublicando } from "@/componentes/ui/OverlayPublicando";
-import { PanelExitoReporte } from "@/componentes/landing/modales/PanelExitoReporte";
-
-const PASOS_PERDIDA = [
-  { id: 1, titulo: "Lo esencial" },
-  { id: 2, titulo: "Detalles" },
-  { id: 3, titulo: "Contacto" },
-] as const;
-
-const AVISO_LOGIN =
-  "Al activar la alerta, guardaremos tu reporte y te pediremos iniciar sesión para publicarlo de forma segura.";
+  AVISO_LOGIN_REPORTE_PERDIDA,
+  MENSAJE_ERROR_GUARDADO_PERDIDA,
+} from "@/lib/reportes/mensajes";
+import { abrirCompartirWhatsAppAlerta } from "@/lib/reportes/compartir";
+import { PASOS_WIZARD_PERDIDA } from "@/lib/reportes/pasos-wizard";
+import { clasePasoWizardVisible } from "@/lib/reportes/wizard-ui";
 
 export function ModalReportarPerdida() {
   const { data: sesion, status } = useSession();
@@ -77,36 +64,16 @@ export function ModalReportarPerdida() {
     const borrador = leerBorradorPerdida();
     if (!borrador) return false;
 
-    const { descripcion, recompensa: recomp } = extraerRecompensa(
-      borrador.datosMascota.descripcion
-    );
-
-    setValoresFicha({
-      nombre: borrador.datosMascota.nombre,
-      tipo: borrador.datosMascota.tipo,
-      raza: borrador.datosMascota.raza,
-      sexo: borrador.datosMascota.sexo ?? "",
-      color: borrador.datosMascota.color ?? "",
-      tamano: borrador.datosMascota.tamano ?? "",
-      edad: borrador.datosMascota.edad ?? "",
-      accesoExterior: borrador.datosMascota.accesoExterior ?? "",
-      descripcion,
-      fechaPerdida: borrador.perdida.fechaPerdida,
-    });
-    setUbicacion({
-      lat: borrador.perdida.latPerdida,
-      lng: borrador.perdida.lngPerdida,
-    });
-    const partesLugar = borrador.perdida.lugarPerdida.split(" · ");
-    setDireccion(partesLugar[0] ?? "");
-    setReferenciasZona(
-      borrador.referenciasZona ?? borrador.perdida.notas ?? partesLugar[1] ?? ""
-    );
-    setContactoNombre(borrador.contactoNombre ?? "");
-    setContactoTelefono(borrador.contactoTelefono ?? "");
-    setContactoEmail(borrador.contactoEmail ?? "");
-    setRecompensa(borrador.recompensa ?? recomp);
-    camara.establecerFotos(borrador.fotos);
+    const campos = camposDesdeBorradorPerdida(borrador);
+    setValoresFicha(campos.valoresFicha);
+    setUbicacion(campos.ubicacion);
+    setDireccion(campos.direccion);
+    setReferenciasZona(campos.referenciasZona);
+    setContactoNombre(campos.contactoNombre);
+    setContactoTelefono(campos.contactoTelefono);
+    setContactoEmail(campos.contactoEmail);
+    setRecompensa(campos.recompensa);
+    camara.establecerFotos(campos.fotos);
     setClaveFormulario((k) => k + 1);
     return true;
   }, [camara, setDireccion, setUbicacion]);
@@ -154,45 +121,25 @@ export function ModalReportarPerdida() {
     const form = e.currentTarget;
 
     if (paso < pasoFinal) {
-      if (paso === 1) {
-        irSiguiente(() =>
-          validarPaso1Perdida(form, ubicacion, camara.fotosPreview)
-        );
-      } else if (paso === 2) {
-        irSiguiente(() => validarPaso2Perdida(form));
-      } else {
-        irSiguiente();
-      }
+      irSiguiente(() =>
+        validarAvancePasoPerdida(paso, form, ubicacion, camara.fotosPreview)
+      );
       return;
     }
 
-    const err1 = validarPaso1Perdida(form, ubicacion, camara.fotosPreview);
-    if (err1) {
-      setError(err1);
-      setPaso(1);
-      return;
-    }
-
-    const err2 = validarPaso2Perdida(form);
-    if (err2) {
-      setError(err2);
-      setPaso(2);
-      return;
-    }
-
-    const errUbicacion = errorSiSinUbicacion(
+    const errPublicacion = validarPublicacionPerdida(
+      form,
       ubicacion,
-      MSG_UBICACION_CORTA_PERDIDA
+      camara.fotosPreview
     );
-    if (errUbicacion) {
-      setError(errUbicacion);
-      setPaso(1);
+    if (errPublicacion) {
+      setError(errPublicacion.error);
+      setPaso(errPublicacion.paso);
       return;
     }
 
-    const fd = new FormData(form);
     const borrador = armarBorradorPerdida(
-      fd,
+      new FormData(form),
       ubicacion!,
       direccion,
       camara.fotosPreview
@@ -208,8 +155,7 @@ export function ModalReportarPerdida() {
         guardarBorrador: () => guardarBorradorPerdida(borrador),
         marcarPendienteStorage: marcarPerdidaPendienteAuth,
         setFlagContexto: setPerdidaPendienteAuth,
-        mensajeErrorGuardado:
-          "No se pudo guardar el reporte (las fotos pueden ser muy pesadas). Prueba con imágenes más pequeñas.",
+        mensajeErrorGuardado: MENSAJE_ERROR_GUARDADO_PERDIDA,
       });
       return;
     }
@@ -228,15 +174,6 @@ export function ModalReportarPerdida() {
     camara.limpiarFotos();
     limpiarUbicacion();
     router.refresh();
-  }
-
-  function compartirWhatsApp() {
-    if (!slugExito || typeof window === "undefined") return;
-    const url = `${window.location.origin}/mascota/${slugExito}`;
-    const texto = encodeURIComponent(
-      `Ayúdame a encontrar a mi mascota. Mira la alerta en PawPatrol: ${url}`
-    );
-    window.open(`https://wa.me/?text=${texto}`, "_blank", "noopener,noreferrer");
   }
 
   if (exito) {
@@ -262,7 +199,7 @@ export function ModalReportarPerdida() {
             <button
               type="button"
               className="submit-btn submit-btn-blue"
-              onClick={compartirWhatsApp}
+              onClick={() => abrirCompartirWhatsAppAlerta(slugExito)}
             >
               Compartir en WhatsApp
             </button>
@@ -273,31 +210,28 @@ export function ModalReportarPerdida() {
   }
 
   return (
-    <ModalContenedor tipo="report">
-      <OverlayPublicando
-        visible={publicando}
-        mensaje="Activando alerta de búsqueda…"
-      />
-      <EncabezadoModalReporte
-        tipo="report"
-        titulo="Perdí mi mascota"
-        subtitulo={
-          <>
-            {paso === 1 &&
-              "Cuéntanos lo esencial: nombre, foto y dónde se perdió. La comunidad podrá ayudarte en minutos."}
-            {paso === 2 &&
-              "Un poco más de detalle ayuda a quien la vea en la calle a reconocerla."}
-            {paso === 3 &&
-              "Tu contacto aparece en la página pública para que puedan escribirte."}
-          </>
-        }
-      />
+    <ShellModalReporte
+      tipo="report"
+      publicando={publicando}
+      mensajePublicando="Activando alerta de búsqueda…"
+      titulo="Perdí mi mascota"
+      subtitulo={
+        <>
+          {paso === 1 &&
+            "Cuéntanos lo esencial: nombre, foto y dónde se perdió. La comunidad podrá ayudarte en minutos."}
+          {paso === 2 &&
+            "Un poco más de detalle ayuda a quien la vea en la calle a reconocerla."}
+          {paso === 3 &&
+            "Tu contacto aparece en la página pública para que puedan escribirte."}
+        </>
+      }
+    >
       <FormularioWizardReporte
         formRef={formRef}
         onSubmit={enviar}
         avisoBorrador={avisoBorrador}
         error={error}
-        pasos={PASOS_PERDIDA}
+        pasos={PASOS_WIZARD_PERDIDA}
         pasoActivo={paso}
         etiquetaPasos="Progreso del reporte"
       >
@@ -307,89 +241,36 @@ export function ModalReportarPerdida() {
           pasoActivo={paso as 1 | 2 | 3}
         />
 
-        <div className={paso === 1 ? "" : "pp-wizard-oculto"}>
-          <SeccionUbicacionReporte
-            tituloSeccion="Ubicación donde se perdió"
-            etiqueta="¿Dónde se perdió? *"
-            idInput="report-location"
-            icono="ubicacion"
-            valor={ubicacion}
-            onChange={setUbicacion}
+        <div className={clasePasoWizardVisible(paso, 1)}>
+          <PasoUbicacionFotosPerdida
+            ubicacion={ubicacion}
+            onUbicacionChange={setUbicacion}
             direccion={direccion}
             onDireccionChange={setDireccion}
-          >
-            <div className="form-group">
-              <label htmlFor="referenciasZona">
-                Referencias adicionales de la zona
-              </label>
-              <input
-                id="referenciasZona"
-                name="referenciasZona"
-                type="text"
-                placeholder="Ej: Cerca al mercado, frente al parque..."
-                value={referenciasZona}
-                onChange={(e) => setReferenciasZona(e.target.value)}
-              />
-            </div>
-          </SeccionUbicacionReporte>
-          <FormularioFotosMascota camara={camara} />
+            referenciasZona={referenciasZona}
+            onReferenciasZonaChange={setReferenciasZona}
+            camara={camara}
+          />
         </div>
 
-        <div className={paso === 3 ? "" : "pp-wizard-oculto"}>
-          <div className="section-divider">Datos de contacto en la página pública</div>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="contactoNombre">Tu nombre</label>
-              <input
-                id="contactoNombre"
-                name="contactoNombre"
-                type="text"
-                placeholder="Nombre del dueño"
-                value={contactoNombre || sesion?.user?.name || ""}
-                onChange={(e) => setContactoNombre(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="contactoTelefono">
-                Teléfono (público en la página)
-              </label>
-              <input
-                id="contactoTelefono"
-                name="contactoTelefono"
-                type="tel"
-                placeholder="+51 999 999 999"
-                value={contactoTelefono}
-                onChange={(e) => setContactoTelefono(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="form-group">
-            <label htmlFor="contactoEmail">Correo (público en la página)</label>
-            <input
-              id="contactoEmail"
-              name="contactoEmail"
-              type="email"
-              placeholder="tucorreo@ejemplo.com"
-              value={contactoEmail || sesion?.user?.email || ""}
-              onChange={(e) => setContactoEmail(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="recompensa">¿Ofrece recompensa?</label>
-            <input
-              id="recompensa"
-              name="recompensa"
-              type="text"
-              placeholder="Ej: S/. 200 a quien lo encuentre (opcional)"
-              value={recompensa}
-              onChange={(e) => setRecompensa(e.target.value)}
-            />
-          </div>
+        <div className={clasePasoWizardVisible(paso, 3)}>
+          <PasoContactoPerdida
+            contactoNombre={contactoNombre}
+            onContactoNombreChange={setContactoNombre}
+            contactoTelefono={contactoTelefono}
+            onContactoTelefonoChange={setContactoTelefono}
+            contactoEmail={contactoEmail}
+            onContactoEmailChange={setContactoEmail}
+            recompensa={recompensa}
+            onRecompensaChange={setRecompensa}
+            nombreSesion={sesion?.user?.name}
+            emailSesion={sesion?.user?.email}
+          />
         </div>
 
         <AvisoLoginAntesPublicar
           visible={paso === 3 && !sesionActiva}
-          mensaje={AVISO_LOGIN}
+          mensaje={AVISO_LOGIN_REPORTE_PERDIDA}
         />
 
         <AccionesWizardReporteConIcono
@@ -402,6 +283,6 @@ export function ModalReportarPerdida() {
           iconoEnviar="alerta"
         />
       </FormularioWizardReporte>
-    </ModalContenedor>
+    </ShellModalReporte>
   );
 }

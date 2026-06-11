@@ -5,9 +5,6 @@
 /**
  * [casos] Contenedor: hub chats.
  */
-/**
- * [casos] Contenedor: hub chats.
- */
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";

@@ -1,10 +1,13 @@
 /**
  * Dominio mascotas (fichas, estados, validación): validacion.
  */
+import {
+  MAX_BYTES_DATA_URL_IMAGEN,
+  validarDataUrlImagen,
+} from "@/lib/imagen/validar-archivo";
 import { TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 
 const MAX_FOTOS = 5;
-const MAX_DATA_URL_BYTES = 900_000;
 
 export function validarDatosMascota(datos: {
   nombre: string;
@@ -35,10 +38,9 @@ export function validarFotosDataUrl(fotos: string[]) {
   }
 
   for (const url of fotos) {
-    if (!url.startsWith("data:image/")) {
-      return { ok: false as const, error: "Formato de imagen no válido." };
-    }
-    if (url.length > MAX_DATA_URL_BYTES) {
+    const validacion = validarDataUrlImagen(url);
+    if (!validacion.ok) return validacion;
+    if (url.length > MAX_BYTES_DATA_URL_IMAGEN) {
       return {
         ok: false as const,
         error: "Alguna imagen es demasiado pesada. Usa fotos más pequeñas.",

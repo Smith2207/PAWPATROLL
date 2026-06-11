@@ -5,9 +5,6 @@
 /**
  * Server Actions (avistamientos): operaciones de servidor invocadas desde la UI.
  */
-/**
- * Server Actions (avistamientos): operaciones de servidor invocadas desde la UI.
- */
 import { and, asc, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -24,6 +21,7 @@ import { coordenadasValidas, type Coordenadas } from "@/lib/geo/tipos";
 import { esTipoMascotaPermitido, TIPOS_MASCOTA } from "@/lib/mascotas/tipos";
 import { emitirTiempoReal } from "@/lib/tiempo-real/hub";
 import { enviarCorreoAvistamientoNuevo, enviarCorreoMensajeChat } from "@/lib/email/enviarAvistamiento";
+import { validarAdjuntoChat } from "@/lib/imagen/validar-adjunto-chat";
 import {
   crearNotificacionPrivada,
   registrarCoincidenciaIaDueno,
@@ -37,7 +35,6 @@ import {
   puedeGestionarReporte,
 } from "@/lib/reportes/acceso";
 import { ETIQUETA_MENSAJE_FOTO } from "@/lib/chat/mensaje";
-import { esAdjuntoChatValido } from "@/lib/storage/blob-chat";
 import { sesionUsuario } from "@/lib/auth/sesion-servidor";
 
 export type DatosAvistamiento = {
@@ -424,11 +421,11 @@ export async function enviarMensajeAvistamiento(
   if (texto.length > 2000) {
     return { ok: false, error: "Mensaje demasiado largo." };
   }
-  if (adjunto && !esAdjuntoChatValido(adjunto)) {
-    return { ok: false, error: "Solo se permiten imágenes como adjunto." };
-  }
-  if (adjunto?.startsWith("data:image/") && adjunto.length > 900_000) {
-    return { ok: false, error: "La imagen es demasiado pesada." };
+  if (adjunto) {
+    const validacionAdjunto = validarAdjuntoChat(adjunto);
+    if (!validacionAdjunto.ok) {
+      return { ok: false, error: validacionAdjunto.error };
+    }
   }
 
   const userId = await sesionUsuario();

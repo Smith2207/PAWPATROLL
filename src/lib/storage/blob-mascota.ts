@@ -2,6 +2,7 @@
  * Librería (storage): blob-mascota.
  */
 import { put } from "@vercel/blob";
+import { dataUrlABuffer } from "@/lib/visual/data-url";
 
 const EXT_POR_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -20,14 +21,10 @@ export function esUrlBlobMascota(url: string | null | undefined): boolean {
   return u.includes(".blob.vercel-storage.com/");
 }
 
-function parseDataUrl(dataUrl: string): { buffer: Buffer; mime: string } | null {
-  const match = /^data:(image\/[\w+.-]+);base64,(.+)$/i.exec(dataUrl.trim());
-  if (!match) return null;
+function dataUrlImagenABuffer(dataUrl: string): { buffer: Buffer; mime: string } | null {
   try {
-    return {
-      mime: match[1]!,
-      buffer: Buffer.from(match[2]!, "base64"),
-    };
+    const { buffer, mime } = dataUrlABuffer(dataUrl.trim());
+    return { buffer, mime };
   } catch {
     return null;
   }
@@ -73,7 +70,7 @@ export async function normalizarFotosMascota(
       resultado.push(url);
       continue;
     }
-    const parsed = parseDataUrl(url);
+    const parsed = dataUrlImagenABuffer(url);
     if (!parsed) {
       resultado.push(url);
       continue;

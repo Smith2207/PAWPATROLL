@@ -5,9 +5,6 @@
 /**
  * [layout] Barra: navegacion base.
  */
-/**
- * [layout] Barra: navegacion base.
- */
 import { MenuUsuario } from "@/componentes/auth/MenuUsuario";
 import { EnlaceChatsNav } from "@/componentes/layout/EnlaceChatsNav";
 import { EnlaceMisMascotasNav } from "@/componentes/layout/EnlaceMisMascotasNav";

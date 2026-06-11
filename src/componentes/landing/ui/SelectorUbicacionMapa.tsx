@@ -5,11 +5,8 @@
 /**
  * [landing] Componente React: selector ubicacion mapa.
  */
-/**
- * [landing] Componente React: selector ubicacion mapa.
- */
-import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MapaPawPatrolCompacto } from "@/componentes/mapa/MapaPawPatrolLazy";
 import { useGeolocalizacion } from "@/hooks/useGeolocalizacion";
 import { useSolicitudUbicacion } from "@/hooks/useSolicitudUbicacion";
 import {
@@ -25,14 +22,6 @@ import type { UbicacionSeleccionada } from "@/lib/geo/tipos";
 import { coordenadasValidas } from "@/lib/geo/tipos";
 import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
 import { etiquetaVisibleUbicacion, ubicacionConEtiqueta } from "@/lib/geo/etiqueta-ubicacion";
-
-const MapaPawPatrol = dynamic(
-  () =>
-    import("@/componentes/mapa/MapaPawPatrol").then((m) => ({
-      default: m.MapaPawPatrol,
-    })),
-  { ssr: false, loading: () => <div className="pp-mapa pp-mapa--compacto" /> }
-);
 
 type Props = {
   etiqueta: string;
@@ -261,7 +250,7 @@ export function SelectorUbicacionMapa({
         )}
 
         <div className="location-map-preview location-map-preview--real">
-          <MapaPawPatrol
+          <MapaPawPatrolCompacto
             altura="compacto"
             marcadorUsuario={ubicacionLista ? ubicacionActiva : null}
             centrarEnUsuario={ubicacionLista ? ubicacionActiva : undefined}

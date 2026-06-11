@@ -5,10 +5,8 @@
 /**
  * [auth] Formulario: restablecer contrasena.
  */
-/**
- * [auth] Formulario: restablecer contrasena.
- */
 import { restablecerContrasenaConToken } from "@/actions/autenticacion";
+import { CampoContrasena } from "@/componentes/auth/CampoContrasena";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -93,30 +91,22 @@ export function FormularioRestablecerContrasena({
       )}
 
       <form onSubmit={enviar} style={{ marginTop: "1.25rem" }}>
-        <div className="form-group">
-          <label>Nueva contraseña</label>
-          <input
-            type="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Mínimo 8 caracteres"
-          />
-        </div>
-        <div className="form-group">
-          <label>Repetir contraseña</label>
-          <input
-            type="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            value={password2}
-            onChange={(e) => setPassword2(e.target.value)}
-            placeholder="Repite la contraseña"
-          />
-        </div>
+        <CampoContrasena
+          id="restablecer-nueva"
+          label="Nueva contraseña"
+          value={password}
+          onChange={setPassword}
+          autoComplete="new-password"
+          placeholder="Mínimo 8 caracteres"
+        />
+        <CampoContrasena
+          id="restablecer-repetir"
+          label="Repetir contraseña"
+          value={password2}
+          onChange={setPassword2}
+          autoComplete="new-password"
+          placeholder="Repite la contraseña"
+        />
         <button type="submit" disabled={cargando} className="submit-btn">
           {cargando ? "Guardando..." : "Guardar nueva contraseña"}
         </button>

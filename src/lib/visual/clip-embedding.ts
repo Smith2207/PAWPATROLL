@@ -3,7 +3,9 @@
  * En Vercel: WASM (onnxruntime-web), sin libonnxruntime.so nativo.
  */
 
-import { MODELO_XENOVA_LOCAL } from "@/lib/visual/config";
+import { MODELO_XENOVA_LOCAL, MODELO_CLIP, DIMENSION_CLIP } from "@/lib/visual/config";
+
+export { MODELO_CLIP };
 import {
   configurarEnvTransformers,
   esEntornoServerless,
@@ -12,10 +14,7 @@ import {
 import { dataUrlABuffer } from "@/lib/visual/data-url";
 import { preprocesarDataUrlParaClip } from "@/lib/visual/preprocesar-imagen";
 
-/** Nombre canónico guardado en BD */
-export const MODELO_CLIP = "openai/clip-vit-base-patch32";
-
-const DIM_ESPERADA = 512;
+const DIM_ESPERADA = DIMENSION_CLIP;
 
 type ModuloTransformers = typeof import("@xenova/transformers");
 type ImagenClip = Awaited<ReturnType<ModuloTransformers["RawImage"]["read"]>>;

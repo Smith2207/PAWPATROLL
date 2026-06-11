@@ -5,15 +5,10 @@
 /**
  * [avistamientos] Componente React: subir foto avistamiento.
  */
-/**
- * [avistamientos] Componente React: subir foto avistamiento.
- */
 import { useEffect, useRef } from "react";
 import { Icono } from "@/componentes/ui/Icono";
 import { useCamaraReporte } from "@/hooks/useCamaraReporte";
-import { ACCEPT_INPUT_IMAGEN } from "@/lib/imagen/validar-archivo";
-
-const MAX_BYTES_AVISTAMIENTO = 4 * 1024 * 1024;
+import { ACCEPT_INPUT_IMAGEN, MAX_BYTES_IMAGEN_USUARIO } from "@/lib/imagen/validar-archivo";
 
 type Props = {
   foto: string | null;
@@ -26,7 +21,7 @@ export function SubirFotoAvistamiento({ foto, onChange }: Props) {
     useCamaraReporte({
       idPrefijo: "avistamiento",
       maxFotos: 1,
-      maxBytesArchivo: MAX_BYTES_AVISTAMIENTO,
+      maxBytesArchivo: MAX_BYTES_IMAGEN_USUARIO,
     });
 
   useEffect(() => {

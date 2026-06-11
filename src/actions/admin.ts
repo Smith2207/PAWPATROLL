@@ -5,9 +5,6 @@
 /**
  * Server Actions (admin): operaciones de servidor invocadas desde la UI.
  */
-/**
- * Server Actions (admin): operaciones de servidor invocadas desde la UI.
- */
 import { and, count, desc, eq, gte, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { listarDatosMapaPublico, type DatosMapaPublico } from "@/actions/mapa";

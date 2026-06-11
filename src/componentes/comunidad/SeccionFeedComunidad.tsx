@@ -3,6 +3,7 @@ import type {
   ActividadComunidad,
   ColaboradorDestacado,
 } from "@/actions/comunidad";
+import { tiempoRelativo } from "@/lib/fechas/tiempo-relativo";
 
 type Props = {
   actividad: ActividadComunidad[];
@@ -15,17 +16,6 @@ function badgeTexto(badge: ColaboradorDestacado["badge"]) {
   if (badge === "ayudante") return "Vecino ayudante";
   if (badge === "vecino") return "Colaborador";
   return null;
-}
-
-function tiempoRelativo(fecha: Date) {
-  const diff = Date.now() - fecha.getTime();
-  const min = Math.floor(diff / 60000);
-  if (min < 1) return "ahora";
-  if (min < 60) return `hace ${min} min`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `hace ${h} h`;
-  const d = Math.floor(h / 24);
-  return `hace ${d} d`;
 }
 
 function ListaActividad({ actividad }: { actividad: ActividadComunidad[] }) {
@@ -44,7 +34,9 @@ function ListaActividad({ actividad }: { actividad: ActividadComunidad[] }) {
           <div className="pp-feed-item-cuerpo">
             <strong>{a.titulo}</strong>
             <span>{a.subtitulo}</span>
-            <time dateTime={a.fecha.toISOString()}>{tiempoRelativo(a.fecha)}</time>
+            <time dateTime={a.fecha.toISOString()}>
+              {tiempoRelativo(a.fecha, "feed")}
+            </time>
           </div>
           {a.slug && (
             <Link href={`/mascota/${a.slug}`} className="pp-feed-link">

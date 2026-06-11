@@ -5,9 +5,6 @@
 /**
  * [notificaciones] Componente React: campana notificaciones.
  */
-/**
- * [notificaciones] Componente React: campana notificaciones.
- */
 import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -18,28 +15,10 @@ import {
   marcarTodasNotificacionesLeidas,
   type NotificacionAgrupada,
 } from "@/actions/notificaciones";
-import { Icono, type NombreIcono } from "@/componentes/ui/Icono";
+import { Icono } from "@/componentes/ui/Icono";
+import { IconoNotificacion } from "@/componentes/notificaciones/utilidades-notificacion";
 import { useTiempoReal } from "@/hooks/useTiempoReal";
-
-function iconoTipo(tipo: string) {
-  let nombre: NombreIcono = "campana";
-  if (tipo.includes("AVISTAMIENTO")) nombre = "ojo";
-  else if (tipo === "MENSAJE_NUEVO") nombre = "mensaje";
-  else if (tipo === "COINCIDENCIA_IA") nombre = "camara";
-  else if (tipo === "CASO_RECUPERADO") nombre = "celebracion";
-  else if (tipo === "REPORTE_ABUSO_ADMIN") nombre = "alerta";
-  return <Icono nombre={nombre} size={18} />;
-}
-
-function tiempoRelativo(fecha: Date) {
-  const diff = Date.now() - new Date(fecha).getTime();
-  const min = Math.floor(diff / 60000);
-  if (min < 1) return "ahora";
-  if (min < 60) return `hace ${min} min`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `hace ${h} h`;
-  return new Date(fecha).toLocaleDateString("es-PE");
-}
+import { tiempoRelativo } from "@/lib/fechas/tiempo-relativo";
 
 export function CampanaNotificaciones() {
   const { data: sesion, status } = useSession();
@@ -151,17 +130,17 @@ export function CampanaNotificaciones() {
                         onClick={() => irNotificacion(n)}
                       >
                         <span className="pp-notif-item-icono" aria-hidden>
-                          {iconoTipo(n.tipo)}
+                          <IconoNotificacion tipo={n.tipo} size={18} />
                         </span>
                         <span className="pp-notif-item-cuerpo">
                           <strong>{n.titulo}</strong>
                           {n.cuerpo && <span>{n.cuerpo}</span>}
-                          <time>{tiempoRelativo(n.createdAt)}</time>
+                          <time>{tiempoRelativo(n.createdAt, "notificacion")}</time>
                         </span>
                       </Link>
                     ) : (
                       <div className="pp-notif-item">
-                        <span className="pp-notif-item-icono">{iconoTipo(n.tipo)}</span>
+                        <span className="pp-notif-item-icono"><IconoNotificacion tipo={n.tipo} size={18} /></span>
                         <span className="pp-notif-item-cuerpo">
                           <strong>{n.titulo}</strong>
                           {n.cuerpo && <span>{n.cuerpo}</span>}
