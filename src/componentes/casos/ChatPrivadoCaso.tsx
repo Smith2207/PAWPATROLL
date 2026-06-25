@@ -676,44 +676,7 @@ export function ChatPrivadoCaso({
           disabled={pendiente || geo.cargando || Boolean(ubicacionPendiente)}
         >
           <Icono nombre="ubicacion" size={18} />
-        </button>
-        <button
-          type="button"
-          className="pp-coord-accion-rapida"
-          title="Avistamiento"
-          aria-label="Insertar referencia al avistamiento"
-          onClick={() =>
-            setTexto((t) =>
-              t
-                ? `${t}\nAvistamiento #${numeroReporte}`
-                : `Avistamiento #${numeroReporte} sobre ${nombreMascota}`
-            )
-          }
-        >
-          <Icono nombre="ojo" size={18} />
-        </button>
-        <button
-          type="button"
-          className="pp-coord-accion-rapida"
-          title="Contacto"
-          aria-label="Insertar solicitud de contacto telefónico"
-          onClick={() =>
-            setTexto((t) =>
-              t ? `${t}\n¿Podemos hablar por teléfono?` : "¿Podemos hablar por teléfono?"
-            )
-          }
-        >
-          <Icono nombre="telefono" size={18} />
-        </button>
-        <button
-          type="button"
-          className="pp-coord-accion-rapida pp-coord-accion-rapida--alerta"
-          title="Emergencia"
-          aria-label="Reportar comportamiento sospechoso"
-          onClick={accionEmergencia}
-        >
-          <Icono nombre="alerta" size={18} />
-        </button>
+         </button>
       </div>
 
       <div className="pp-chat-privado-input pp-chat-privado-input--coord">

@@ -75,10 +75,6 @@ export function PanelContextualCaso({
           <dt>Pendientes</dt>
           <dd>{resumen.pendientes}</dd>
         </div>
-        <div>
-          <dt>Coincidencias IA</dt>
-          <dd>{resumen.coincidenciasIa}</dd>
-        </div>
       </dl>
       {resumen.ultimoAvistamientoDireccion && (
         <p className="pp-coord-ctx-ubicacion">
