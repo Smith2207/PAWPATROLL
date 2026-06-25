@@ -45,7 +45,7 @@ export async function subirFotoMascotaBlob(
   const pathname = `mascotas/${mascotaId}/${crypto.randomUUID()}.${ext}`;
 
   const blob = await put(pathname, buffer, {
-    access: "private",
+    access: "public",
     contentType: mime,
     token,
   });
